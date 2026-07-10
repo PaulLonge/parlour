@@ -1,78 +1,244 @@
 @import "tailwindcss";
 
-:root {
-  --bg: #14100d;
-  --panel: #1f1915;
+/* ---------------------------------------------------------------------------
+   PARLOUR themes. Every component styles itself ONLY through these variables,
+   so a theme is one class (and a generated story's skin can override inline).
+   Themes: .theme-manor (default) | .theme-deco | .theme-seance
+--------------------------------------------------------------------------- */
+
+:root, .theme-manor {
+  --bg: #161006;
+  --bg-glow: radial-gradient(ellipse 80% 60% at 50% -10%, #3a2510 0%, transparent 60%),
+             radial-gradient(ellipse 60% 40% at 50% 110%, #2a1608 0%, transparent 60%);
+  --panel: rgba(42, 30, 16, 0.75);
+  --panel-solid: #241a0e;
+  --border: rgba(201, 164, 92, 0.28);
+  --border-strong: rgba(201, 164, 92, 0.55);
   --accent: #a63a2e;
-  --accent-soft: #7a2b22;
-  --ink: #e8ddc8;
-  --ink-dim: #a89a80;
+  --accent-ink: #f3e2d0;
+  --danger: #c0392b;
+  --ink: #eadfc8;
+  --ink-dim: #a89a7d;
   --gold: #c9a45c;
+  --seal: #7e1f16;
+  --font-display: var(--font-manor), Georgia, serif;
+  --font-body: Georgia, "Times New Roman", serif;
+  --radius: 0.6rem;
+  --btn-radius: 0.5rem;
+  --tracking: 0.03em;
 }
 
+.theme-deco {
+  --bg: #0b0c0e;
+  --bg-glow: radial-gradient(ellipse 70% 50% at 50% -10%, #1c1a12 0%, transparent 55%),
+             linear-gradient(180deg, transparent 0%, #101114 100%);
+  --panel: rgba(24, 25, 28, 0.85);
+  --panel-solid: #16171a;
+  --border: rgba(212, 175, 55, 0.35);
+  --border-strong: rgba(212, 175, 55, 0.7);
+  --accent: #0e6b5c;
+  --accent-ink: #eaf5f0;
+  --danger: #9e2b25;
+  --ink: #e9e4d8;
+  --ink-dim: #8f8a7c;
+  --gold: #d4af37;
+  --seal: #0e6b5c;
+  --font-display: var(--font-deco), "Futura", "Avenir Next", sans-serif;
+  --font-body: "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --radius: 0.15rem;
+  --btn-radius: 0;
+  --tracking: 0.18em;
+}
+
+.theme-seance {
+  --bg: #0d0a14;
+  --bg-glow: radial-gradient(ellipse 70% 55% at 50% -10%, #241a38 0%, transparent 60%),
+             radial-gradient(ellipse 90% 40% at 50% 115%, #0f2420 0%, transparent 55%);
+  --panel: rgba(28, 22, 44, 0.72);
+  --panel-solid: #191428;
+  --border: rgba(158, 130, 208, 0.3);
+  --border-strong: rgba(158, 130, 208, 0.6);
+  --accent: #5b2a86;
+  --accent-ink: #efe6ff;
+  --danger: #8e3050;
+  --ink: #ddd6ea;
+  --ink-dim: #8f86a8;
+  --gold: #9ff0c8;
+  --seal: #3d1f5c;
+  --font-display: var(--font-seance), Georgia, serif;
+  --font-body: Georgia, "Palatino Linotype", serif;
+  --radius: 0.9rem;
+  --btn-radius: 999px;
+  --tracking: 0.06em;
+}
+
+/* --------------------------------------------------------------------- */
+
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: var(--bg-glow);
+  background-attachment: fixed;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-body);
   min-height: 100dvh;
 }
 
-.font-display {
-  font-family: Georgia, "Times New Roman", serif;
-  letter-spacing: 0.02em;
+.themed {
+  background-color: var(--bg);
+  background-image: var(--bg-glow);
+  color: var(--ink);
+  font-family: var(--font-body);
 }
 
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking);
+}
+
+/* panels & cards */
 .panel {
   background: var(--panel);
-  border: 1px solid rgba(201, 164, 92, 0.25);
-  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
+.panel-hero {
+  border: 1px solid var(--border-strong);
+  position: relative;
+}
+/* corner flourishes on hero panels */
+.panel-hero::before,
+.panel-hero::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--gold);
+  border-style: solid;
+  opacity: 0.8;
+}
+.panel-hero::before { top: 6px; left: 6px; border-width: 1px 0 0 1px; }
+.panel-hero::after { bottom: 6px; right: 6px; border-width: 0 1px 1px 0; }
 
+/* buttons */
 .btn {
-  display: inline-block;
-  padding: 0.65rem 1.2rem;
-  border-radius: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5ch;
+  padding: 0.7rem 1.25rem;
+  border-radius: var(--btn-radius);
   background: var(--accent);
-  color: var(--ink);
+  color: var(--accent-ink);
   font-weight: 600;
-  border: 1px solid rgba(201, 164, 92, 0.35);
-  transition: transform 0.06s ease, background 0.15s ease;
+  font-family: var(--font-body);
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border-strong);
+  transition: transform 0.06s ease, filter 0.15s ease;
+  cursor: pointer;
 }
+.btn:hover { filter: brightness(1.12); }
 .btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: 0.45; }
+.btn:disabled { opacity: 0.45; cursor: default; }
 .btn-ghost {
   background: transparent;
-  border: 1px solid rgba(201, 164, 92, 0.4);
   color: var(--gold);
 }
+.btn-danger { background: var(--danger); }
 
 .input {
   width: 100%;
-  padding: 0.7rem 0.9rem;
-  border-radius: 0.5rem;
-  background: #0f0c0a;
-  border: 1px solid rgba(201, 164, 92, 0.3);
+  padding: 0.75rem 0.95rem;
+  border-radius: var(--btn-radius);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border);
   color: var(--ink);
+  font-family: var(--font-body);
 }
-.input:focus { outline: 2px solid var(--accent-soft); }
+.input:focus { outline: 2px solid var(--border-strong); outline-offset: 1px; }
 
+/* the wax seal — used on secrets */
+.seal-dot {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--seal) 70%, white 12%), var(--seal) 60%, color-mix(in srgb, var(--seal) 75%, black 25%));
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 3px rgba(0,0,0,0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-ink);
+  font-size: 0.9rem;
+  flex: none;
+}
+
+/* kicker labels above cards */
+.kicker {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+  font-family: var(--font-body);
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+  border: 0;
+}
+
+/* animations */
 @keyframes flicker {
   0%, 100% { opacity: 1; }
   92% { opacity: 1; }
-  94% { opacity: 0.75; }
+  94% { opacity: 0.72; }
   96% { opacity: 0.95; }
   98% { opacity: 0.85; }
 }
 .candle { animation: flicker 7s infinite; }
 
 @keyframes envelope-in {
-  from { transform: translateY(14px) scale(0.98); opacity: 0; }
+  from { transform: translateY(16px) scale(0.98); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
-.envelope { animation: envelope-in 0.45s ease-out; }
+.envelope { animation: envelope-in 0.5s cubic-bezier(0.2, 0.8, 0.3, 1); }
 
 @keyframes pulse-red {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(166, 58, 46, 0.5); }
-  50% { box-shadow: 0 0 0 12px rgba(166, 58, 46, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 55%, transparent); }
+  50% { box-shadow: 0 0 0 12px transparent; }
 }
-.pulse-danger { animation: pulse-red 1.6s infinite; }
+.pulse-danger { animation: pulse-red 1.7s infinite; }
+
+@keyframes drift {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+.drift { animation: drift 6s ease-in-out infinite; }
+
+/* TV vignette */
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 90% 80% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* deco frame line for TV headers */
+.deco-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--gold);
+}
+.deco-rule::before,
+.deco-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-strong));
+}
+.deco-rule::after {
+  background: linear-gradient(90deg, var(--border-strong), transparent);
+}

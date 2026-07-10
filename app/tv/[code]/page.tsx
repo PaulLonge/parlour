@@ -41,48 +41,57 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
     );
 
   const skin = g.game.story_public?.skin?.palette;
-  const style = skin ? ({ ["--bg" as string]: skin.bg, ["--accent" as string]: skin.accent, ["--ink" as string]: skin.text } as React.CSSProperties) : undefined;
+  const style = skin
+    ? ({ ["--bg" as string]: skin.bg, ["--accent" as string]: skin.accent, ["--ink" as string]: skin.text } as React.CSSProperties)
+    : undefined;
 
-  const announces = g.publicEvents.filter((e) =>
-    ["announce", "seal_broken", "seal_resumed"].includes(e.type)
-  );
+  const announces = g.publicEvents.filter((e) => ["announce", "seal_broken", "seal_resumed"].includes(e.type));
   const latest = announces[0];
   const reveal = g.publicEvents.find((e) => e.type === "reveal_roles");
 
   return (
-    <main className="flex min-h-dvh flex-col p-10" style={style}>
+    <main className="relative flex min-h-dvh flex-col p-10" style={style}>
+      <div className="vignette" />
+
       {!begun && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-          <button className="btn px-10 py-6 text-2xl" onClick={begin}>
+          <button className="btn candle px-10 py-6 text-2xl" onClick={begin}>
             🕯 Light the candles
           </button>
         </div>
       )}
 
-      <header className="text-center">
-        <h1 className="candle font-display text-6xl tracking-widest" style={{ color: "var(--gold)" }}>
+      <header className="relative text-center">
+        <p className="deco-rule kicker justify-center text-sm">the house is listening</p>
+        <h1 className="candle font-display mt-4 text-7xl" style={{ color: "var(--gold)" }}>
           {g.game.story_public?.meta?.title ?? g.game.title}
         </h1>
-        <p className="mt-2 text-xl italic" style={{ color: "var(--ink-dim)" }}>
-          {g.game.story_public?.meta?.tagline ?? "The house is listening."}
+        <p className="mt-3 text-xl italic" style={{ color: "var(--ink-dim)" }}>
+          {g.game.story_public?.meta?.tagline ?? "An evening you were warned about."}
         </p>
-        <p className="mt-4 text-lg" style={{ color: "var(--ink-dim)" }}>
-          {g.game.status === "lobby" && `Join at ${typeof window !== "undefined" ? window.location.host : ""} — code `}
+        <p className="mt-5 text-lg" style={{ color: "var(--ink-dim)" }}>
           {g.game.status === "lobby" && (
-            <span className="font-display text-3xl tracking-[0.4em]" style={{ color: "var(--gold)" }}>
-              {g.game.code}
-            </span>
+            <>
+              join at&ensp;
+              <span style={{ color: "var(--ink)" }}>
+                {typeof window !== "undefined" ? window.location.host : ""}
+              </span>
+              &ensp;·&ensp;code&ensp;
+              <span className="font-display text-4xl tracking-[0.4em]" style={{ color: "var(--gold)" }}>
+                {g.game.code}
+              </span>
+            </>
           )}
-          {g.game.status === "round" && `Round ${g.game.round_no}`}
-          {g.game.paused && " — ⏸ the game holds its breath"}
+          {g.game.status === "round" && `— Round ${g.game.round_no} —`}
+          {g.game.paused && "  ⏸ the game holds its breath"}
         </p>
       </header>
 
-      <section className="flex flex-1 flex-col items-center justify-center text-center">
+      <section className="relative flex flex-1 flex-col items-center justify-center text-center">
         {reveal && g.game.status !== "round" ? (
           <RevealBoard e={reveal} />
         ) : latest ? (
-          <p key={latest.id} className="envelope max-w-4xl font-display text-4xl leading-snug">
+          <p key={latest.id} className="envelope drift max-w-4xl font-display text-5xl leading-snug">
             “{(latest.payload.text as string) ?? ""}”
           </p>
         ) : (
@@ -92,11 +101,15 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
         )}
       </section>
 
-      <footer className="flex justify-center gap-6 text-sm" style={{ color: "var(--ink-dim)" }}>
+      <footer className="relative flex flex-wrap justify-center gap-x-6 gap-y-2 text-base" style={{ color: "var(--ink-dim)" }}>
         {g.roster.map((p) => (
-          <span key={p.id} className={p.status === "dead" || p.status === "banished" ? "line-through opacity-50" : ""}>
+          <span
+            key={p.id}
+            className={p.status === "dead" || p.status === "banished" ? "line-through opacity-40" : ""}
+          >
+            {p.status === "ghost" && "👻 "}
             {p.name}
-            {p.status === "ghost" && " 👻"}
+            {p.is_host ? " ✦" : ""}
           </span>
         ))}
       </footer>
@@ -108,14 +121,19 @@ function RevealBoard({ e }: { e: PublicEvent }) {
   const players = (e.payload.players as { name: string; persona: string; role: string; status: string }[]) ?? [];
   return (
     <div className="envelope">
-      <h2 className="font-display text-4xl" style={{ color: "var(--gold)" }}>The truth of the evening</h2>
-      <div className="mt-8 grid grid-cols-2 gap-x-16 gap-y-3 text-left text-xl">
+      <h2 className="deco-rule font-display justify-center text-5xl" style={{ color: "var(--gold)" }}>
+        The truth of the evening
+      </h2>
+      <div className="mt-10 grid grid-cols-2 gap-x-16 gap-y-3 text-left text-2xl">
         {players.map((p) => (
           <p key={p.name}>
-            <b style={{ color: p.role === "traitor" ? "var(--accent)" : "var(--ink)" }}>
-              {p.role === "traitor" ? "🗡 " : ""}{p.name}
+            <b style={{ color: p.role === "traitor" ? "var(--danger)" : "var(--ink)" }}>
+              {p.role === "traitor" ? "🗡 " : ""}
+              {p.name}
             </b>{" "}
-            <span style={{ color: "var(--ink-dim)" }}>was {p.persona} — {p.role}</span>
+            <span style={{ color: "var(--ink-dim)" }}>
+              was {p.persona} — {p.role}
+            </span>
           </p>
         ))}
       </div>
