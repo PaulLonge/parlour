@@ -1,0 +1,291 @@
+{
+  "meta": {
+    "title": "The Ashgrove Reunion",
+    "genre": "classic country-house whodunnit",
+    "tagline": "The will is read at midnight. Not everyone will hear it.",
+    "setting": "Ashgrove House, a fading country manor, the night old Edmund Ashgrove's will is finally to be read",
+    "houseVoiceIntro": "Welcome to Ashgrove House. The fires are lit, the brandy is poured, and the will — at last — will be read at midnight. Do make yourselves comfortable. Some of you may even leave."
+  },
+  "skin": {
+    "palette": { "bg": "#171310", "accent": "#a63a2e", "text": "#e8ddc8" },
+    "motif": "wax-seal"
+  },
+  "characters": [
+    {
+      "forPlayer": null,
+      "personaName": "Mortimer the Butler",
+      "archetype": "the loyal retainer",
+      "publicBlurb": "Has served Ashgrove House for forty years and knows where everything — and everyone — is buried.",
+      "costumeHint": "Dark waistcoat, white gloves, a pocket watch",
+      "background": "You practically raised the Ashgrove children. The house is your life, and the will may hand it to strangers.",
+      "connections": [
+        { "personaName": "Celia Ashgrove", "what": "You covered for her the night of the fire, years ago." },
+        { "personaName": "Dr. Hollis Vane", "what": "You fetch his 'medicine' from town. It is not medicine." }
+      ],
+      "secret": "You have already read the will. You resealed the envelope badly.",
+      "mannerism": "You refill people's drinks without being asked, especially when they're mid-secret.",
+      "entrance": {
+        "announcement": "Mortimer, butler of Ashgrove these forty years, opens the doors.",
+        "starterSecret": "The study fireplace has been lit twice today. Nobody admits to the second fire.",
+        "nudgeTask": "Ask the butler what time the post arrived today. Watch his hands."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Celia Ashgrove",
+      "archetype": "the heiress presumptive",
+      "publicBlurb": "Edmund's niece, back from abroad, radiating confidence she may not have earned.",
+      "costumeHint": "Something elegant and slightly too fashionable for the countryside",
+      "background": "Everyone assumes the estate is yours. Your debts assume it too — loudly, and on a schedule.",
+      "connections": [
+        { "personaName": "Mortimer the Butler", "what": "He knows what really happened the night of the fire." },
+        { "personaName": "Rex Balfour", "what": "Your solicitor — and briefly, regrettably, your fiancé." }
+      ],
+      "secret": "You sold your claim to a stranger three weeks ago to cover your debts.",
+      "mannerism": "You laugh one beat too early at anything about money.",
+      "entrance": {
+        "announcement": "Celia Ashgrove has returned to the house she never doubted would be hers.",
+        "starterSecret": "Rex Balfour's briefcase has two latches. He only ever locks one.",
+        "nudgeTask": "Welcome Celia home warmly, then mention — casually — that the will was rewritten in spring."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Dr. Hollis Vane",
+      "archetype": "the family physician",
+      "publicBlurb": "Treated Edmund for thirty years; signed the death certificate himself.",
+      "costumeHint": "Tweed, spectacles, a doctor's bag you won't open",
+      "background": "Edmund's heart gave out, you wrote. Whether it had help is a question you've been paid not to ask yourself.",
+      "connections": [
+        { "personaName": "Mortimer the Butler", "what": "He collects your laudanum. You collect his silence." },
+        { "personaName": "Margot Finch", "what": "She photographed you leaving the house the night Edmund died." }
+      ],
+      "secret": "The death certificate is wrong about the time of death. By four hours.",
+      "mannerism": "You check your own pulse when anyone raises their voice.",
+      "entrance": {
+        "announcement": "Dr. Hollis Vane arrives, professionally sombre, bag in hand.",
+        "starterSecret": "Edmund's medicine cabinet was rearranged after his death. Bottom shelf, back row.",
+        "nudgeTask": "Ask the doctor, sympathetically, whether Edmund suffered at the end. Count the pause."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Rex Balfour",
+      "archetype": "the family solicitor",
+      "publicBlurb": "Keeper of the will, the codicils, and several envelopes nobody has asked about yet.",
+      "costumeHint": "Pinstripes, a locked briefcase, cufflinks that cost too much",
+      "background": "You drafted three versions of Edmund's will. Only one is in your briefcase tonight, and choosing which was... editorial.",
+      "connections": [
+        { "personaName": "Celia Ashgrove", "what": "The engagement ended badly. The retainer didn't." },
+        { "personaName": "Major Tom Radley", "what": "He owes you money and thinks you've forgotten." }
+      ],
+      "secret": "One version of the will names you. It is not the version in the briefcase — yet.",
+      "mannerism": "You pat the briefcase whenever inheritance is mentioned.",
+      "entrance": {
+        "announcement": "Rex Balfour, solicitor to the estate, arrives with the will itself.",
+        "starterSecret": "The Major has been practising a toast in the mirror. It thanks Edmund for 'a debt forgiven'.",
+        "nudgeTask": "Offer to guard Rex's briefcase while he takes a drink. Insist twice."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Ivy Thorn",
+      "archetype": "the gardener",
+      "publicBlurb": "Grows everything at Ashgrove — the roses, the vegetables, and the plants with the little warning labels.",
+      "costumeHint": "Practical clothes, soil under the fingernails, a sprig of something in the buttonhole",
+      "background": "Edmund promised you the cottage in writing. That letter is worth more than the garden now, if it can be found.",
+      "connections": [
+        { "personaName": "Mrs. Pemberly", "what": "She borrowed dried foxglove from your shed 'for the mice'. Twice." },
+        { "personaName": "Celia Ashgrove", "what": "You watched her bury something by the greenhouse in spring." }
+      ],
+      "secret": "Your poison log is missing a page. You didn't tear it out.",
+      "mannerism": "You name the plants in any room you enter, quietly, like a register.",
+      "entrance": {
+        "announcement": "Ivy Thorn comes in from the gardens, bringing the cold with her.",
+        "starterSecret": "Something was buried near the greenhouse in spring. The soil has just been disturbed again.",
+        "nudgeTask": "Ask Ivy which plant in this room could kill a man. Note who leans in to hear the answer."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Margot Finch",
+      "archetype": "the visiting actress",
+      "publicBlurb": "A stage star between engagements, invited by Edmund for reasons nobody quite remembers.",
+      "costumeHint": "Dramatic — a shawl, dark lipstick, presence",
+      "background": "Edmund didn't invite you for company. He hired you — to watch someone in this house and report weekly. He died before naming your final payment.",
+      "connections": [
+        { "personaName": "Dr. Hollis Vane", "what": "Your camera caught him leaving at an hour he denies." },
+        { "personaName": "Rex Balfour", "what": "You once performed a play he wrote under another name. It was terrible, and useful." }
+      ],
+      "secret": "Your last report to Edmund was never delivered. It is sewn into your shawl.",
+      "mannerism": "You rehearse other people's sentences back at them, 'for the theatre'.",
+      "entrance": {
+        "announcement": "Margot Finch makes an entrance, as she has never done anything else.",
+        "starterSecret": "The doctor's bag rattles like glass. Doctors' bags shouldn't rattle.",
+        "nudgeTask": "Ask Margot to perform a toast to Edmund's memory. Watch who doesn't raise their glass."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Major Tom Radley",
+      "archetype": "the old comrade",
+      "publicBlurb": "Edmund's oldest friend, full of war stories that improve with every telling.",
+      "costumeHint": "Regimental tie, medals, a hip flask",
+      "background": "Edmund forgave your debt the week he died — verbally, warmly, and with no witnesses whatsoever.",
+      "connections": [
+        { "personaName": "Rex Balfour", "what": "He holds your IOUs and smiles at you too often." },
+        { "personaName": "Mrs. Pemberly", "what": "She caught you in the study after hours. You told her you were 'remembering'." }
+      ],
+      "secret": "You were in the study the night Edmund died — searching for your IOUs.",
+      "mannerism": "You stand to attention when lying.",
+      "entrance": {
+        "announcement": "Major Tom Radley marches in, medals first.",
+        "starterSecret": "Balfour's cufflinks are new. Solicitors' cufflinks are never new.",
+        "nudgeTask": "Get the Major telling the story of how he met Edmund. It changes every time — note what changed."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Mrs. Pemberly",
+      "archetype": "the cook",
+      "publicBlurb": "Runs the kitchen with an iron ladle; fed Edmund every meal for two decades — including his last.",
+      "costumeHint": "Apron, rolled sleeves, a wooden spoon tucked like a sidearm",
+      "background": "Edmund's last supper was your cooking, and the whole county knows it. Someone tampered with that tray — you'd stake your life it wasn't you.",
+      "connections": [
+        { "personaName": "Ivy Thorn", "what": "You borrowed from her shed. It was for the mice. Mostly." },
+        { "personaName": "Major Tom Radley", "what": "You caught him in the study at midnight and accepted his nonsense explanation, for a price." }
+      ],
+      "secret": "The tray sat unwatched for eleven minutes. You've told everyone it was two.",
+      "mannerism": "You offer food to anyone who looks like they're about to say something important.",
+      "entrance": {
+        "announcement": "Mrs. Pemberly arrives from the kitchen, wiping her hands of more than flour.",
+        "starterSecret": "The Major pays for silence in cash. The envelope is behind the biscuit tin.",
+        "nudgeTask": "Compliment Mrs. Pemberly's cooking, then ask — gently — about Edmund's last meal."
+      }
+    }
+  ],
+  "spares": [
+    {
+      "forPlayer": null,
+      "personaName": "Inspector Greeley",
+      "archetype": "the inspector (late entrance / respawn)",
+      "publicBlurb": "Arrived uninvited, asking the kind of questions that have warrants behind them.",
+      "costumeHint": "A long coat and a notebook",
+      "background": "You were sent after an anonymous letter reached the station. You are not leaving without a name.",
+      "connections": [
+        { "personaName": "Rex Balfour", "what": "His name is in your notebook, underlined twice." },
+        { "personaName": "Dr. Hollis Vane", "what": "The station has questions about three other certificates he's signed." }
+      ],
+      "secret": "The anonymous letter that summoned you was posted from inside this house.",
+      "mannerism": "You write in your notebook after anyone finishes speaking. Sometimes nothing.",
+      "entrance": {
+        "announcement": "There is a knock. Inspector Greeley does not wait to be let in.",
+        "starterSecret": "The letter that brought you here was written on Ashgrove House stationery.",
+        "nudgeTask": "Someone official has arrived. Intercept them before they reach the drawing room and find out what they want."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Jasper Ashgrove",
+      "archetype": "the estranged sibling (late entrance / respawn)",
+      "publicBlurb": "Edmund's brother, unheard of for a decade, arriving with impeccable timing.",
+      "costumeHint": "Travel-worn coat, a suitcase with foreign labels",
+      "background": "You left after the fire and swore never to return. The will changed your mind. Wills do that.",
+      "connections": [
+        { "personaName": "Celia Ashgrove", "what": "Your niece — who was told you were dead." },
+        { "personaName": "Mortimer the Butler", "what": "He is the only one who wrote to you all these years." }
+      ],
+      "secret": "You have a letter from Edmund, dated a week before his death, inviting you home 'before it's too late'.",
+      "mannerism": "You look at doorways before you look at people.",
+      "entrance": {
+        "announcement": "A stranger at the door gives a name that silences the room: Jasper Ashgrove.",
+        "starterSecret": "Mortimer's letters to you stopped mentioning the doctor two years ago. Abruptly.",
+        "nudgeTask": "A man claiming to be family has arrived. Establish whether anyone can actually vouch for his face."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Sylvie Marsh",
+      "archetype": "the stranded motorist (late entrance / respawn)",
+      "publicBlurb": "Her car died at the gates in the rain. Or so she says.",
+      "costumeHint": "A wet coat, borrowed slippers",
+      "background": "Your car is fine. You bought Celia's claim to this estate three weeks ago, and you've come to inspect the goods.",
+      "connections": [
+        { "personaName": "Celia Ashgrove", "what": "Her signature is in your handbag, next to the receipt." },
+        { "personaName": "Rex Balfour", "what": "He notarised a document he clearly didn't read. You kept the copy." }
+      ],
+      "secret": "If the will favours Celia, this house is already yours.",
+      "mannerism": "You ask what things cost, then apologise for asking.",
+      "entrance": {
+        "announcement": "A soaked stranger is shown in from the storm — a Miss Sylvie Marsh, whose car has died at the gates.",
+        "starterSecret": "Celia's handwriting is on something in your bag that could end her evening.",
+        "nudgeTask": "See that the stranded stranger gets a drink — and find out what she was doing on this road at this hour."
+      }
+    },
+    {
+      "forPlayer": null,
+      "personaName": "Felix Crane",
+      "archetype": "the journalist (late entrance / respawn)",
+      "publicBlurb": "From the county paper, ostensibly covering 'the estate's future'.",
+      "costumeHint": "Crumpled jacket, pencil behind the ear",
+      "background": "Your editor wants five hundred words on the will. You want the story you've chased for years: what really burned at Ashgrove.",
+      "connections": [
+        { "personaName": "Margot Finch", "what": "You reviewed her once, kindly, and she owes you a quote." },
+        { "personaName": "Ivy Thorn", "what": "Your archive says the fire started in her greenhouse. The insurance says otherwise." }
+      ],
+      "secret": "You've already written tomorrow's headline. It names a killer. You're here to check it.",
+      "mannerism": "You repeat names back when introduced, spelling them slightly wrong on purpose.",
+      "entrance": {
+        "announcement": "The press, in the person of Felix Crane, has found its way in.",
+        "starterSecret": "Your archive clipping shows tonight isn't the first suspicious death at Ashgrove.",
+        "nudgeTask": "A journalist is circling. Decide as a group what the official version of tonight is — quickly."
+      }
+    }
+  ],
+  "twist": {
+    "summary": "Edmund Ashgrove is not dead. The 'death' was staged with Dr. Vane's help to flush out which of his beloved circle would turn killer over the will. The house voice — the announcements everyone has been hearing all night — has been Edmund, watching. The first 'murder' victim of the night was chosen because they got too close to the truth.",
+    "revealText": "The will can be read now. But it seems only fair that its author read it himself. Good evening, all of you. You have no idea how educational this has been."
+  },
+  "killMethods": [
+    {
+      "name": "The Marked Glass",
+      "brief": "Hand your victim a drink you have 'prepared' — any drink, but you must say the word 'cheers' as they take it.",
+      "discoveryText": "A glass lies on its side. Its owner will not be raising another."
+    },
+    {
+      "name": "The Black Envelope",
+      "brief": "Slip the black envelope (any folded dark paper) into your victim's hand or pocket without a witness.",
+      "discoveryText": "An envelope, black as the Ashgrove ledgers, has found its recipient."
+    },
+    {
+      "name": "The Whispered Word",
+      "brief": "Get your victim alone, or lean close in company, and whisper exactly: 'Edmund sends his regards.'",
+      "discoveryText": "Some words are heavier than knives. A body has been found."
+    }
+  ],
+  "socialChallengePool": [
+    { "brief": "Get two other guests to clink glasses to 'absent friends' without proposing the toast yourself.", "difficulty": 2 },
+    { "brief": "Learn what one other character claims to have been doing the night Edmund died.", "difficulty": 1 },
+    { "brief": "Convince someone the study is 'strictly off limits tonight' — invent why.", "difficulty": 2 },
+    { "brief": "Work the phrase 'the second fire' into three separate conversations.", "difficulty": 2 },
+    { "brief": "Swap one small object with another guest without them noticing.", "difficulty": 3 },
+    { "brief": "Get someone to tell you who they trust least in the room, in so many words.", "difficulty": 2 },
+    { "brief": "Compliment three people on things they are visibly lying about.", "difficulty": 1 },
+    { "brief": "Start a rumour that the will has been rewritten twice. Hear it come back to you.", "difficulty": 3 },
+    { "brief": "Hold a full minute of conversation about the weather while someone nearby discusses the murder.", "difficulty": 1 },
+    { "brief": "Find out one other guest's character secret without revealing your own.", "difficulty": 3 }
+  ],
+  "revealScript": [
+    "Guests of Ashgrove House. The doors are locked, the brandy is finished, and the truth, at last, is on the table.",
+    "Tonight you dined with liars, toasted with thieves, and danced — some of you — with killers. Here is who they were.",
+    "But before the killers take their bow: one detail. The will. And the small matter of who actually wrote tonight.",
+    "Edmund Ashgrove thanks you for a most instructive evening."
+  ],
+  "awards": [
+    { "title": "Best Performance", "criteria": "The guest who most convincingly became their character" },
+    { "title": "Deadliest Guest", "criteria": "The traitor with the most kills — or the near-est miss" },
+    { "title": "Sharpest Eye", "criteria": "The guest whose accusations were most often right" },
+    { "title": "Most Dramatic Death", "criteria": "The victim who died like they meant it" },
+    { "title": "Best Costume", "criteria": "The guest who dressed like the invitation threatened them" }
+  ]
+}

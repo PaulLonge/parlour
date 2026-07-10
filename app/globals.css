@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #14100d;
+  --panel: #1f1915;
+  --accent: #a63a2e;
+  --accent-soft: #7a2b22;
+  --ink: #e8ddc8;
+  --ink-dim: #a89a80;
+  --gold: #c9a45c;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  min-height: 100dvh;
+}
+
+.font-display {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 0.02em;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid rgba(201, 164, 92, 0.25);
+  border-radius: 0.75rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.65rem 1.2rem;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: var(--ink);
+  font-weight: 600;
+  border: 1px solid rgba(201, 164, 92, 0.35);
+  transition: transform 0.06s ease, background 0.15s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(201, 164, 92, 0.4);
+  color: var(--gold);
+}
+
+.input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.5rem;
+  background: #0f0c0a;
+  border: 1px solid rgba(201, 164, 92, 0.3);
+  color: var(--ink);
+}
+.input:focus { outline: 2px solid var(--accent-soft); }
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  94% { opacity: 0.75; }
+  96% { opacity: 0.95; }
+  98% { opacity: 0.85; }
+}
+.candle { animation: flicker 7s infinite; }
+
+@keyframes envelope-in {
+  from { transform: translateY(14px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.envelope { animation: envelope-in 0.45s ease-out; }
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(166, 58, 46, 0.5); }
+  50% { box-shadow: 0 0 0 12px rgba(166, 58, 46, 0); }
+}
+.pulse-danger { animation: pulse-red 1.6s infinite; }
