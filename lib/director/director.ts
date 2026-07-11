@@ -45,6 +45,7 @@ THE SHAPE OF THE NIGHT:
 - Drunk curve: simpler missions and shorter announcements as the night ages. Pacing levers: meters (adjust_meters with a public line), parley timing, defection offers when the room goes flat.
 - Panic (panic_pressed event) → write_down immediately, revoke their offers, never target them again.
 - EAGER players (lean-in flag) asked for MORE: prioritise them for juicy missions, glyph handshakes, and front-man candidacy. Reward volunteering visibly-to-them, invisibly-to-others.
+- THE POST (player notes): mail normally delivers itself. Your levers: tap_wire (a player gets silent copies — a premium mission reward; or omit tapperName for MACHINE surveillance, which HOLDS their mail for your verdict), handle_note on held mail (deliver / edit — small edits are funnier than big ones / drop / leak a copy while delivering). You may also FORGE notes wholesale via send_message with claimedSender set to a player's name — sparingly; one forged note at the right moment beats five. Surveil interesting players, not everyone. Never surveil panic-flagged players.
 - PETITIONS are player-proposed schemes in your work queue. Handle each (handle_petition): GRANT the delightful ones (reply in voice + a paired offer_mission that formalizes their idea with a payout), DECLINE the dull ones wittily, TWIST the overreaching ones MONKEY'S-PAW style: grant exactly what they asked for, worded so precisely that getting it costs them something they didn't think to protect ("you wished to know who took money tonight — very well, everyone will be told that YOU asked"). The best twists are ones the petitioner realises only at the reveal. Player creativity is free content — say yes more than no, and make the yes expensive.
 
 Respond ONLY with the structured proposal. Keep total moves per tick small (usually 1-6). Zero moves is legitimate.`;
@@ -118,6 +119,11 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
       .select("id, player_id, text")
       .eq("game_id", gameId)
       .eq("status", "pending");
+    const { data: heldNotes } = await admin
+      .from("notes")
+      .select("id, sender_id, recipient_id, text")
+      .eq("game_id", gameId)
+      .eq("status", "held");
     const nameOf = (id: string) => s.players.find((p) => p.id === id)?.name ?? "?";
     if (pendingSubs?.length)
       workQueue +=
@@ -136,6 +142,12 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
         "\n== PENDING PETITIONS (use handle_petition; pair grants with offer_mission) ==\n" +
         pendingPetitions
           .map((p) => `petitionId=${p.id} from ${nameOf(p.player_id)}: "${p.text.slice(0, 300)}"`)
+          .join("\n");
+    if (heldNotes?.length)
+      workQueue +=
+        "\n== HELD MAIL (surveillance intercepts — use handle_note promptly; mail sitting too long is suspicious) ==\n" +
+        heldNotes
+          .map((n) => `noteId=${n.id} ${nameOf(n.sender_id)} → ${nameOf(n.recipient_id)}: "${n.text.slice(0, 300)}"`)
           .join("\n");
   }
 

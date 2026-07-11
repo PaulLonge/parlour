@@ -27,6 +27,7 @@ const { applyDirectorMoves, castVote } = await import("../lib/engine/referee");
 const { acceptOffer, hideCode, findCode, closeAccusation, resolveUnmasking } = await import(
   "../lib/engine/rogue"
 );
+const { sendNote, handleNote } = await import("../lib/engine/notes");
 const { loadState } = await import("../lib/engine/state");
 
 const admin = createClient(url, key, { auth: { persistSession: false } });
@@ -120,6 +121,51 @@ try {
   check("Jess finds BLACKTIDE", r.ok, r.result);
   r = await findCode(admin, gid, byName("Sam").id, "BLACKTIDE");
   check("codes are found once", !r.ok, r.result);
+
+  console.log("— the post: delivery, wiretaps, surveillance holds");
+  // postage requires coins — stake the letter-writers
+  await admin.from("players").update({ balance: 100 }).eq("id", byName("Alex").id);
+  await admin.from("players").update({ balance: 100 }).eq("id", byName("Sam").id);
+  let n = await sendNote(admin, gid, byName("Alex").id, "Jess", "I think Co-Host took the coin.");
+  check("plain note delivers", n.ok, String(n.result));
+  const { data: jessMail } = await admin
+    .from("messages")
+    .select("kind, body, claimed_sender")
+    .eq("player_id", byName("Jess").id)
+    .eq("kind", "note");
+  check("recipient got it, signed by sender", !!jessMail?.some((m) => m.claimed_sender === "Alex"));
+  v = await applyDirectorMoves(admin, gid, [
+    { tool: "tap_wire", targetName: "Alex", minutes: 30, tapperName: "Co-Host" }, // player tap
+    { tool: "tap_wire", targetName: "Sam", minutes: 30 }, // machine surveillance
+  ]);
+  check("wiretaps set", v.every((x) => x.ok), JSON.stringify(v.filter((x) => !x.ok)));
+  n = await sendNote(admin, gid, byName("Alex").id, "Tom", "Meet me by the map.");
+  check("tapped note still delivers", n.ok, String(n.result));
+  const { data: co-hostCopies } = await admin
+    .from("messages")
+    .select("kind, title")
+    .eq("player_id", byName("Co-Host").id)
+    .eq("kind", "intercept");
+  check("tapper received silent copy", (co-hostCopies?.length ?? 0) > 0);
+  n = await sendNote(admin, gid, byName("Sam").id, "Paul", "The machine is bluffing.");
+  check("surveilled note reports posted", n.ok && n.result === "posted", String(n.result));
+  const { data: heldRow } = await admin
+    .from("notes")
+    .select("id, status")
+    .eq("game_id", gid)
+    .eq("status", "held")
+    .maybeSingle();
+  check("…but is HELD, not delivered", !!heldRow);
+  if (heldRow) {
+    const hr = await handleNote(admin, gid, heldRow.id, "edit", "The machine is generous.", undefined);
+    check("director edits held mail", hr.ok && hr.result === "edit", String(hr.result));
+    const { data: paulMail } = await admin
+      .from("messages")
+      .select("body")
+      .eq("player_id", byName("Paul").id)
+      .eq("kind", "note");
+    check("recipient got the EDITED text", !!paulMail?.some((m) => m.body === "The machine is generous."));
+  }
 
   console.log("— wrongful accusation: the rogue profits");
   v = await applyDirectorMoves(admin, gid, [{ tool: "open_accusation" }]);

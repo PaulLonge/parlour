@@ -119,6 +119,24 @@ export const OfferMission = z.object({
   expiresInMinutes: z.number().min(3).max(90).default(20),
 });
 
+export const TapWire = z.object({
+  tool: z.literal("tap_wire"),
+  targetName: z.string(),
+  minutes: z.number().min(5).max(120).default(20),
+  tapperName: z
+    .string()
+    .optional()
+    .describe("omit = the MACHINE holds the target's mail (surveillance); set = a player receives silent copies"),
+});
+
+export const HandleNote = z.object({
+  tool: z.literal("handle_note"),
+  noteId: z.string().uuid(),
+  action: z.enum(["deliver", "edit", "drop", "leak"]),
+  finalText: z.string().optional().describe("for edit: what the recipient actually receives"),
+  leakToName: z.string().optional().describe("for leak: who gets the intercepted copy (deliver still happens)"),
+});
+
 export const HandlePetition = z.object({
   tool: z.literal("handle_petition"),
   petitionId: z.string().uuid(),
@@ -213,6 +231,8 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   AdjustMeters,
   MintCode,
   HandlePetition,
+  TapWire,
+  HandleNote,
 ]);
 export type DirectorTool = z.infer<typeof DirectorTool>;
 

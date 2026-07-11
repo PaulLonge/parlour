@@ -9,6 +9,7 @@ import {
   closeAccusation,
   resolveUnmasking,
 } from "./rogue";
+import { handleNote, setWiretap } from "./notes";
 import { adjustMeters } from "./economy";
 import { GameConfig } from "@/lib/schemas/config";
 
@@ -484,6 +485,22 @@ export async function applyDirectorMoves(
             payload: { petitionId: pet.id, outcome: move.outcome },
           });
           detail = move.outcome;
+          break;
+        }
+        case "tap_wire": {
+          requireRogue(s);
+          const target = byName(s, move.targetName);
+          if (target?.panic) throw new Error("never surveil a panic-flagged player");
+          const r = await setWiretap(admin, gameId, move.targetName, move.minutes, move.tapperName);
+          if (!r.ok) throw new Error(r.result);
+          detail = r.result;
+          break;
+        }
+        case "handle_note": {
+          requireRogue(s);
+          const r = await handleNote(admin, gameId, move.noteId, move.action, move.finalText, move.leakToName);
+          if (!r.ok) throw new Error(r.result);
+          detail = r.result;
           break;
         }
         case "mint_code": {

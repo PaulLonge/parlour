@@ -272,7 +272,7 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
         <NowPanel g={g} rogueLive={rogueLive} voteOpen={voteOpen} />
       </div>
       <div className={tab === "inbox" ? "" : "hidden"}>
-        <InboxPanel messages={inboxMessages} />
+        <InboxPanel g={g} messages={inboxMessages} rogueLive={rogueLive} />
       </div>
       {game.mode === "rogue" && (
         <div className={tab === "ask" ? "" : "hidden"}>
@@ -445,9 +445,18 @@ function NowPanel({
 }
 
 // ------------------------------ INBOX ---------------------------------------
-function InboxPanel({ messages }: { messages: ReturnType<typeof useGame>["messages"] }) {
+function InboxPanel({
+  g,
+  messages,
+  rogueLive,
+}: {
+  g: ReturnType<typeof useGame>;
+  messages: ReturnType<typeof useGame>["messages"];
+  rogueLive: boolean;
+}) {
   return (
-    <section className="flex flex-col gap-2">
+    <section className="flex flex-col gap-3">
+      {rogueLive && g.me!.status === "alive" && <NoteComposer g={g} />}
       {messages.length === 0 && (
         <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
           No letters yet. The house knows where you are.
@@ -457,6 +466,83 @@ function InboxPanel({ messages }: { messages: ReturnType<typeof useGame>["messag
         <MessageEnvelope key={m.id} m={m} />
       ))}
     </section>
+  );
+}
+
+// D38: pass a note — postage applies, the courier is not your friend
+function NoteComposer({ g }: { g: ReturnType<typeof useGame> }) {
+  const [open, setOpen] = useState(false);
+  const [to, setTo] = useState("");
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  const postage = Number(g.game!.config?.notePostage ?? 15);
+  const others = g.roster.filter((p) => p.status === "alive" && p.id !== g.me!.id);
+
+  if (!open)
+    return (
+      <button className="btn btn-ghost w-full" onClick={() => setOpen(true)}>
+        ✉ Pass a note · {postage}Ƀ postage
+      </button>
+    );
+
+  return (
+    <div className="panel p-4">
+      <p className="kicker flex items-center justify-between">
+        <span>
+          pass a note
+          <InfoDot hint="The house carries your letters for a fee. The house also reads them, occasionally edits them, and answers to nobody. A signature on an envelope proves nothing." />
+        </span>
+        <button className="text-xs underline" style={{ color: "var(--ink-dim)" }} onClick={() => setOpen(false)}>
+          close
+        </button>
+      </p>
+      <select className="input mt-2" aria-label="recipient" value={to} onChange={(e) => setTo(e.target.value)}>
+        <option value="">To whom?</option>
+        {others.map((p) => (
+          <option key={p.id} value={p.name}>
+            {p.name}
+          </option>
+        ))}
+      </select>
+      <textarea
+        className="input mt-2 h-20"
+        aria-label="your note"
+        maxLength={300}
+        placeholder="Written in haste…"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+      <button
+        className="btn mt-2 w-full"
+        disabled={busy || !to || !text.trim()}
+        onClick={async () => {
+          setBusy(true);
+          setNote("");
+          try {
+            const r = await g.actions.sendNote(to, text.trim());
+            if (r.ok) {
+              setNote("Posted. The house carries it from here.");
+              setText("");
+            } else
+              setNote(
+                r.result === "insufficient_postage"
+                  ? `Postage is ${postage} — your purse disagrees.`
+                  : (r.error ?? "The post office said no.")
+              );
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        Send · {postage}Ƀ
+      </button>
+      {note && (
+        <p className="mt-2 text-sm" style={{ color: note.startsWith("Posted") ? "var(--gold)" : "var(--danger)" }}>
+          {note}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -724,6 +810,7 @@ function AboutContent({ mode, hijacked, cost }: { mode: string; hijacked: boolea
         <p><b style={{ color: "var(--ink)" }}>Your mark.</b> The symbol at the bottom of Now. If asked to verify someone, get them to SHOW you theirs — never say yours aloud.</p>
         <p><b style={{ color: "var(--ink)" }}>Accusations.</b> The room may vote to name the machine's human voice — its "front man". Right — they burn (exposed, but still playing). Wrong — everyone pays for it. The night ends with one final naming: get it right, together, or the machine keeps everything.</p>
         <p><b style={{ color: "var(--ink)" }}>Talking to the machines.</b> The Ask tab buys you audiences ({cost} a question), takes your schemes, and hears volunteers.</p>
+        <p><b style={{ color: "var(--ink)" }}>Passing notes.</b> Inbox lets you write to anyone — for postage. The house carries your letters. The house reads your letters. Nothing about that arrangement is in your favour, and a signature proves nothing.</p>
         <p><b style={{ color: "var(--ink)" }}>Need out?</b> Hold the ◦ button for a moment — a ring fills while you hold. It's private, it's instant, and it's always okay.</p>
       </div>
     );

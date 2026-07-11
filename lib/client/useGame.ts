@@ -264,6 +264,8 @@ export function useGame(code: string) {
         post("/api/audience", { code, ai, question }).then((r) => (refetch(), r)),
       petition: (text: string) => post("/api/petition", { code, text }).then((r) => (refetch(), r)),
       volunteer: () => post("/api/volunteer", { code }),
+      sendNote: (to: string, text: string) =>
+        post("/api/note", { code, to, text }).then((r) => (refetch(), r)),
     }),
     [code, refetch]
   );

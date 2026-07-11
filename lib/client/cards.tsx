@@ -105,18 +105,27 @@ const KIND_LABEL: Record<string, { icon: string; label: string }> = {
 
 export function MessageEnvelope({ m }: { m: Msg }) {
   const k = KIND_LABEL[m.kind] ?? KIND_LABEL.info;
-  const transmission = !!m.claimed_sender; // an AI is (claiming to be) speaking (D28)
+  const isNote = m.kind === "note"; // player mail — the name on the envelope proves nothing (D38)
+  const isIntercept = m.kind === "intercept";
+  const transmission = !!m.claimed_sender && !isNote; // an AI is (claiming to be) speaking (D28)
+  const kicker = isNote
+    ? `✉ a note — signed "${m.claimed_sender}"`
+    : isIntercept
+      ? `🎧 tapped wire — ${m.title}`
+      : transmission
+        ? `⌁ transmission — ${m.claimed_sender}`
+        : `${k.icon} ${k.label}`;
   return (
     <div className={`panel envelope p-4 ${transmission ? "transmission" : ""}`}>
       <p className="kicker flex items-baseline justify-between gap-2">
-        <span>{transmission ? `⌁ transmission — ${m.claimed_sender}` : `${k.icon} ${k.label}`}</span>
+        <span>{kicker}</span>
         {m.created_at && (
           <span className="normal-case" style={{ letterSpacing: "normal", color: "var(--ink-dim)" }}>
             {timeAgo(m.created_at)}
           </span>
         )}
       </p>
-      {m.title && m.title !== "…" && <p className="mt-1 font-semibold">{m.title}</p>}
+      {m.title && m.title !== "…" && !isIntercept && <p className="mt-1 font-semibold">{m.title}</p>}
       <p
         className={`mt-0.5 text-sm leading-relaxed whitespace-pre-wrap ${transmission ? "caret" : ""}`}
         style={{ color: transmission ? "var(--ink)" : "var(--ink-dim)" }}

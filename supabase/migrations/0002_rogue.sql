@@ -88,6 +88,38 @@ alter table public.forgeries enable row level security;
 create policy forgeries_select_own on public.forgeries
   for select using (author_id in (select id from public.players where auth_uid = auth.uid()));
 
+-- notes (D38): player-to-player mail, carried by the machine. Delivery is
+-- instant UNLESS the sender or recipient is under surveillance (held for the
+-- director) — and active wiretaps receive silent copies. The house carries
+-- your letters; nothing about that arrangement is in your favour.
+create table public.notes (
+  id           uuid primary key default gen_random_uuid(),
+  game_id      uuid not null references public.games(id) on delete cascade,
+  sender_id    uuid not null references public.players(id) on delete cascade,
+  recipient_id uuid not null references public.players(id) on delete cascade,
+  text         text not null,
+  postage      int not null default 0,
+  status       text not null default 'delivered',   -- delivered | held | edited | dropped | leaked
+  final_text   text,                                 -- what was actually delivered, if edited
+  created_at   timestamptz not null default now()
+);
+alter table public.notes enable row level security;
+create policy notes_select_own_sent on public.notes
+  for select using (sender_id in (select id from public.players where auth_uid = auth.uid()));
+-- recipients read their mail via the messages table (delivery copies), so a
+-- sender can never see whether/what was actually delivered. By design.
+
+-- wiretaps (D38): tapper_id null = the machine itself holds the target's mail
+create table public.wiretaps (
+  id         uuid primary key default gen_random_uuid(),
+  game_id    uuid not null references public.games(id) on delete cascade,
+  tapper_id  uuid references public.players(id) on delete cascade,
+  target_id  uuid not null references public.players(id) on delete cascade,
+  expires_at timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table public.wiretaps enable row level security;  -- no client policies: server-only
+
 -- petitions (D34): players propose their own schemes; the director grants,
 -- declines in voice, or twists them. One open petition per player at a time.
 create table public.petitions (

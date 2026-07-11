@@ -24,6 +24,8 @@ export const GameConfig = z.object({
   // D33: audiences with the AIs — the economy sink. One question per audience.
   audienceCost: z.number().default(250),
   audienceCap: z.number().default(5), // per player per night
+  // D38: postage on player-to-player notes (sink #2 + spam throttle)
+  notePostage: z.number().default(15),
 });
 export type GameConfig = z.infer<typeof GameConfig>;
 
