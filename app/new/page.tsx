@@ -7,6 +7,8 @@ export default function NewGame() {
   const [title, setTitle] = useState("");
   const [hostName, setHostName] = useState("");
   const [endTime, setEndTime] = useState("23:30");
+  const [mode, setMode] = useState<"murder" | "rogue">("rogue");
+  const [sandbox, setSandbox] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -25,13 +27,14 @@ export default function NewGame() {
       body: JSON.stringify({
         title: title || "The Gathering",
         hostName,
-        config: { targetEndAt: end.toISOString() },
+        mode,
+        config: { targetEndAt: end.toISOString(), ...(sandbox ? { timeScale: 10 } : {}) },
       }),
     });
     const json = await res.json();
     setBusy(false);
     if (!res.ok) return setError(json.error?.toString() ?? "something went wrong");
-    router.push(`/g/${json.code}`);
+    router.push(sandbox ? `/sandbox/${json.code}` : `/g/${json.code}`);
   }
 
   return (
@@ -51,6 +54,21 @@ export default function NewGame() {
         <label className="flex flex-col gap-1 text-sm" style={{ color: "var(--ink-dim)" }}>
           Aim to finish around
           <input className="input" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+        </label>
+        <div className="flex flex-col gap-1 text-sm" style={{ color: "var(--ink-dim)" }}>
+          The game
+          <div className="flex gap-2">
+            <button type="button" className={`btn flex-1 ${mode === "rogue" ? "" : "btn-ghost"}`} onClick={() => setMode("rogue")}>
+              🏴 The Long Con
+            </button>
+            <button type="button" className={`btn flex-1 ${mode === "murder" ? "" : "btn-ghost"}`} onClick={() => setMode("murder")}>
+              🗡 Classic Murder
+            </button>
+          </div>
+        </div>
+        <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
+          <input type="checkbox" checked={sandbox} onChange={(e) => setSandbox(e.target.checked)} />
+          Sandbox (solo test run — time ×10, possess any player)
         </label>
         {error && <p className="text-sm" style={{ color: "var(--accent)" }}>{error}</p>}
         <button className="btn" onClick={create} disabled={busy || !hostName.trim()}>

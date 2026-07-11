@@ -8,6 +8,7 @@ import { emit } from "@/lib/engine/state";
 const Body = z.object({
   title: z.string().min(1).max(80).default("The Gathering"),
   hostName: z.string().min(1).max(40),
+  mode: z.enum(["murder", "rogue"]).default("murder"),
   config: GameConfig.partial().default({}),
 });
 
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-  const { title, hostName, config } = parsed.data;
+  const { title, hostName, mode, config } = parsed.data;
 
   const admin = supabaseAdmin();
   const code = Array.from(
@@ -35,9 +36,10 @@ export async function POST(req: Request) {
     () => CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]
   ).join("");
 
+  const fullConfig = GameConfig.parse(config);
   const { data: game, error: gErr } = await admin
     .from("games")
-    .insert({ code, title, config: GameConfig.parse(config) })
+    .insert({ code, title, mode, config: fullConfig })
     .select()
     .single();
   if (gErr) return NextResponse.json({ error: gErr.message }, { status: 500 });
@@ -47,6 +49,7 @@ export async function POST(req: Request) {
     auth_uid: user!.id,
     name: hostName,
     is_host: true,
+    balance: mode === "rogue" ? fullConfig.startingBalance : 0,
   });
   if (pErr) return NextResponse.json({ error: pErr.message }, { status: 500 });
 

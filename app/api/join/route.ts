@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   const admin = supabaseAdmin();
   const { data: game } = await admin
     .from("games")
-    .select("id, status, sealed_story")
+    .select("id, status, sealed_story, mode, hijacked_at, config")
     .eq("code", code.toUpperCase())
     .single();
   if (!game) return NextResponse.json({ error: "game not found" }, { status: 404 });
@@ -78,6 +78,13 @@ export async function POST(req: Request) {
     character = story.spares.find((c) => !used.has(c.personaName)) ?? null;
   }
 
+  // ROGUE: purses show the starting balance until the hijack "zeroes" them;
+  // joiners after the hijack arrive already-plundered (their first message explains).
+  const startingBalance =
+    game.mode === "rogue" && !game.hijacked_at
+      ? ((game.config as { startingBalance?: number })?.startingBalance ?? 1500)
+      : 0;
+
   const { data: player, error } = await admin
     .from("players")
     .insert({
@@ -87,6 +94,7 @@ export async function POST(req: Request) {
       intake,
       character,
       status: game.status === "lobby" ? "lobby" : "alive",
+      balance: startingBalance,
     })
     .select("id")
     .single();

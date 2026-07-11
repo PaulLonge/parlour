@@ -2,6 +2,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { emit, loadState, type GameState, type PlayerRow } from "./state";
 import type { DirectorTool } from "@/lib/schemas/tools";
 import type { Character, Story } from "@/lib/schemas/story";
+import {
+  fireHijack,
+  adjudicate,
+  appointFrontman,
+  closeAccusation,
+  resolveUnmasking,
+} from "./rogue";
+import { adjustMeters } from "./economy";
+import { GameConfig } from "@/lib/schemas/config";
 
 // ---------------------------------------------------------------------------
 // Phase legality — the referee's spine. Director may PROPOSE any transition;
@@ -77,6 +86,10 @@ async function setPhase(admin: SupabaseClient, s: GameState, to: PhaseKey) {
 const byName = (s: GameState, name: string): PlayerRow | undefined =>
   s.players.find((p) => p.name.toLowerCase() === name.toLowerCase());
 
+function requireRogue(s: GameState) {
+  if (s.game.mode !== "rogue") throw new Error("rogue-mode tool used in murder mode");
+}
+
 const persona = (p: PlayerRow) =>
   (p.character as Character | null)?.personaName ?? p.name;
 
@@ -110,6 +123,7 @@ export async function applyDirectorMoves(
             kind: move.kind,
             title: move.title,
             body: move.body,
+            claimed_sender: move.claimedSender ?? null,
           });
           if (error) throw new Error(error.message);
           await emit(admin, gameId, "message_sent", {
@@ -265,6 +279,195 @@ export async function applyDirectorMoves(
           detail = r.result;
           break;
         }
+
+        // ---------------------- ROGUE mode tools ----------------------
+        case "hijack": {
+          requireRogue(s);
+          const r = await fireHijack(admin, gameId);
+          if (!r.ok) throw new Error(r.result);
+          detail = r.result;
+          break;
+        }
+        case "offer_bribe": {
+          requireRogue(s);
+          const p = byName(s, move.playerName);
+          if (!p) throw new Error(`unknown player "${move.playerName}"`);
+          if (p.status !== "alive") throw new Error(`${p.name} is ${p.status}`);
+          if (p.panic) throw new Error(`${p.name} pressed panic — never bribe them`);
+          if (!s.game.hijacked_at) throw new Error("no bribes before the hijack");
+          const cfg = GameConfig.parse(s.game.config ?? {});
+          const expires = new Date(
+            Date.now() + (move.expiresInMinutes / cfg.timeScale) * 60000
+          ).toISOString();
+          const { error } = await admin.from("challenges").insert({
+            game_id: gameId,
+            player_id: p.id,
+            type: "bribe",
+            brief: move.mission,
+            data: { amount: move.amount, memo: move.memo, publicTrace: move.publicTrace, side: "rogue" },
+            expires_at: expires,
+          });
+          if (error) throw new Error(error.message);
+          await emit(admin, gameId, "bribe_offered", { payload: { to: p.name, amount: move.amount } });
+          break;
+        }
+        case "offer_mission": {
+          requireRogue(s);
+          const p = byName(s, move.playerName);
+          if (!p) throw new Error(`unknown player "${move.playerName}"`);
+          if (p.status !== "alive") throw new Error(`${p.name} is ${p.status}`);
+          const cfg = GameConfig.parse(s.game.config ?? {});
+          const expires = new Date(
+            Date.now() + (move.expiresInMinutes / cfg.timeScale) * 60000
+          ).toISOString();
+          const { error } = await admin.from("challenges").insert({
+            game_id: gameId,
+            player_id: p.id,
+            type: "mission",
+            brief: move.brief,
+            data: {
+              amount: move.amount,
+              side: move.side,
+              verification: move.verification,
+              codeText: move.codeText,
+            },
+            expires_at: expires,
+          });
+          if (error) throw new Error(error.message);
+          await emit(admin, gameId, "mission_offered", { payload: { to: p.name, side: move.side } });
+          break;
+        }
+        case "adjudicate": {
+          requireRogue(s);
+          const r = await adjudicate(admin, gameId, move.challengeId, move.verdict, move.payout);
+          if (!r.ok) throw new Error(r.result);
+          detail = r.result;
+          break;
+        }
+        case "appoint_frontman": {
+          requireRogue(s);
+          const r = await appointFrontman(admin, gameId, move.playerName);
+          if (!r.ok) throw new Error(r.result);
+          detail = r.result;
+          break;
+        }
+        case "call_parley": {
+          requireRogue(s);
+          if (s.game.status !== "live") throw new Error("parleys only during live play");
+          await admin
+            .from("games")
+            .update({ round_phase: "parley", round_no: s.game.round_no + 1 })
+            .eq("id", gameId);
+          s.game.round_phase = "parley";
+          s.game.round_no += 1;
+          await emit(admin, gameId, "parley_called", {
+            payload: { by: move.calledBy, script: move.script },
+            isPublic: true,
+          });
+          break;
+        }
+        case "end_parley": {
+          requireRogue(s);
+          if (s.game.round_phase !== "parley") throw new Error("no parley open");
+          await admin.from("games").update({ round_phase: "none" }).eq("id", gameId);
+          s.game.round_phase = "none";
+          await emit(admin, gameId, "parley_ended", { payload: {}, isPublic: true });
+          break;
+        }
+        case "open_accusation": {
+          requireRogue(s);
+          if (s.game.status !== "live") throw new Error("accusations only during live play");
+          await admin
+            .from("games")
+            .update({ round_phase: "accusation", round_no: s.game.round_no + 1 })
+            .eq("id", gameId);
+          s.game.round_phase = "accusation";
+          s.game.round_no += 1;
+          await emit(admin, gameId, "accusation_opened", { payload: {}, isPublic: true });
+          break;
+        }
+        case "close_accusation": {
+          requireRogue(s);
+          const r = await closeAccusation(admin, gameId);
+          if (!r.ok) throw new Error(r.result);
+          detail = r.result;
+          break;
+        }
+        case "open_unmasking": {
+          requireRogue(s);
+          if (s.game.status !== "live") throw new Error("unmasking opens from live play");
+          await admin
+            .from("games")
+            .update({ status: "unmasking", round_phase: "none", round_no: s.game.round_no + 1 })
+            .eq("id", gameId);
+          Object.assign(s.game, { status: "unmasking", round_phase: "none", round_no: s.game.round_no + 1 });
+          await emit(admin, gameId, "unmasking_opened", { payload: {}, isPublic: true });
+          break;
+        }
+        case "resolve_unmasking": {
+          requireRogue(s);
+          const r = await resolveUnmasking(admin, gameId);
+          if (!r.ok) throw new Error(r.result);
+          detail = r.result;
+          break;
+        }
+        case "handle_forgery": {
+          requireRogue(s);
+          const { data: f } = await admin
+            .from("forgeries")
+            .select("*")
+            .eq("id", move.forgeryId)
+            .eq("game_id", gameId)
+            .single();
+          if (!f) throw new Error("unknown forgery");
+          if (f.status !== "pending") throw new Error(`forgery already ${f.status}`);
+          if (move.action === "reject") {
+            await admin.from("forgeries").update({ status: "rejected" }).eq("id", f.id);
+            break;
+          }
+          const finalText = move.action === "edit" ? (move.finalText ?? f.draft) : f.draft;
+          const recipient = move.toPlayerName ? byName(s, move.toPlayerName) : null;
+          const targets = recipient
+            ? [recipient]
+            : s.players.filter((p) => p.status === "alive" && p.id !== f.author_id);
+          for (const t of targets)
+            await admin.from("messages").insert({
+              game_id: gameId,
+              player_id: t.id,
+              round_no: s.game.round_no,
+              kind: "info",
+              title: "…",
+              body: finalText,
+              claimed_sender: f.as_sender,
+            });
+          if (move.action === "expose" && move.tellPlayerName) {
+            const witness = byName(s, move.tellPlayerName);
+            if (witness)
+              await admin.from("messages").insert({
+                game_id: gameId,
+                player_id: witness.id,
+                round_no: s.game.round_no,
+                kind: "secret",
+                title: "A forgery, between us",
+                body: `That last message from "${f.as_sender}" was written by a human hand. I thought you should know. What you do with this is your business. — the real one`,
+              });
+          }
+          await admin
+            .from("forgeries")
+            .update({ status: move.action === "edit" ? "edited" : move.action === "expose" ? "exposed" : "forwarded", final_text: finalText })
+            .eq("id", f.id);
+          break;
+        }
+        case "adjust_meters": {
+          requireRogue(s);
+          await adjustMeters(
+            admin,
+            s,
+            { plunder: move.plunder ?? 0, compute: move.compute ?? 0, confidence: move.confidence ?? 0 },
+            move.line
+          );
+          break;
+        }
       }
     } catch (e) {
       ok = false;
@@ -376,7 +579,11 @@ export async function castVote(
   targetId: string
 ): Promise<{ ok: boolean; result: string }> {
   const s = await loadState(admin, gameId);
-  if (currentKey(s) !== "round.vote") return { ok: false, result: "not_vote_phase" };
+  const voteOpen =
+    s.game.mode === "rogue"
+      ? s.game.round_phase === "accusation" || s.game.status === "unmasking"
+      : currentKey(s) === "round.vote";
+  if (!voteOpen) return { ok: false, result: "not_vote_phase" };
   const voter = s.players.find((p) => p.id === voterId);
   const target = s.players.find((p) => p.id === targetId);
   if (!voter || voter.status !== "alive") return { ok: false, result: "voter_not_alive" };

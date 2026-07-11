@@ -217,6 +217,23 @@ body {
 }
 .drift { animation: drift 6s ease-in-out infinite; }
 
+/* AI transmissions (D28): terminal styling + blinking caret */
+.transmission {
+  background: rgba(0, 0, 0, 0.55);
+  font-family: "Consolas", "Courier New", monospace;
+}
+.caret::after {
+  content: "▌";
+  animation: caret-blink 1.1s steps(1) infinite;
+  opacity: 0.7;
+}
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caret::after { animation: none; }
+}
+
 /* TV vignette */
 .vignette {
   position: fixed;

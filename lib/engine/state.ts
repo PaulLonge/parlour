@@ -10,11 +10,15 @@ export type PlayerRow = {
   is_host: boolean;
   intake: Record<string, unknown>;
   status: "lobby" | "alive" | "dead" | "ghost" | "banished";
-  role: "faithful" | "traitor";
+  role: "faithful" | "traitor" | "minion"; // minion = bought by the rogue (ROGUE mode)
   character: Record<string, unknown> | null;
   arrived_at: string | null;
   panic: boolean;
+  balance: number;
+  burned: boolean; // exposed ex-front-man (ROGUE) — stays in play, never fronts again
 };
+
+export type Meters = { plunder: number; compute: number; confidence: number };
 
 export type GameRow = {
   id: string;
@@ -24,19 +28,24 @@ export type GameRow = {
   round_no: number;
   round_phase: RoundPhase;
   paused: boolean;
+  mode: "murder" | "rogue";
+  hijacked_at: string | null;
+  meters: Meters;
+  frontman_player_id: string | null; // server-only column (revoked from clients)
   config: Record<string, unknown>;
   story_public: Record<string, unknown> | null;
-  sealed_story: Story | null;
+  sealed_story: Story | Record<string, unknown> | null; // RogueStory in rogue mode
 };
 
 export type ChallengeRow = {
   id: string;
   game_id: string;
   player_id: string;
-  type: "kill" | "social" | "secret";
+  type: "kill" | "social" | "secret" | "bribe" | "mission";
   brief: string;
   data: Record<string, unknown>;
   status: "offered" | "completed" | "expired" | "revoked";
+  response: Record<string, unknown> | null;
   offered_at: string;
   expires_at: string | null;
 };
@@ -101,11 +110,23 @@ export function summarizeForDirector(s: GameState): string {
     lines.push(`Time remaining to target end: ~${mins} min`);
   }
   const fmt = (p: PlayerRow) =>
-    `${p.name}${p.is_host ? " (HOST)" : ""} [${p.status}${p.role === "traitor" ? "/TRAITOR" : ""}${
-      p.panic ? "/PANIC" : ""
-    }] as ${(p.character as { personaName?: string } | null)?.personaName ?? "(uncast)"}`;
+    `${p.name}${p.is_host ? " (HOST)" : ""} [${p.status}${
+      p.role !== "faithful" ? `/${p.role.toUpperCase()}` : ""
+    }${p.burned ? "/BURNED" : ""}${p.panic ? "/PANIC" : ""}]${
+      s.game.mode === "rogue" ? ` Ƀ${p.balance}` : ""
+    } as ${(p.character as { personaName?: string } | null)?.personaName ?? "(uncast)"}`;
   lines.push(`Players (${s.players.length}):`);
   for (const p of s.players) lines.push(`  - ${fmt(p)}`);
+  if (s.game.mode === "rogue") {
+    const m = s.game.meters;
+    lines.push(
+      `Meters: plunder=${m.plunder} compute=${m.compute} confidence=${m.confidence}. ` +
+        `Front man: ${s.players.find((p) => p.id === s.game.frontman_player_id)?.name ?? "NONE APPOINTED"}. ` +
+        `Minions: ${s.players.filter((p) => p.role === "minion").map((p) => p.name).join(", ") || "none yet"}.`
+    );
+    if (!s.game.hijacked_at && s.game.status === "act1")
+      lines.push(`HIJACK NOT YET FIRED — act1 is pre-game theatre; fire it at arrival threshold.`);
+  }
   if (s.openChallenges.length) {
     lines.push(`Open challenges:`);
     for (const c of s.openChallenges) {

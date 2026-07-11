@@ -84,13 +84,17 @@ const KIND_LABEL: Record<string, { icon: string; label: string }> = {
 
 export function MessageEnvelope({ m }: { m: Msg }) {
   const k = KIND_LABEL[m.kind] ?? KIND_LABEL.info;
+  const transmission = !!m.claimed_sender; // an AI is (claiming to be) speaking (D28)
   return (
-    <div className="panel envelope p-4">
+    <div className={`panel envelope p-4 ${transmission ? "transmission" : ""}`}>
       <p className="kicker">
-        {k.icon} {k.label}
+        {transmission ? `⌁ transmission — ${m.claimed_sender}` : `${k.icon} ${k.label}`}
       </p>
-      <p className="mt-1 font-semibold">{m.title}</p>
-      <p className="mt-0.5 text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "var(--ink-dim)" }}>
+      {m.title && m.title !== "…" && <p className="mt-1 font-semibold">{m.title}</p>}
+      <p
+        className={`mt-0.5 text-sm leading-relaxed whitespace-pre-wrap ${transmission ? "caret" : ""}`}
+        style={{ color: transmission ? "var(--ink)" : "var(--ink-dim)" }}
+      >
         {m.body}
       </p>
     </div>
@@ -150,18 +154,22 @@ export function VoteTable({
   candidates,
   votedId,
   onVote,
+  title = "The round table",
+  subtitle = "Who do you banish? You may change your mind until the house calls time.",
 }: {
   candidates: { id: string; name: string }[];
   votedId: string | null;
   onVote: (id: string) => void;
+  title?: string;
+  subtitle?: string;
 }) {
   return (
     <div className="panel panel-hero p-5">
       <p className="font-display text-xl" style={{ color: "var(--gold)" }}>
-        The round table
+        {title}
       </p>
       <p className="mt-1 mb-4 text-sm" style={{ color: "var(--ink-dim)" }}>
-        Who do you banish? You may change your mind until the house calls time.
+        {subtitle}
       </p>
       <div className="flex flex-wrap gap-2">
         {candidates.map((p) => (

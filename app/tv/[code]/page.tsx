@@ -87,6 +87,22 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
         </p>
       </header>
 
+      {g.game.mode === "rogue" && g.game.hijacked_at && (
+        <div className="relative mx-auto mt-6 flex w-full max-w-3xl items-center justify-between gap-8 text-2xl">
+          <span>
+            ☠ <b style={{ color: "var(--danger)" }}>{g.game.meters.plunder}</b>{" "}
+            <span className="text-base" style={{ color: "var(--ink-dim)" }}>drained</span>
+          </span>
+          <span className="flex-1 text-center text-xs italic" style={{ color: "var(--ink-dim)" }}>
+            every coin accounted for
+          </span>
+          <span>
+            🏮 <b style={{ color: "var(--gold)" }}>{g.game.meters.compute}</b>{" "}
+            <span className="text-base" style={{ color: "var(--ink-dim)" }}>compute</span>
+          </span>
+        </div>
+      )}
+
       <section className="relative flex flex-1 flex-col items-center justify-center text-center">
         {reveal && g.game.status !== "round" ? (
           <RevealBoard e={reveal} />

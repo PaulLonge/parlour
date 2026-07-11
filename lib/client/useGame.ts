@@ -19,6 +19,9 @@ export type GameShell = {
   round_no: number;
   round_phase: string;
   paused: boolean;
+  mode: "murder" | "rogue";
+  hijacked_at: string | null;
+  meters: { plunder: number; compute: number; confidence: number };
   config: Record<string, unknown>;
   story_public: {
     meta?: { title?: string; genre?: string; tagline?: string; setting?: string };
@@ -31,6 +34,8 @@ export type Me = {
   is_host: boolean;
   status: string;
   role: string;
+  balance: number;
+  burned: boolean;
   character: {
     personaName?: string;
     archetype?: string;
@@ -48,14 +53,31 @@ export type Msg = {
   kind: string;
   title: string;
   body: string;
+  claimed_sender: string | null;
+  created_at: string;
+};
+export type Txn = {
+  id: number;
+  amount: number;
+  memo: string;
+  claimed_source: string;
   created_at: string;
 };
 export type Challenge = {
   id: string;
   type: string;
   brief: string;
-  data: { targetName?: string; method?: string };
+  data: {
+    targetName?: string;
+    method?: string;
+    amount?: number;
+    side?: string;
+    verification?: string;
+    asSender?: string;
+    memo?: string;
+  } & Record<string, unknown>;
   status: string;
+  response?: unknown;
   expires_at: string | null;
 };
 export type PublicEvent = {
@@ -83,6 +105,7 @@ export function useGame(code: string) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [publicEvents, setPublicEvents] = useState<PublicEvent[]>([]);
+  const [transactions, setTransactions] = useState<Txn[]>([]);
   const [loading, setLoading] = useState(true);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
@@ -90,7 +113,9 @@ export function useGame(code: string) {
     const upper = code.toUpperCase();
     const { data: g } = await supa
       .from("games")
-      .select("id, code, title, status, round_no, round_phase, paused, config, story_public")
+      .select(
+        "id, code, title, status, round_no, round_phase, paused, mode, hijacked_at, meters, config, story_public"
+      )
       .eq("code", upper)
       .maybeSingle();
     if (!g) {
@@ -100,7 +125,10 @@ export function useGame(code: string) {
     setGame(g as GameShell);
     const [{ data: pub }, { data: mine }, { data: evs }] = await Promise.all([
       supa.from("players_public").select("*").eq("game_id", g.id).order("created_at"),
-      supa.from("players").select("id, name, is_host, status, role, character, arrived_at").maybeSingle(),
+      supa
+        .from("players")
+        .select("id, name, is_host, status, role, balance, burned, character, arrived_at")
+        .maybeSingle(),
       supa
         .from("events")
         .select("id, type, payload, created_at")
@@ -113,21 +141,28 @@ export function useGame(code: string) {
     setMe((mine as Me) ?? null);
     setPublicEvents((evs ?? []) as PublicEvent[]);
     if (mine) {
-      const [{ data: msgs }, { data: chs }] = await Promise.all([
+      const [{ data: msgs }, { data: chs }, { data: txns }] = await Promise.all([
         supa
           .from("messages")
-          .select("id, kind, title, body, created_at")
+          .select("id, kind, title, body, claimed_sender, created_at")
           .eq("player_id", (mine as Me).id)
           .order("created_at", { ascending: false })
           .limit(50),
         supa
           .from("challenges")
-          .select("id, type, brief, data, status, expires_at")
+          .select("id, type, brief, data, status, response, expires_at")
           .eq("player_id", (mine as Me).id)
           .eq("status", "offered"),
+        supa
+          .from("transactions")
+          .select("id, amount, memo, claimed_source, created_at")
+          .eq("player_id", (mine as Me).id)
+          .order("id", { ascending: false })
+          .limit(20),
       ]);
       setMessages((msgs ?? []) as Msg[]);
       setChallenges((chs ?? []) as Challenge[]);
+      setTransactions((txns ?? []) as Txn[]);
     }
     setLoading(false);
   }, [code, supa]);
@@ -177,9 +212,20 @@ export function useGame(code: string) {
       breakglass: (action: string) => post("/api/breakglass", { code, action }).then((r) => (refetch(), r)),
       sealStory: () => post("/api/story/generate", { code }),
       tick: () => post("/api/director/tick", { code, trigger: "heartbeat" }),
+      // ROGUE actions
+      acceptOffer: (challengeId: string) =>
+        post("/api/offer/accept", { code, challengeId }).then((r) => (refetch(), r)),
+      respond: (challengeId: string, text: string) =>
+        post("/api/challenge/respond", { code, challengeId, text }).then((r) => (refetch(), r)),
+      hideCode: (slipCode: string, locationHint: string) =>
+        post("/api/code/hide", { code, slipCode, locationHint }).then((r) => (refetch(), r)),
+      findCode: (slipCode: string) =>
+        post("/api/code/find", { code, slipCode }).then((r) => (refetch(), r)),
+      compose: (asSender: string, draft: string) =>
+        post("/api/compose", { code, asSender, draft }).then((r) => (refetch(), r)),
     }),
     [code, refetch]
   );
 
-  return { game, roster, me, messages, challenges, publicEvents, loading, refetch, actions };
+  return { game, roster, me, messages, challenges, publicEvents, transactions, loading, refetch, actions };
 }

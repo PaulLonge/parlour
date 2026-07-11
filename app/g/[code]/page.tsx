@@ -11,6 +11,7 @@ import {
   PausedBanner,
   DeadBanner,
 } from "@/lib/client/cards";
+import { MetersStrip, PurseChip, BribeCard, MissionCard, CodeEntryBox } from "@/lib/client/rogue-cards";
 
 const PHASE_LABEL: Record<string, string> = {
   none: "",
@@ -20,6 +21,8 @@ const PHASE_LABEL: Record<string, string> = {
   assembly: "🔔 Assembly — gather everyone",
   vote: "🗳️ The vote is open",
   banishment: "Judgement",
+  parley: "🏴 Parley — gather at the glass",
+  accusation: "☠ An accusation is on the table — vote",
 };
 
 export default function GamePage({ params }: { params: Promise<{ code: string }> }) {
@@ -153,13 +156,23 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
         <hr className="divider my-2" />
         <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
           {game.status === "lobby" && "The doors are not yet open."}
-          {game.status === "act1" && "Guests are gathering…"}
+          {game.status === "act1" &&
+            (game.mode === "rogue" ? "The game will begin shortly… sharpening cutlasses…" : "Guests are gathering…")}
           {game.status === "round" && `Round ${game.round_no} — ${PHASE_LABEL[game.round_phase] ?? ""}`}
+          {game.status === "live" && (PHASE_LABEL[game.round_phase] || "New management. Watch your purse.")}
+          {game.status === "unmasking" && "🗳 THE UNMASKING — one name, together"}
           {game.status === "endgame" && "The end approaches."}
           {game.status === "reveal" && "The truth."}
           {game.status === "ended" && "The evening is over."}
         </p>
       </header>
+
+      {game.mode === "rogue" && game.hijacked_at && (
+        <>
+          <MetersStrip meters={game.meters} />
+          <PurseChip balance={me.balance} transactions={g.transactions} />
+        </>
+      )}
 
       {game.paused && <PausedBanner />}
       {dead && <DeadBanner status={me.status} />}
@@ -178,23 +191,67 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
         </div>
       )}
 
-      {g.challenges.map((c) => (
-        <ChallengeOffer
-          key={c.id}
-          c={c}
-          aliveNames={aliveNames}
-          busy={busy}
-          onComplete={async (victimName) => {
-            setBusy(true);
-            const res = await g.actions.completeChallenge(c.id, victimName);
-            setBusy(false);
-            if (!res.ok && res.result === "near_miss")
-              alert("You were a heartbeat too late — someone else moved first tonight. Say nothing.");
-          }}
-        />
-      ))}
+      {g.challenges.map((c) =>
+        c.type === "bribe" ? (
+          <BribeCard
+            key={c.id}
+            c={c}
+            busy={busy}
+            onAccept={async () => {
+              setBusy(true);
+              await g.actions.acceptOffer(c.id);
+              setBusy(false);
+            }}
+          />
+        ) : c.type === "mission" ? (
+          <MissionCard
+            key={c.id}
+            c={c}
+            busy={busy}
+            onRespond={async (text) => {
+              setBusy(true);
+              await g.actions.respond(c.id, text);
+              setBusy(false);
+            }}
+            onSelfComplete={async () => {
+              setBusy(true);
+              await g.actions.completeChallenge(c.id);
+              setBusy(false);
+            }}
+            onCompose={async (asSender, draft) => {
+              setBusy(true);
+              await g.actions.compose(asSender, draft);
+              setBusy(false);
+            }}
+          />
+        ) : (
+          <ChallengeOffer
+            key={c.id}
+            c={c}
+            aliveNames={aliveNames}
+            busy={busy}
+            onComplete={async (victimName) => {
+              setBusy(true);
+              const res = await g.actions.completeChallenge(c.id, victimName);
+              setBusy(false);
+              if (!res.ok && res.result === "near_miss")
+                alert("You were a heartbeat too late — someone else moved first tonight. Say nothing.");
+            }}
+          />
+        )
+      )}
 
-      {game.round_phase === "vote" && me.status === "alive" && <LiveVote g={g} />}
+      {game.mode === "rogue" && game.status === "live" && me.status === "alive" && (
+        <CodeEntryBox
+          busy={busy}
+          onFind={(slip) => g.actions.findCode(slip)}
+          onHide={(slip, hint) => g.actions.hideCode(slip, hint)}
+        />
+      )}
+
+      {(game.round_phase === "vote" ||
+        (game.mode === "rogue" && (game.round_phase === "accusation" || game.status === "unmasking"))) &&
+        me.status === "alive" && <LiveVote g={g} />}
 
       <section className="flex flex-col gap-2">
         {g.messages.map((m) => (
@@ -211,10 +268,20 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
 function LiveVote({ g }: { g: ReturnType<typeof useGame> }) {
   const [voted, setVoted] = useState<string | null>(null);
   const candidates = g.roster.filter((p) => p.status === "alive" && p.id !== g.me!.id);
+  const rogue = g.game!.mode === "rogue";
+  const unmasking = g.game!.status === "unmasking";
   return (
     <VoteTable
       candidates={candidates}
       votedId={voted}
+      title={!rogue ? "The round table" : unmasking ? "THE UNMASKING" : "The accusation"}
+      subtitle={
+        !rogue
+          ? "Who do you banish? You may change your mind until the house calls time."
+          : unmasking
+            ? "One name, together. Right — and the machine loses its head. Wrong — and everything on that meter is its, forever."
+            : "Who wears the hat RIGHT NOW? Right — they burn. Wrong — you'll be billed for it."
+      }
       onVote={async (id) => {
         const r = await g.actions.vote(id);
         if (r.ok) setVoted(id);
@@ -263,6 +330,11 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
         <Link href={`/tv/${game.code}`} className="btn btn-ghost">
           📺 House channel
         </Link>
+        {Number(game.config?.timeScale ?? 1) > 1 && (
+          <Link href={`/sandbox/${game.code}`} className="btn btn-ghost">
+            🧪 Sandbox
+          </Link>
+        )}
         {!open && (
           <button
             className="btn btn-ghost"

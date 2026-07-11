@@ -106,6 +106,19 @@ B-numbers are build-time engineering calls made inside the codebase.
 - **B8 — model tiering by trigger**: heartbeats use `FAST_MODEL` (Haiku-class), event reactions use `DIRECTOR_MODEL`, story generation uses `STORY_MODEL` (strongest). All via env, all through AI SDK `generateObject` + zod.
 - **B9 — audio cues deferred.** The iOS audio-unlock gate ("Light the candles" tap on the TV; join tap on phones) is in place, but no sounds ship yet. Decoy-buzz design is *cadence* (everyone gets a message each beat), not vibration (impossible on iPhone).
 
+- **B10 — ROGUE engine built ahead of the database (July 2026).** Everything except
+  execution: migration 0002 (transactions, codes, forgeries, meters, mode/frontman
+  columns with the same column-revoke sealing as sealed_story), economy engine with
+  the plunder-meter-equals-accepted-bribes twist wired in, 13 new director tools,
+  mode-aware referee + phase machine (act1 → hijack → live ⇄ parley/accusation →
+  unmasking → reveal), mode-aware director prompt with an adjudication/forgery work
+  queue, five player routes (offer/accept, challenge/respond, code/hide, code/find,
+  compose), rogue UI (purse, meters, bribe card, verification-aware mission card,
+  code entry, transmission styling), the sandbox (possess-player + timeScale), and
+  `npm run simulate:rogue` — a full scripted rogue game asserting the hijack gate,
+  arming-by-acceptance, code chains, wrongful-vs-burning accusations, rotation rules,
+  and the two-sided unmasking. All compile-verified only; first execution awaits keys.
+
 ## Not built yet (deliberate, ordered by likely value)
 
 1. Pre-party intake/invitation drip flow (currently intake rides the join call; a nicer form + invite links wanted before September playtest)

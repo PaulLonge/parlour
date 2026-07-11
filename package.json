@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "simulate": "tsx scripts/simulate.ts"
+    "simulate": "tsx scripts/simulate.ts",
+    "simulate:rogue": "tsx scripts/simulate-rogue.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.12",
