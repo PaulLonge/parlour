@@ -86,3 +86,64 @@ them out") rather than a dramatic seal.
 
 The TV is **The Spyglass** (working name; host may re-skin per story). "Ledger" is
 CALICO's vocabulary, not furniture — keep it in dialogue, remove it from UI names.
+
+## The setup loop — PDCA / OODA (D26)
+
+Setup is a DIALOGUE, not a form. Before the party (and re-runnable any time):
+1. **Plan** — the AI emits a requirements list from the story: what to print (slips,
+   colors, codes), what props to place, what space it assumes.
+2. **Do** — the host does what they can.
+3. **Check** — the host reports reality in plain words ("only 12 slips, no garden,
+   map's in the hallway; I recorded two villain clips").
+4. **Act** — the AI re-plans to close the gap (fewer chains, re-routed hiding spots).
+The check step continues DURING the night: missions that quietly verify the physical
+layer ("type the code of any slip you've seen so far") tell the director which chains
+actually exist.
+
+## The public channel is an ABSTRACTION (D27)
+
+There may be no TV. Capability profiles, declared in the setup loop:
+- **screen** (TV/laptop): full Spyglass — meters, sigils, parley text, reveal ceremony.
+- **audio** (phone → speaker): announcements as TTS/pre-recorded clips; no visuals.
+- **announcer** (the host's loud voice): announcer cards, already built (I12).
+- **phones-only fallback**: the twin meters ALSO live on every phone's home screen
+  regardless — glanceable everywhere, and it makes "your bribe moved that meter"
+  personal at the reveal.
+Optional host media: the story schema gets slots for HOST-RECORDED CLIPS (e.g. Paul
+costumed as the villain, welcoming guests) played at named beats when a screen exists.
+
+## Message theatre (D28)
+
+- Delivery presentation: typewriter reveal / voice-note-style animation (text only).
+  Pure presentation layer on the existing messages table.
+- Phone chrome stays allegiance-neutral (D22), but messages carry a **claimedSender**
+  (CALICO / BOSUN / house) separate from true origin — one AI impersonating the other
+  is CONTENT, and the forgery's tell (if any) lives in the text.
+- **The hacked-AI mission**: a player earns a compose-as-an-AI box. Their draft parses
+  THROUGH the director before delivery — which may forward it, edit it, or deliver it
+  while quietly telling one other player it's forged (the double bluff on the author).
+  Verification: SUBMISSION mode; the director adjudicates.
+
+## The persona arc — personas die at the hijack (D29)
+
+Act 1 runs LIGHT pirate personas (name, costume bit, two hooks) serving the cover
+story. The hijack kills the fictional game and the personas with it — from then on
+everyone plays as THEMSELVES (real names, real purses, real suspicion). Diegetic line:
+"the script is gone; you're all just yourselves now — which was rather the point."
+This supersedes the persona-weight dial for ROGUE (the dial remains for other modes)
+and reduces the intake weave to act-1 hooks only.
+
+## Sandbox mode — the host as all twenty guests (D30)
+
+Admin-only test harness so the host can run an entire game solo from one phone:
+- **possess-player switcher**: tabs/dropdown to act as any player (admin-issued).
+- **time warp**: a config multiplier accelerating timers, expiries, and heartbeats.
+- **verdict notes**: a scratch field per session for playtest observations.
+First priority after go-live: it converts every remote evening into a playtest.
+
+## November starts now (D31)
+
+Per D24 (surprise = WHO, not WHAT), the November story can be authored and iterated
+immediately — reading it costs Paul nothing. Real intake binds names to the cast at
+close; with D29 the binding is light (act-1 hooks only). The reference story remains
+the schema exemplar; November's content becomes a living document.

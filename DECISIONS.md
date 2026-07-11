@@ -73,6 +73,26 @@ B-numbers are build-time engineering calls made inside the codebase.
 - **D25 — naming**: the TV is "The Spyglass" (per-story re-skinnable); "ledger" stays
   only in CALICO's dialogue. (Not leaked from Paul's other projects — the swarm
   committed to the accountant-villain bit.)
+- **D26 — the setup loop is PDCA/OODA**: AI emits requirements → host reports reality →
+  AI re-plans to close the gap; the check step continues during the night via
+  physical-layer verification missions.
+- **D27 — the public channel is an abstraction**: screen / audio(speaker) / announcer
+  (host's voice) capability profiles declared at setup; twin meters also on every
+  phone regardless; optional host-recorded villain clips as story media beats.
+- **D28 — message theatre**: typewriter/voice-note text delivery; messages carry
+  claimedSender ≠ true origin (AI-impersonates-AI is content); the hacked-AI mission —
+  player composes as an AI, draft parses through the director (forward/edit/expose),
+  double-bluffable against its author.
+- **D29 — personas die at the hijack**: light pirate personas for act 1 only; the
+  hijack kills the fictional game AND the personas; real names from then on.
+  Supersedes the persona-weight dial for ROGUE; reduces intake weave to act-1 hooks.
+- **D30 — sandbox mode**: admin possess-player switching + time-warp multiplier +
+  verdict notes, so Paul can play all guests solo from one phone. First build after
+  go-live (requires the database like everything else).
+- **D31 — November content starts now** (unlocked by D24): author and iterate the real
+  party story immediately; intake binds names at close (lightly, per D29). Genre
+  self-description, Paul's words: "escape room you build yourself × murder mystery ×
+  Traitors."
 
 ## Build decisions (Claude, build session)
 
