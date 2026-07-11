@@ -7,16 +7,18 @@ import { tickDirector } from "@/lib/director/director";
 
 const Body = z.object({ code: z.string() });
 
-// D42: the "this is dragging" flag — the third private signal (panic = less,
-// volunteer = more, dragging = nothing's happening FOR ME). PRIVATE by design:
-// never a public tally, never a trigger during votes, always advisory. The
-// director feeds the flagger first, compresses if flags cluster, and escalates
-// to the host's phone only past a threshold. Cooldown: one flag per 10 min.
+// D42a: the "this is dragging" flag — HOSTS ONLY (Paul + Co-Host), the room's two
+// calibrated sensors. A soft private nudge below break-glass: no ceremony, no
+// public tally, advisory during votes. Guests' individual boredom is the
+// director's job via behavior telemetry (open missions, completions, recency),
+// not self-report. Cooldown: one flag per 10 min per host.
 export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "bad body" }, { status: 400 });
   const caller = await getCaller(parsed.data.code);
   if (!caller.ok) return NextResponse.json({ error: caller.error }, { status: caller.status });
+  if (!caller.player.is_host)
+    return NextResponse.json({ error: "hosts only" }, { status: 403 });
 
   const admin = supabaseAdmin();
   const since = new Date(Date.now() - 10 * 60000).toISOString();

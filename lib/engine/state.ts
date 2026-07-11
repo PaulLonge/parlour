@@ -155,7 +155,7 @@ export function summarizeForDirector(s: GameState): string {
   lines.push(`Balance: ${s.traitorsAlive.length} traitor(s) vs ${faithful} faithful alive.`);
   if (s.recentDragFlags.length)
     lines.push(
-      `PACING (D42): ${s.recentDragFlags.length} "dragging" flag(s) in the last 15 min from: ${s.recentDragFlags.join(", ")}. Feed the flaggers first; compress if it clusters; escalate to the HOST's phone if ≥ a third of living players have flagged. Never let a flag interrupt an open vote — and notice WHO flags during accusations.`
+      `PACING (D42a): HOST flag(s) in the last 15 min from: ${s.recentDragFlags.join(", ")} — the hosts find this stretch slow. This is a strong, trusted signal: energize NOW (a mission wave, a quiz burst, a parley, or compress the phase). Both hosts flagging = compress immediately unless a vote is open. Never announce that a flag happened.`
     );
   if (s.traitorsAlive.length === 0 && g.status === "round")
     lines.push(`NOTE: no traitors alive — consider arming or moving to endgame.`);

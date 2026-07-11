@@ -173,6 +173,14 @@ B-numbers are build-time engineering calls made inside the codebase.
   compress if clustered — and escalates to Paul's phone only past ⅓-of-living-players,
   where he rules via break-glass). Reframed as the third private signal: panic = less,
   volunteer = more, dragging = "nothing's happening for me." Cooldown 10 min/player.
+- **D42a — dragging flags are HOSTS-ONLY (Paul, same session).** Kills the sabotage
+  vector outright and never invites guests into critic-mode; guest boredom is
+  detected from BEHAVIOR instead (no open mission, no recent completion — the
+  director feeds them before they notice they're bored). A host flag is a strong
+  trusted signal (energize now); both hosts flagging = compress immediately unless a
+  vote is open; never announced. The control gradient: drag-flag = soft private
+  nudge, break-glass = hard public controls. Ships as a "⏭ feels slow" button in
+  Host tools.
 
 ## Build decisions (Claude, build session)
 

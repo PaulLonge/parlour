@@ -414,8 +414,7 @@ function NowPanel({
         <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
           Nothing is asked of you. Right now. Enjoy the party — it will find you.
           <span className="mt-1 block text-xs not-italic" style={{ color: "var(--ink-dim)" }}>
-            (Want a quieter night? Hold the ◦ button. Bored instead?{" "}
-            <DragFlagLink g={g} />)
+            (Want a quieter night? Hold the ◦ button. Private, instant, always okay.)
           </span>
         </div>
       )}
@@ -836,21 +835,24 @@ function AboutContent({ mode, hijacked, cost }: { mode: string; hijacked: boolea
   );
 }
 
-// D42: the private "this is dragging" signal — quiet by design, never a tally
-function DragFlagLink({ g }: { g: ReturnType<typeof useGame> }) {
+// D42a: the hosts' private "feels slow" nudge — softer than break-glass
+function DragFlagButton({ g }: { g: ReturnType<typeof useGame> }) {
   const [state, setState] = useState<"idle" | "sent">("idle");
-  if (state === "sent")
-    return <span style={{ color: "var(--gold)" }}>Noted — quietly. Something will find you.</span>;
+  useEffect(() => {
+    if (state !== "sent") return;
+    const t = setTimeout(() => setState("idle"), 60_000); // re-arm after a while
+    return () => clearTimeout(t);
+  }, [state]);
   return (
     <button
-      className="underline"
-      style={{ color: "var(--ink-dim)" }}
+      className="btn btn-ghost"
+      disabled={state === "sent"}
       onClick={async () => {
         await g.actions.flagDragging();
         setState("sent");
       }}
     >
-      tell the machine this is dragging
+      {state === "sent" ? "⏭ noted, quietly" : "⏭ feels slow"}
     </button>
   );
 }
@@ -935,6 +937,7 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
         <Link href={`/tv/${game.code}`} className="btn btn-ghost">
           📺 House channel
         </Link>
+        <DragFlagButton g={g} />
         {Number(game.config?.timeScale ?? 1) > 1 && (
           <Link href={`/sandbox/${game.code}`} className="btn btn-ghost">
             🧪 Sandbox
