@@ -20,6 +20,7 @@ import {
   GlyphBadge,
   ActionRow,
 } from "@/lib/client/rogue-cards";
+import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
 
 const PHASE_LABEL: Record<string, string> = {
   none: "",
@@ -147,9 +148,11 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
   const dead = ["dead", "ghost", "banished"].includes(me.status);
   const [busy, setBusy] = useState(false);
   const aliveNames = g.roster.filter((p) => p.status === "alive" && p.id !== me.id).map((p) => p.name);
+  const { themeClass, glitching } = useRogueTheme(game.mode, game.hijacked_at);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pb-28">
+    <main className={`mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pb-28 ${themeClass}`}>
+      <GlitchOverlay active={glitching} />
       <header>
         <div className="flex items-baseline justify-between gap-3">
           <h1 className="font-display text-2xl leading-tight" style={{ color: "var(--gold)" }}>

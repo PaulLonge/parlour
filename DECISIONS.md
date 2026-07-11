@@ -118,6 +118,14 @@ B-numbers are build-time engineering calls made inside the codebase.
   games.config.venue; final validation = the story-requirements vs venue-supply
   reconciliation checklist.
 
+- **D35 — the UI is the hijack.** ROGUE mode has a two-state visual identity:
+  `theme-decoy` (act 1: warm parchment daylight, rounded and a shade too naff — the
+  party the invitation promised) and `theme-hijacked` (CALICO's ledger: near-black,
+  bone ink, stamp-red, monospaced display). The swap fires LIVE on every phone at the
+  hijack moment via a one-time glitch overlay — twenty screens going dark at once is
+  the room's first scare. Rogue identity outranks story skins; murder mode keeps the
+  manor/deco/séance themes.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.

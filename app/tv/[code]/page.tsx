@@ -2,6 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import { useGame, type PublicEvent } from "@/lib/client/useGame";
+import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
 
 // The house channel (I12): a TV/laptop left open all night. It is also the
 // game's metronome — while this page is up, the director's heartbeat ticks.
@@ -9,6 +10,7 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
   const { code } = use(params);
   const g = useGame(code);
   const [begun, setBegun] = useState(false);
+  const { themeClass, glitching } = useRogueTheme(g.game?.mode, g.game?.hijacked_at);
 
   const heartbeatMs = useMemo(() => {
     const s = (g.game?.config?.heartbeatSeconds as number) ?? 180;
@@ -41,16 +43,19 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
     );
 
   const skin = g.game.story_public?.skin?.palette;
-  const style = skin
-    ? ({ ["--bg" as string]: skin.bg, ["--accent" as string]: skin.accent, ["--ink" as string]: skin.text } as React.CSSProperties)
-    : undefined;
+  // rogue mode's decoy/hijacked identity outranks any story skin (D35)
+  const style =
+    skin && g.game.mode !== "rogue"
+      ? ({ ["--bg" as string]: skin.bg, ["--accent" as string]: skin.accent, ["--ink" as string]: skin.text } as React.CSSProperties)
+      : undefined;
 
   const announces = g.publicEvents.filter((e) => ["announce", "seal_broken", "seal_resumed"].includes(e.type));
   const latest = announces[0];
   const reveal = g.publicEvents.find((e) => e.type === "reveal_roles");
 
   return (
-    <main className="relative flex min-h-dvh flex-col p-10" style={style}>
+    <main className={`relative flex min-h-dvh flex-col p-10 ${themeClass}`} style={style}>
+      <GlitchOverlay active={glitching} />
       <div className="vignette" />
 
       {!begun && (

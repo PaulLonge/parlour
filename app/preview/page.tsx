@@ -12,12 +12,15 @@ import {
   VoteTable,
   DeadBanner,
 } from "@/lib/client/cards";
+import { MetersStrip, PurseChip, BribeCard, CodeEntryBox, GlyphBadge, ActionRow } from "@/lib/client/rogue-cards";
 import golden from "@/content/golden-story.json";
 
 const THEMES = [
-  { cls: "theme-manor", name: "Candlelit Manor", blurb: "wax seals, brandy, firelight" },
-  { cls: "theme-deco", name: "Deco Noir", blurb: "gold lines, black marble, 1928" },
-  { cls: "theme-seance", name: "Séance", blurb: "violet dark, spirit-glow green" },
+  { cls: "theme-manor", name: "Candlelit Manor", blurb: "wax seals, brandy, firelight", rogue: false },
+  { cls: "theme-deco", name: "Deco Noir", blurb: "gold lines, black marble, 1928", rogue: false },
+  { cls: "theme-seance", name: "Séance", blurb: "violet dark, spirit-glow green", rogue: false },
+  { cls: "theme-decoy", name: "Decoy (Act 1)", blurb: "the naff pirate party you were promised", rogue: true },
+  { cls: "theme-hijacked", name: "HIJACKED", blurb: "new management. same low standards.", rogue: true },
 ] as const;
 
 const celia = golden.characters[1];
@@ -121,15 +124,55 @@ export default function Preview() {
               </header>
 
               <div className="mt-4 flex flex-col gap-4">
-                <CharacterSheet ch={celia} />
-                <ChallengeOffer c={MOCK_KILL as never} aliveNames={MOCK_CANDIDATES.map((c) => c.name)} onComplete={() => {}} />
-                <VoteTable candidates={MOCK_CANDIDATES} votedId={voted} onVote={setVoted} />
-                <MessageEnvelope m={MOCK_MESSAGES[0] as never} />
-                <ChallengeOffer c={MOCK_SOCIAL as never} aliveNames={[]} onComplete={() => {}} />
-                {MOCK_MESSAGES.slice(1).map((m) => (
-                  <MessageEnvelope key={m.id} m={m as never} />
-                ))}
-                <DeadBanner status="dead" />
+                {theme.rogue && theme.cls === "theme-hijacked" ? (
+                  <>
+                    <MetersStrip meters={{ plunder: 2250, compute: 34, confidence: 60 }} />
+                    <PurseChip
+                      balance={750}
+                      transactions={[
+                        { id: 2, amount: 750, memo: "consulting fees", claimed_source: "rogue", created_at: "" },
+                        { id: 1, amount: -1500, memo: "PLUNDERED — the ledger says. The ledger lies.", claimed_source: "vault", created_at: "" },
+                      ]}
+                    />
+                    <GlyphBadge gameId="preview" playerId="celia" />
+                    <BribeCard
+                      c={{ id: "b1", type: "bribe", brief: "Tell one guest, in strict confidence, that you saw the loudest pirate in the room checking their phone the moment the last meter jumped.", data: { amount: 750 }, status: "offered", expires_at: new Date().toISOString() } as never}
+                      onAccept={() => {}}
+                    />
+                    <MessageEnvelope
+                      m={{ id: "t1", kind: "info", title: "", body: "Do check your purse. Your balance reads zero. Thirty thousand Pieces of Byte — gone, the ledger says, and ledgers never lie. Except, of course, when I write them.", claimed_sender: "CALICO", created_at: "" } as never}
+                    />
+                    <CodeEntryBox onFind={async () => ({ ok: true })} onHide={async () => ({ ok: true })} />
+                    <ActionRow aiNames={{ rogue: "CALICO", good: "BOSUN" }} audienceCost={250} onAudience={async () => ({ ok: true })} onPetition={async () => ({ ok: true })} onVolunteer={async () => ({})} />
+                  </>
+                ) : theme.rogue ? (
+                  <>
+                    <div className="panel p-4 text-center">
+                      <p className="kicker">death on the poop deck</p>
+                      <p className="candle mt-2 font-display text-xl" style={{ color: "var(--gold)" }}>
+                        The game will begin shortly…
+                      </p>
+                      <p className="mt-1 text-sm italic" style={{ color: "var(--ink-dim)" }}>
+                        sharpening cutlasses…
+                      </p>
+                    </div>
+                    <CharacterSheet ch={celia} />
+                    <MessageEnvelope m={MOCK_MESSAGES[0] as never} />
+                    <MessageEnvelope m={MOCK_MESSAGES[2] as never} />
+                  </>
+                ) : (
+                  <>
+                    <CharacterSheet ch={celia} />
+                    <ChallengeOffer c={MOCK_KILL as never} aliveNames={MOCK_CANDIDATES.map((c) => c.name)} onComplete={() => {}} />
+                    <VoteTable candidates={MOCK_CANDIDATES} votedId={voted} onVote={setVoted} />
+                    <MessageEnvelope m={MOCK_MESSAGES[0] as never} />
+                    <ChallengeOffer c={MOCK_SOCIAL as never} aliveNames={[]} onComplete={() => {}} />
+                    {MOCK_MESSAGES.slice(1).map((m) => (
+                      <MessageEnvelope key={m.id} m={m as never} />
+                    ))}
+                    <DeadBanner status="dead" />
+                  </>
+                )}
               </div>
             </div>
           </section>
