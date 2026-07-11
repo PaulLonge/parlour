@@ -10,6 +10,7 @@ Blood-on-the-Clocktower soul.
 Built for Paul's 30th, November 2026.
 
 **The paper trail** (read in this order when picking the project up):
+- [`docs/OVERVIEW.md`](docs/OVERVIEW.md) — **start here**: the intrigue stack, how the app works, tech stack, current status (living doc, co-edited by Paul)
 - [`SPEC.md`](SPEC.md) — how it works: the ontology (object types, actions, visibility, phase machine, the three seams)
 - [`DECISIONS.md`](DECISIONS.md) — why it's this way: every design + build call, and the not-built-yet queue
 - [`docs/modes.md`](docs/modes.md) — the mode library: heist, infection, and friends, specced against the three seams

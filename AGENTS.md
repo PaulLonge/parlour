@@ -23,5 +23,9 @@ Load-bearing invariants (do not silently break):
 - Generation must never be a single point of failure: schema + structural validator +
   golden-story fallback (`content/golden-story.json` — deliberately spoiler-safe for Paul).
 
-Verify with: `npm run build` and `npm run simulate` (full scripted game vs a real
-Supabase; needs `.env.local`).
+Verify with: `npm run build` and `npm run simulate` + `npm run simulate:rogue` (full
+scripted games vs a real Supabase; needs `.env.local`).
+
+Documentation rule (D40): any change to game mechanics, app behaviour, or the tech
+stack updates `docs/OVERVIEW.md` (and its Last-updated date) in the same commit —
+it is the shareable front door and Paul co-edits it; never overwrite his marginalia.

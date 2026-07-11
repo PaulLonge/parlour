@@ -139,6 +139,25 @@ B-numbers are build-time engineering calls made inside the codebase.
   honest pirate." Phones must never replace the room. Prompt rule: one stamp is a
   gift, three is a plot.
 
+- **D39 — Paul plays HIMSELF, unobfuscated (Paul, July 2026).** No character, no
+  cover: Paul is THE COMMISSIONER — the in-fiction (and factual) origin of the night
+  is that he typed "Hey ChatGPT— hey Claude, whichever one. Make me a murder mystery
+  game for my 30th birthday. Make no mistakes." into an AI, and what he thought was a
+  fun pirate game became the takeover. This origin is CANON: the invitation can tell
+  it, CALICO can weaponize it ("You asked for no mistakes. Point to one."), and Paul
+  is the room's lightning rod all night. His mechanical role: ordinary player by
+  default, with OPTIONS still open (recorded, not decided): (a) knows the whole plot
+  and produces chaos, (b) secretly on the rogue's side, (c) plain player. THE CO-HOST gets
+  a FEATURED role — options open: (a) BOSUN's champion, publicly recruited first to
+  save the party, (b) full-knowledge co-conspirator, (c) secretly rogue-side. The
+  WHO-surprise (D24) survives regardless: neither needs to know who else gets bought.
+  Blind-host machinery (break-glass etc.) remains for practical use.
+- **D40 — the living reviewer doc.** docs/OVERVIEW.md is the maintained front door:
+  the intrigue stack, how the app works, the tech stack, current status — with a
+  Last-updated date header, co-edited by Paul, shareable with an outside reviewer.
+  Maintenance rule (also in AGENTS.md): any change to mechanics or stack updates
+  OVERVIEW.md's date in the same commit.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
