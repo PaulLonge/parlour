@@ -73,6 +73,26 @@ export function CharacterSheet({ ch, defaultOpen = false }: { ch: CharacterData;
   );
 }
 
+// relative time — "an hour ago" must be anchorable (IA review #4)
+export function timeAgo(iso: string): string {
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (!isFinite(mins) || mins < 1) return "now";
+  if (mins < 60) return `${mins}m ago`;
+  const h = Math.floor(mins / 60);
+  return `${h}h${mins % 60 ? ` ${mins % 60}m` : ""} ago`;
+}
+
+// coarse expiry countdown — "expires quietly" must still let a drunk player
+// triage (IA review #6)
+export function expiresIn(iso: string | null): string | null {
+  if (!iso) return null;
+  const mins = Math.ceil((new Date(iso).getTime() - Date.now()) / 60000);
+  if (!isFinite(mins)) return null;
+  if (mins <= 0) return "moments";
+  if (mins <= 60) return `~${mins} min`;
+  return `~${Math.round(mins / 60)}h`;
+}
+
 const KIND_LABEL: Record<string, { icon: string; label: string }> = {
   secret: { icon: "🔎", label: "a secret finds you" },
   task: { icon: "✉️", label: "a note, passed" },
@@ -88,8 +108,13 @@ export function MessageEnvelope({ m }: { m: Msg }) {
   const transmission = !!m.claimed_sender; // an AI is (claiming to be) speaking (D28)
   return (
     <div className={`panel envelope p-4 ${transmission ? "transmission" : ""}`}>
-      <p className="kicker">
-        {transmission ? `⌁ transmission — ${m.claimed_sender}` : `${k.icon} ${k.label}`}
+      <p className="kicker flex items-baseline justify-between gap-2">
+        <span>{transmission ? `⌁ transmission — ${m.claimed_sender}` : `${k.icon} ${k.label}`}</span>
+        {m.created_at && (
+          <span className="normal-case" style={{ letterSpacing: "normal", color: "var(--ink-dim)" }}>
+            {timeAgo(m.created_at)}
+          </span>
+        )}
       </p>
       {m.title && m.title !== "…" && <p className="mt-1 font-semibold">{m.title}</p>}
       <p
@@ -121,13 +146,14 @@ export function ChallengeOffer({
       className={`panel envelope p-5 ${isKill ? "pulse-danger" : ""}`}
       style={isKill ? { borderColor: "var(--danger)" } : undefined}
     >
-      <p className="kicker" style={isKill ? { color: "var(--danger)" } : undefined}>
+      <p className={`kicker ${isKill ? "kicker-danger" : ""}`}>
         {isKill ? "⚔ a dark offer — yours alone" : "🕯 a challenge — tell no one"}
       </p>
       <p className="mt-2 leading-relaxed whitespace-pre-wrap">{c.brief}</p>
       {c.expires_at && (
         <p className="mt-2 text-xs italic" style={{ color: "var(--ink-dim)" }}>
-          This offer expires quietly. No one will ever know, either way.
+          This offer expires quietly{expiresIn(c.expires_at) ? ` — ${expiresIn(c.expires_at)} left` : ""}. No one
+          will ever know, either way.
         </p>
       )}
       {isKill && !preset && (
@@ -140,8 +166,10 @@ export function ChallengeOffer({
           ))}
         </select>
       )}
+      {/* social tasks get a quiet button — solid danger fill is reserved for the
+          irreversible (visual review #8) */}
       <button
-        className={`btn mt-4 w-full ${isKill ? "btn-danger" : ""}`}
+        className={`btn mt-4 w-full ${isKill ? "btn-danger" : "btn-ghost"}`}
         disabled={busy || (isKill && !preset && !victim)}
         onClick={() => onComplete(isKill ? (preset ?? victim) : undefined)}
       >
@@ -155,12 +183,16 @@ export function VoteTable({
   candidates,
   votedId,
   onVote,
+  busy = false,
+  note = "",
   title = "The round table",
   subtitle = "Who do you banish? You may change your mind until the house calls time.",
 }: {
   candidates: { id: string; name: string }[];
   votedId: string | null;
   onVote: (id: string) => void;
+  busy?: boolean;
+  note?: string;
   title?: string;
   subtitle?: string;
 }) {
@@ -174,12 +206,27 @@ export function VoteTable({
       </p>
       <div className="flex flex-wrap gap-2">
         {candidates.map((p) => (
-          <button key={p.id} className={`btn ${votedId === p.id ? "" : "btn-ghost"}`} onClick={() => onVote(p.id)}>
+          <button
+            key={p.id}
+            className={`btn ${votedId === p.id ? "" : "btn-ghost"}`}
+            disabled={busy}
+            onClick={() => onVote(p.id)}
+          >
             {votedId === p.id ? "🗡 " : ""}
             {p.name}
           </button>
         ))}
       </div>
+      {votedId && (
+        <p className="mt-3 text-xs italic" style={{ color: "var(--gold)" }}>
+          Your finger points at {candidates.find((c) => c.id === votedId)?.name ?? "someone"}. Change it while you can.
+        </p>
+      )}
+      {note && (
+        <p className="mt-2 text-sm" style={{ color: "var(--danger)" }}>
+          {note}
+        </p>
+      )}
     </div>
   );
 }

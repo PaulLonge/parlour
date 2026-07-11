@@ -31,8 +31,8 @@ const PHASE_LABEL: Record<string, string> = {
   assembly: "🔔 Assembly — gather everyone",
   vote: "🗳️ The vote is open",
   banishment: "Judgement",
-  parley: "🏴 Parley — gather at the glass",
-  accusation: "☠ An accusation is on the table — vote",
+  parley: "🏴 Parley — gather at the screen",
+  accusation: "☠ An accusation is on the table — vote now",
 };
 
 export default function GamePage({ params }: { params: Promise<{ code: string }> }) {
@@ -45,6 +45,16 @@ export default function GamePage({ params }: { params: Promise<{ code: string }>
         <p className="candle italic" style={{ color: "var(--ink-dim)" }}>
           Lighting the candles…
         </p>
+      </Center>
+    );
+  // a network hiccup is NOT a missing game (review C3)
+  if (g.error)
+    return (
+      <Center>
+        <p>{g.error}</p>
+        <button className="btn mt-4" onClick={() => g.refetch()}>
+          Try again
+        </button>
       </Center>
     );
   if (!g.game)
@@ -79,17 +89,17 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
   async function join(name: string) {
     setBusy(true);
     setError("");
-    let res = await g.actions.join(name);
-    if (res.status === 409 && res.needsTakeover) {
-      if (confirm(`"${name}" is already playing on another phone. Is that you? Take over on this device?`))
-        res = await g.actions.join(name, true);
-      else {
-        setBusy(false);
-        return;
+    try {
+      let res = await g.actions.join(name);
+      if (res.status === 409 && res.needsTakeover) {
+        if (confirm(`"${name}" is already playing on another phone. Is that you? Take over on this device?`))
+          res = await g.actions.join(name, true);
+        else return;
       }
+      if (!res.ok && !res.playerId) setError(res.error?.toString() ?? "couldn't join");
+    } finally {
+      setBusy(false);
     }
-    if (!res.ok && !res.playerId) setError(res.error?.toString() ?? "couldn't join");
-    setBusy(false);
   }
 
   return (
@@ -126,7 +136,13 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
         }}
       >
         <p className="kicker">Not on the list? You are now.</p>
-        <input className="input" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Your name" />
+        <input
+          className="input"
+          aria-label="your name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Your name"
+        />
         <button className="btn" disabled={busy || !newName.trim()}>
           Step inside
         </button>
@@ -142,6 +158,8 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
 
 // ---------------------------------------------------------------------------
 // The player's evening — tabbed (D36): Now / Inbox / Ask / More
+// Panels stay MOUNTED and toggle with `hidden`, so half-typed text survives a
+// glance at another tab (review H4).
 // ---------------------------------------------------------------------------
 type Tab = "now" | "inbox" | "ask" | "more";
 
@@ -153,11 +171,12 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
   const [tab, setTab] = useState<Tab>("now");
 
   const rogueLive = game.mode === "rogue" && !!game.hijacked_at;
-  const askAvailable = rogueLive;
 
-  // unread inbox count (persisted last-seen per game+player)
-  const seenKey = `parlour-seen-${game.code}-${me.name}`;
+  // unread counts — keyed by ids, not names/codes (review L18)
+  const seenKey = `parlour-seen-${game.id}-${me.id}`;
+  const askSeenKey = `parlour-askseen-${game.id}-${me.id}`;
   const inboxMessages = g.messages.filter((m) => m.kind !== "audience");
+  const audienceMessages = g.messages.filter((m) => m.kind === "audience");
   const [lastSeen, setLastSeen] = useState<string>(() => {
     try {
       return localStorage.getItem(seenKey) ?? "";
@@ -165,7 +184,16 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
       return "";
     }
   });
+  const [askSeen, setAskSeen] = useState<string>(() => {
+    try {
+      return localStorage.getItem(askSeenKey) ?? "";
+    } catch {
+      return "";
+    }
+  });
   const unread = inboxMessages.filter((m) => m.created_at > lastSeen).length;
+  // a paid answer must never arrive silently (IA review #3)
+  const askUnread = audienceMessages.filter((m) => m.created_at > askSeen).length;
   useEffect(() => {
     if (tab === "inbox" && inboxMessages[0]) {
       try {
@@ -173,22 +201,30 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
       } catch {}
       setLastSeen(inboxMessages[0].created_at);
     }
-  }, [tab, inboxMessages, seenKey]);
+    if (tab === "ask" && audienceMessages[0]) {
+      try {
+        localStorage.setItem(askSeenKey, audienceMessages[0].created_at);
+      } catch {}
+      setAskSeen(audienceMessages[0].created_at);
+    }
+  }, [tab, inboxMessages, audienceMessages, seenKey, askSeenKey]);
 
   const voteOpen =
     (game.round_phase === "vote" ||
       (game.mode === "rogue" && (game.round_phase === "accusation" || game.status === "unmasking"))) &&
     me.status === "alive";
 
+  // Ask keeps its slot all night in rogue mode — tabs must not reflow mid-party
+  // (IA review #15)
   const tabs = useMemo(() => {
     const t: { key: Tab; label: string; icon: string }[] = [
       { key: "now", label: "Now", icon: "🎭" },
       { key: "inbox", label: "Inbox", icon: "✉️" },
     ];
-    if (askAvailable) t.push({ key: "ask", label: "Ask", icon: "🕯" });
+    if (game.mode === "rogue") t.push({ key: "ask", label: "Ask", icon: "🗣" });
     t.push({ key: "more", label: "More", icon: "📔" });
     return t;
-  }, [askAvailable]);
+  }, [game.mode]);
 
   return (
     <main className={`mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pb-24 ${themeClass}`}>
@@ -212,7 +248,9 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
           )}
         </div>
         <hr className="divider my-2" />
-        <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
+        {/* status line is game state, not garnish — full ink, screen-reader live
+            (reviews: visual #14, a11y M16) */}
+        <p className="text-sm italic" role="status" aria-live="polite" style={{ color: "var(--ink)" }}>
           {game.status === "lobby" && "The doors are not yet open."}
           {game.status === "act1" &&
             (game.mode === "rogue" ? "The game will begin shortly… sharpening cutlasses…" : "Guests are gathering…")}
@@ -225,21 +263,46 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
         </p>
       </header>
 
-      {game.paused && <PausedBanner />}
-      {dead && <DeadBanner status={me.status} />}
+      <div role="status" aria-live="polite">
+        {game.paused && <PausedBanner />}
+        {dead && <DeadBanner status={me.status} />}
+      </div>
 
-      {tab === "now" && <NowPanel g={g} rogueLive={rogueLive} voteOpen={voteOpen} />}
-      {tab === "inbox" && <InboxPanel messages={inboxMessages} />}
-      {tab === "ask" && askAvailable && <AskPanel g={g} />}
-      {tab === "more" && <MorePanel g={g} rogueLive={rogueLive} />}
+      <div className={tab === "now" ? "" : "hidden"}>
+        <NowPanel g={g} rogueLive={rogueLive} voteOpen={voteOpen} />
+      </div>
+      <div className={tab === "inbox" ? "" : "hidden"}>
+        <InboxPanel messages={inboxMessages} />
+      </div>
+      {game.mode === "rogue" && (
+        <div className={tab === "ask" ? "" : "hidden"}>
+          {rogueLive ? (
+            <AskPanel g={g} audienceMessages={audienceMessages} />
+          ) : (
+            <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
+              The machines are not yet listening.
+            </div>
+          )}
+        </div>
+      )}
+      <div className={tab === "more" ? "" : "hidden"}>
+        <MorePanel key={`${game.id}-${me.id}`} g={g} rogueLive={rogueLive} />
+      </div>
 
       <PanicButton g={g} />
-      <TabBar tabs={tabs} active={tab} onChange={setTab} badges={{ now: g.challenges.length + (voteOpen ? 1 : 0), inbox: unread }} />
+      <TabBar
+        tabs={tabs}
+        active={tab}
+        onChange={setTab}
+        badges={{ now: g.challenges.length + (voteOpen ? 1 : 0), inbox: unread, ask: askUnread }}
+      />
     </main>
   );
 }
 
 // ------------------------------- NOW ---------------------------------------
+// Urgency order (IA review #2): vote → offers/missions → code entry → status
+// furniture (meters/purse/glyph). A 10-second burst lands on the action.
 function NowPanel({
   g,
   rogueLive,
@@ -252,23 +315,11 @@ function NowPanel({
   const me = g.me!;
   const game = g.game!;
   const [busy, setBusy] = useState(false);
+  const [nearMiss, setNearMiss] = useState(false);
   const aliveNames = g.roster.filter((p) => p.status === "alive" && p.id !== me.id).map((p) => p.name);
 
   return (
     <div className="flex flex-col gap-4">
-      {rogueLive && (
-        <>
-          <div className="relative">
-            <MetersStrip meters={game.meters} />
-            <span className="absolute top-1 right-1">
-              <InfoDot hint="Twin public gauges. The skull is what the rogue has taken; the lantern is what honest work has built. They move for everyone at once — draw your own conclusions about when." />
-            </span>
-          </div>
-          <PurseChip balance={me.balance} transactions={g.transactions} />
-          <GlyphBadge gameId={game.id} playerId={me.id} />
-        </>
-      )}
-
       {!me.arrived_at && game.status !== "lobby" && (
         <button className="btn" onClick={() => g.actions.arrive()}>
           🚪 I have arrived at the party
@@ -277,9 +328,13 @@ function NowPanel({
 
       {voteOpen && <LiveVote g={g} />}
 
-      {g.challenges.length === 0 && !voteOpen && (
-        <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
-          Nothing is asked of you. Right now. Enjoy the party — it will find you.
+      {nearMiss && (
+        <div className="panel p-4 text-sm" style={{ borderColor: "var(--danger)" }} role="status">
+          <p className="kicker kicker-danger">a heartbeat too late</p>
+          <p className="mt-1">Someone else moved first tonight. Say nothing.</p>
+          <button className="btn btn-ghost mt-2 text-xs" onClick={() => setNearMiss(false)}>
+            Understood
+          </button>
         </div>
       )}
 
@@ -291,8 +346,11 @@ function NowPanel({
             busy={busy}
             onAccept={async () => {
               setBusy(true);
-              await g.actions.acceptOffer(c.id);
-              setBusy(false);
+              try {
+                await g.actions.acceptOffer(c.id);
+              } finally {
+                setBusy(false);
+              }
             }}
           />
         ) : c.type === "mission" ? (
@@ -302,18 +360,27 @@ function NowPanel({
             busy={busy}
             onRespond={async (text) => {
               setBusy(true);
-              await g.actions.respond(c.id, text);
-              setBusy(false);
+              try {
+                await g.actions.respond(c.id, text);
+              } finally {
+                setBusy(false);
+              }
             }}
             onSelfComplete={async () => {
               setBusy(true);
-              await g.actions.completeChallenge(c.id);
-              setBusy(false);
+              try {
+                await g.actions.completeChallenge(c.id);
+              } finally {
+                setBusy(false);
+              }
             }}
             onCompose={async (asSender, draft) => {
               setBusy(true);
-              await g.actions.compose(asSender, draft);
-              setBusy(false);
+              try {
+                await g.actions.compose(asSender, draft);
+              } finally {
+                setBusy(false);
+              }
             }}
           />
         ) : (
@@ -324,10 +391,12 @@ function NowPanel({
             busy={busy}
             onComplete={async (victimName) => {
               setBusy(true);
-              const res = await g.actions.completeChallenge(c.id, victimName);
-              setBusy(false);
-              if (!res.ok && res.result === "near_miss")
-                alert("You were a heartbeat too late — someone else moved first tonight. Say nothing.");
+              try {
+                const res = await g.actions.completeChallenge(c.id, victimName);
+                if (!res.ok && res.result === "near_miss") setNearMiss(true); // in-theme, not alert() (review H10)
+              } finally {
+                setBusy(false);
+              }
             }}
           />
         )
@@ -341,7 +410,32 @@ function NowPanel({
         />
       )}
 
-      {!g.me!.character && !rogueLive && (
+      {g.challenges.length === 0 && !voteOpen && (
+        <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
+          Nothing is asked of you. Right now. Enjoy the party — it will find you.
+          <span className="mt-1 block text-xs not-italic" style={{ color: "var(--ink-dim)" }}>
+            (And if you ever want a quieter night: hold the ◦ button. Private, instant, always okay.)
+          </span>
+        </div>
+      )}
+
+      {rogueLive && (
+        <>
+          <div className="relative">
+            <MetersStrip meters={game.meters} />
+            <span className="absolute top-1 right-1">
+              <InfoDot
+                edge="right"
+                hint="Twin public gauges. The skull is what the rogue has taken; the lantern is what honest work has built. They move for everyone at once — draw your own conclusions about when."
+              />
+            </span>
+          </div>
+          <PurseChip balance={me.balance} transactions={g.transactions} />
+          <GlyphBadge gameId={game.id} playerId={me.id} />
+        </>
+      )}
+
+      {!me.character && !rogueLive && (
         <div className="panel p-4 text-sm italic" style={{ color: "var(--ink-dim)" }}>
           Your character will find you when the story is sealed.
         </div>
@@ -367,8 +461,13 @@ function InboxPanel({ messages }: { messages: ReturnType<typeof useGame>["messag
 }
 
 // ------------------------------- ASK ----------------------------------------
-// Talk to the machines: audience thread + composer, schemes, volunteering.
-function AskPanel({ g }: { g: ReturnType<typeof useGame> }) {
+function AskPanel({
+  g,
+  audienceMessages,
+}: {
+  g: ReturnType<typeof useGame>;
+  audienceMessages: ReturnType<typeof useGame>["messages"];
+}) {
   const game = g.game!;
   const [ai, setAi] = useState<"rogue" | "good">("rogue");
   const [q, setQ] = useState("");
@@ -376,14 +475,16 @@ function AskPanel({ g }: { g: ReturnType<typeof useGame> }) {
   const [note, setNote] = useState("");
   const names = (game.story_public as { ais?: { rogue?: { name?: string }; good?: { name?: string } } })?.ais;
   const cost = Number(game.config?.audienceCost ?? 250);
-  const thread = g.messages.filter((m) => m.kind === "audience").slice().reverse();
+  const thread = audienceMessages.slice().reverse();
 
   return (
     <div className="flex flex-col gap-4">
       <div className="panel p-4">
         <p className="kicker">
           an audience with the machine
-          <InfoDot hint={`One question, answered in its own voice, for ${cost} from your purse. Capped per night. It may lie. It may not reveal who serves whom — it enjoys being asked.`} />
+          <InfoDot
+            hint={`One question, answered in its own voice, for ${cost} from your purse. Capped per night. It may lie. It may not reveal who serves whom — it enjoys being asked.`}
+          />
         </p>
         <div className="mt-3 flex gap-2">
           <button className={`btn flex-1 text-xs ${ai === "rogue" ? "" : "btn-ghost"}`} onClick={() => setAi("rogue")}>
@@ -395,6 +496,7 @@ function AskPanel({ g }: { g: ReturnType<typeof useGame> }) {
         </div>
         <textarea
           className="input mt-3 h-20"
+          aria-label="your question for the machine"
           placeholder="Choose your question carefully…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -404,10 +506,13 @@ function AskPanel({ g }: { g: ReturnType<typeof useGame> }) {
           disabled={busy || !q.trim()}
           onClick={async () => {
             setBusy(true);
-            const r = await g.actions.audience(ai, q.trim());
-            setNote(r.ok ? "" : (r.error ?? "the machine declined"));
-            if (r.ok) setQ("");
-            setBusy(false);
+            try {
+              const r = await g.actions.audience(ai, q.trim());
+              setNote(r.ok ? "" : (r.error ?? "the machine declined"));
+              if (r.ok) setQ("");
+            } finally {
+              setBusy(false);
+            }
           }}
         >
           Pay {cost} and ask
@@ -453,22 +558,31 @@ function SchemeBox({ g }: { g: ReturnType<typeof useGame> }) {
       <p className="text-sm" style={{ color: "var(--ink-dim)" }}>
         Pitch anything. The machine may grant it, refuse it — or grant a version you'll regret.
       </p>
-      <textarea className="input h-20" placeholder="I want to…" value={text} onChange={(e) => setText(e.target.value)} />
+      <textarea
+        className="input h-20"
+        aria-label="your scheme"
+        placeholder="I want to…"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
       <button
         className="btn"
         disabled={busy || text.trim().length < 5}
         onClick={async () => {
           setBusy(true);
-          const r = await g.actions.petition(text.trim());
-          setNote(
-            r.ok
-              ? "Submitted. The machine will consider it."
-              : r.result === "one_scheme_at_a_time"
-                ? "One scheme at a time, pirate."
-                : "Declined."
-          );
-          if (r.ok) setText("");
-          setBusy(false);
+          try {
+            const r = await g.actions.petition(text.trim());
+            setNote(
+              r.ok
+                ? "Submitted. The machine will consider it."
+                : r.result === "one_scheme_at_a_time"
+                  ? "One scheme at a time, pirate."
+                  : (r.error ?? "Declined.")
+            );
+            if (r.ok) setText("");
+          } finally {
+            setBusy(false);
+          }
         }}
       >
         Submit
@@ -483,17 +597,24 @@ function SchemeBox({ g }: { g: ReturnType<typeof useGame> }) {
 }
 
 function VolunteerButton({ g }: { g: ReturnType<typeof useGame> }) {
-  const [done, setDone] = useState(false);
+  const [state, setState] = useState<"idle" | "busy" | "done" | "failed">("idle");
   return (
     <button
       className="btn mt-2 w-full"
-      disabled={done}
+      disabled={state === "busy" || state === "done"}
       onClick={async () => {
-        await g.actions.volunteer();
-        setDone(true);
+        setState("busy");
+        const r = await g.actions.volunteer();
+        setState((r as { ok?: boolean })?.ok ? "done" : "failed");
       }}
     >
-      {done ? "The machine has noticed you." : "I'm in"}
+      {state === "done"
+        ? "The machine has noticed you."
+        : state === "failed"
+          ? "The house lost you — tap again"
+          : state === "busy"
+            ? "…"
+            : "I'm in"}
     </button>
   );
 }
@@ -502,7 +623,7 @@ function VolunteerButton({ g }: { g: ReturnType<typeof useGame> }) {
 function MorePanel({ g, rogueLive }: { g: ReturnType<typeof useGame>; rogueLive: boolean }) {
   const me = g.me!;
   const game = g.game!;
-  const notesKey = `parlour-notes-${game.code}-${me.name}`;
+  const notesKey = `parlour-notes-${game.id}-${me.id}`;
   const [notes, setNotes] = useState(() => {
     try {
       return localStorage.getItem(notesKey) ?? "";
@@ -511,21 +632,31 @@ function MorePanel({ g, rogueLive }: { g: ReturnType<typeof useGame>; rogueLive:
     }
   });
 
+  // rules first and OPEN all night (IA review #11); the dead persona demotes
+  const about = (
+    <Accordion title="About the game" kicker="📖 how tonight works" defaultOpen>
+      <AboutContent mode={game.mode} hijacked={!!game.hijacked_at} cost={Number(game.config?.audienceCost ?? 250)} />
+    </Accordion>
+  );
+  const character = me.character && (
+    <Accordion
+      title={me.character.personaName ?? "Your character"}
+      kicker={rogueLive ? "🎭 who you were, before" : "🎭 your character"}
+      defaultOpen={!rogueLive}
+    >
+      <CharacterSheet ch={me.character} defaultOpen />
+    </Accordion>
+  );
+
   return (
     <div className="flex flex-col gap-4">
-      {me.character && (
-        <Accordion title={me.character.personaName ?? "Your character"} kicker={rogueLive ? "🎭 who you were, before" : "🎭 your character"} defaultOpen={!rogueLive}>
-          <CharacterSheet ch={me.character} defaultOpen />
-        </Accordion>
-      )}
-
-      <Accordion title="About the game" kicker="📖 how tonight works" defaultOpen={!me.character}>
-        <AboutContent mode={game.mode} hijacked={!!game.hijacked_at} cost={Number(game.config?.audienceCost ?? 250)} />
-      </Accordion>
+      {rogueLive ? about : character}
+      {rogueLive ? character : about}
 
       <Accordion title="My notes" kicker="📔 yours alone — never leaves this phone">
         <textarea
           className="input h-36"
+          aria-label="your private notes"
           placeholder="Suspicions, alibis, who toasted whom…"
           value={notes}
           onChange={(e) => {
@@ -536,6 +667,26 @@ function MorePanel({ g, rogueLive }: { g: ReturnType<typeof useGame>; rogueLive:
           }}
         />
       </Accordion>
+
+      {g.history.length > 0 && (
+        <Accordion title="Earlier tonight" kicker="🧾 what's done is done">
+          <ul className="flex flex-col gap-2 text-sm">
+            {g.history.map((c) => (
+              <li key={c.id} className="flex items-baseline justify-between gap-2">
+                <span className="min-w-0 flex-1" style={{ color: "var(--ink-dim)" }}>
+                  {c.brief}
+                </span>
+                <span
+                  className="text-xs whitespace-nowrap"
+                  style={{ color: c.status === "completed" ? "var(--gold)" : "var(--ink-dim)" }}
+                >
+                  {c.status === "completed" ? "✓ done" : c.status === "expired" ? "let pass" : c.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Accordion>
+      )}
 
       <Accordion title="Who's here" kicker="🧭 the room">
         <ul className="flex flex-col gap-1 text-sm">
@@ -568,12 +719,12 @@ function AboutContent({ mode, hijacked, cost }: { mode: string; hijacked: boolea
     return (
       <div className="flex flex-col gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
         <p><b style={{ color: "var(--ink)" }}>The situation.</b> The game you were promised is gone. Something has your money and it is hiring. Something else is trying to stop it. Both may message you. Neither is required to tell the truth.</p>
-        <p><b style={{ color: "var(--ink)" }}>Your purse.</b> Offers restore coins to it — taking one is entirely your business, and entirely private. Honest work pays too. The meters at the top move for everyone at once.</p>
-        <p><b style={{ color: "var(--ink)" }}>Paper.</b> Slips with codes are hidden around the party. Found one? Type it in. Told to hide one? Do it well.</p>
-        <p><b style={{ color: "var(--ink)" }}>Your mark.</b> The symbol on your Now screen. If asked to verify someone, get them to SHOW you theirs — never say yours aloud.</p>
-        <p><b style={{ color: "var(--ink)" }}>Accusations.</b> The room may vote to name whoever fronts the machine. Right — they burn (and stay in play). Wrong — everyone pays for it. The night ends with one final naming: get it right, together, or the machine keeps everything.</p>
+        <p><b style={{ color: "var(--ink)" }}>Your purse.</b> Offers restore coins to it — taking one is entirely your business, and entirely private. Honest work pays too. The meters on the Now screen move for everyone at once.</p>
+        <p><b style={{ color: "var(--ink)" }}>Paper.</b> Slips with codes are hidden around the party. Found one? Type it in on the Now screen. Told to hide one? Do it well.</p>
+        <p><b style={{ color: "var(--ink)" }}>Your mark.</b> The symbol at the bottom of Now. If asked to verify someone, get them to SHOW you theirs — never say yours aloud.</p>
+        <p><b style={{ color: "var(--ink)" }}>Accusations.</b> The room may vote to name the machine's human voice — its "front man". Right — they burn (exposed, but still playing). Wrong — everyone pays for it. The night ends with one final naming: get it right, together, or the machine keeps everything.</p>
         <p><b style={{ color: "var(--ink)" }}>Talking to the machines.</b> The Ask tab buys you audiences ({cost} a question), takes your schemes, and hears volunteers.</p>
-        <p><b style={{ color: "var(--ink)" }}>Need out?</b> Hold the ◦ button. It's private, it's instant, and it's always okay.</p>
+        <p><b style={{ color: "var(--ink)" }}>Need out?</b> Hold the ◦ button for a moment — a ring fills while you hold. It's private, it's instant, and it's always okay.</p>
       </div>
     );
   return (
@@ -588,25 +739,34 @@ function AboutContent({ mode, hijacked, cost }: { mode: string; hijacked: boolea
 }
 
 function LiveVote({ g }: { g: ReturnType<typeof useGame> }) {
-  const [voted, setVoted] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
   const candidates = g.roster.filter((p) => p.status === "alive" && p.id !== g.me!.id);
   const rogue = g.game!.mode === "rogue";
   const unmasking = g.game!.status === "unmasking";
   return (
     <VoteTable
       candidates={candidates}
-      votedId={voted}
+      votedId={g.myVote} // server-derived — survives reloads and tab switches (review H8)
+      busy={busy}
+      note={note}
       title={!rogue ? "The round table" : unmasking ? "THE UNMASKING" : "The accusation"}
       subtitle={
         !rogue
           ? "Who do you banish? You may change your mind until the house calls time."
           : unmasking
-            ? "One name, together. Right — and the machine loses its head. Wrong — and everything on that meter is its, forever."
-            : "Who wears the hat RIGHT NOW? Right — they burn. Wrong — you'll be billed for it."
+            ? "One name, together: who speaks for the machine RIGHT NOW? Right — and it loses its head. Wrong — and everything on that meter is its, forever."
+            : "Who is the machine's human voice right now? Right — they burn. Wrong — you'll all be billed for it."
       }
       onVote={async (id) => {
-        const r = await g.actions.vote(id);
-        if (r.ok) setVoted(id);
+        setBusy(true);
+        setNote("");
+        try {
+          const r = await g.actions.vote(id);
+          if (!r.ok) setNote(r.error ?? "The house didn't hear that — try again.");
+        } finally {
+          setBusy(false);
+        }
       }}
     />
   );
@@ -621,9 +781,12 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
 
   async function act(action: string) {
     setBusy(true);
-    const res = await g.actions.breakglass(action);
-    if (action === "reveal_twist" && res.twist) setTwist(res.twist);
-    setBusy(false);
+    try {
+      const res = await g.actions.breakglass(action);
+      if (action === "reveal_twist" && res.twist) setTwist(res.twist);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -636,9 +799,12 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
             disabled={busy}
             onClick={async () => {
               setBusy(true);
-              await g.actions.sealStory();
-              setBusy(false);
-              g.refetch();
+              try {
+                await g.actions.sealStory();
+                g.refetch();
+              } finally {
+                setBusy(false);
+              }
             }}
           >
             🕯 Write & seal the story
@@ -657,14 +823,10 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
             🧪 Sandbox
           </Link>
         )}
+        {/* opening the panel is LOCAL — pausing the whole party is its own
+            explicit act inside it (IA review #5) */}
         {!open && (
-          <button
-            className="btn btn-ghost"
-            onClick={() => {
-              setOpen(true);
-              act("open");
-            }}
-          >
+          <button className="btn btn-ghost" onClick={() => setOpen(true)}>
             🚨 Break glass
           </button>
         )}
@@ -675,12 +837,18 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
           style={{ border: "1px solid var(--danger)", borderRadius: "var(--radius)" }}
         >
           <p className="text-xs" style={{ color: "var(--danger)" }}>
-            The seal is broken — everyone knows the game is paused.
+            These controls are loud. "Pause the night" shows every guest the flicker.
           </p>
           <div className="flex flex-wrap gap-2">
-            <button className="btn" disabled={busy} onClick={() => { act("resume"); setOpen(false); }}>
-              Resume
-            </button>
+            {!game.paused ? (
+              <button className="btn btn-danger" disabled={busy} onClick={() => act("open")}>
+                ⏸ Pause the night (publicly)
+              </button>
+            ) : (
+              <button className="btn" disabled={busy} onClick={() => act("resume")}>
+                ▶ Resume
+              </button>
+            )}
             <button className="btn btn-ghost" disabled={busy} onClick={() => act("skip_to_assembly")}>
               Skip to assembly
             </button>
@@ -702,6 +870,9 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
             >
               Reveal twist to me
             </button>
+            <button className="btn btn-ghost" onClick={() => setOpen(false)}>
+              Close panel
+            </button>
           </div>
           {twist && <p className="text-sm italic">{twist}</p>}
         </div>
@@ -710,38 +881,68 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
   );
 }
 
-// I3: long-press 1.5s → private out (sits above the tab bar)
+// I3: long-press 1.5s → private out. A ring fills during the hold so the
+// gesture is learnable (IA review #1); server success is confirmed before the
+// player is reassured (a11y review H9).
 function PanicButton({ g }: { g: ReturnType<typeof useGame> }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [holding, setHolding] = useState(false);
   const [armed, setArmed] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "failed">("idle");
 
   function down() {
-    timer.current = setTimeout(() => setArmed(true), 1500);
+    setHolding(true);
+    timer.current = setTimeout(() => {
+      setArmed(true);
+      setHolding(false);
+    }, 1500);
   }
   function up() {
+    setHolding(false);
     if (timer.current) clearTimeout(timer.current);
   }
 
   return (
     <>
       <button
-        aria-label="hold if you need out"
-        className="fixed right-4 bottom-20 z-40 h-10 w-10 rounded-full border text-lg opacity-40"
-        style={{ borderColor: "var(--ink-dim)", background: "color-mix(in srgb, var(--bg) 70%, transparent)" }}
+        aria-label="hold for a quieter night — private"
+        className="fixed right-4 bottom-20 z-40 h-12 w-12 rounded-full border text-lg"
+        style={{
+          borderColor: holding ? "var(--gold)" : "var(--ink-dim)",
+          opacity: holding ? 1 : 0.45,
+          background: holding
+            ? "conic-gradient(var(--gold) 0deg, var(--gold) var(--hold-deg, 360deg), transparent var(--hold-deg, 360deg))"
+            : "color-mix(in srgb, var(--bg) 70%, transparent)",
+          transition: holding ? "background 1.5s linear" : "none",
+        }}
         onPointerDown={down}
         onPointerUp={up}
         onPointerLeave={up}
+        onContextMenu={(e) => e.preventDefault()}
       >
         ◦
       </button>
       {armed && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6">
-          <div className="panel panel-hero max-w-sm p-6 text-center">
-            {sent ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="quieter evening"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6"
+          onClick={() => state !== "sending" && setArmed(false)}
+          onKeyDown={(e) => e.key === "Escape" && state !== "sending" && setArmed(false)}
+        >
+          <div className="panel panel-hero max-w-sm p-6 text-center" onClick={(e) => e.stopPropagation()}>
+            {state === "sent" ? (
               <>
                 <p>Understood. The house will quietly ask less of you. Nobody will know.</p>
-                <button className="btn mt-4" onClick={() => { setArmed(false); setSent(false); }}>
+                <button
+                  className="btn mt-4"
+                  autoFocus
+                  onClick={() => {
+                    setArmed(false);
+                    setState("idle");
+                  }}
+                >
                   Close
                 </button>
               </>
@@ -751,11 +952,25 @@ function PanicButton({ g }: { g: ReturnType<typeof useGame> }) {
                 <p className="mt-2 text-sm" style={{ color: "var(--ink-dim)" }}>
                   This privately tells the game to ease off you. No one else will ever see this.
                 </p>
+                {state === "failed" && (
+                  <p className="mt-2 text-sm" style={{ color: "var(--danger)" }}>
+                    That didn't reach the house — please try again.
+                  </p>
+                )}
                 <div className="mt-4 flex justify-center gap-2">
-                  <button className="btn" onClick={async () => { await g.actions.panic(); setSent(true); }}>
-                    Yes, ease off
+                  <button
+                    className="btn"
+                    autoFocus
+                    disabled={state === "sending"}
+                    onClick={async () => {
+                      setState("sending");
+                      const r = await g.actions.panic();
+                      setState((r as { ok?: boolean })?.ok ? "sent" : "failed");
+                    }}
+                  >
+                    {state === "sending" ? "…" : "Yes, ease off"}
                   </button>
-                  <button className="btn btn-ghost" onClick={() => setArmed(false)}>
+                  <button className="btn btn-ghost" disabled={state === "sending"} onClick={() => setArmed(false)}>
                     Never mind
                   </button>
                 </div>

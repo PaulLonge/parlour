@@ -17,12 +17,15 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
     return Math.max(60, s) * 1000;
   }, [g.game?.config]);
 
-  // heartbeat while the channel is open (server debounces to ≥1/min)
+  // heartbeat while the channel is open (server debounces to ≥1/min).
+  // depends on the game's ID, not the object — refetches must not churn the
+  // interval and starve the metronome (review H5)
+  const gameId = g.game?.id;
   useEffect(() => {
-    if (!begun || !g.game) return;
+    if (!begun || !gameId) return;
     const t = setInterval(() => g.actions.tick(), heartbeatMs);
     return () => clearInterval(t);
-  }, [begun, heartbeatMs, g.game, g.actions]);
+  }, [begun, heartbeatMs, gameId, g.actions]);
 
   async function begin() {
     setBegun(true);

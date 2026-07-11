@@ -36,13 +36,13 @@
   --panel-solid: #16171a;
   --border: rgba(212, 175, 55, 0.35);
   --border-strong: rgba(212, 175, 55, 0.7);
-  --accent: #0e6b5c;
-  --accent-ink: #eaf5f0;
+  --accent: #8a6d1f; /* deep gold — the lone teal read as another app (visual review #9) */
+  --accent-ink: #f5efdc;
   --danger: #9e2b25;
   --ink: #e9e4d8;
   --ink-dim: #8f8a7c;
   --gold: #d4af37;
-  --seal: #0e6b5c;
+  --seal: #8a6d1f;
   --font-display: var(--font-deco), "Futura", "Avenir Next", sans-serif;
   --font-body: "Gill Sans", "Segoe UI", system-ui, sans-serif;
   --radius: 0.15rem;
@@ -87,7 +87,7 @@
   --accent-ink: #fff6ea;
   --danger: #c2452c;
   --ink: #4a321c;
-  --ink-dim: #8a7350;
+  --ink-dim: #6f5a3c; /* was #8a7350 — failed AA on the light ground (visual review #3) */
   --gold: #a2661f;
   --seal: #c2452c;
   --font-display: var(--font-manor), Georgia, serif;
@@ -186,7 +186,13 @@ body {
 }
 .btn:hover { filter: brightness(1.12); }
 .btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: 0.45; cursor: default; }
+/* disabled = clearly inert outline, not a muddy slab (visual review #15) */
+.btn:disabled {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--ink-dim);
+  cursor: default;
+}
 .btn-ghost {
   background: transparent;
   color: var(--gold);
@@ -219,13 +225,18 @@ body {
   flex: none;
 }
 
-/* kicker labels above cards */
+/* kicker labels above cards — 12px floor: kickers carry the message taxonomy,
+   they are semantics, not decoration (visual review #4) */
 .kicker {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   color: var(--gold);
   font-family: var(--font-body);
+}
+/* danger kickers get a readable blend, not raw --danger (visual review #1) */
+.kicker-danger {
+  color: color-mix(in srgb, var(--danger) 55%, var(--ink));
 }
 
 .divider {
@@ -298,9 +309,18 @@ body {
   mix-blend-mode: multiply;
 }
 .glitch-shake { animation: glitch-shift 0.5s ease-in-out 3; }
+@keyframes glitch-calm {
+  0% { opacity: 0; }
+  30% { opacity: 0.85; background: #050607; }
+  100% { opacity: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .glitch-overlay { animation-duration: 0.8s; }
+  /* review C2: never speed up the flicker — replace it with one soft fade */
+  .glitch-overlay { animation: glitch-calm 1.6s ease forwards; }
+  .glitch-overlay::after { display: none; }
   .glitch-shake { animation: none; }
+  .candle, .pulse-danger, .drift { animation: none; }
+  .envelope { animation: none; }
 }
 
 /* AI transmissions (D28): terminal styling + blinking caret */

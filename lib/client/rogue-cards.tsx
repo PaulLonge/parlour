@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import type { Challenge, Txn } from "./useGame";
+import { expiresIn } from "./cards";
 import { GLYPHS, glyphFor, glyphWindow, GLYPH_WINDOW_MINUTES } from "@/lib/engine/glyphs";
 
 // Your rotating glyph (D32): shown big, tapped by whoever you show it to.
@@ -58,18 +59,20 @@ export function MetersStrip({
   currencySymbol?: string;
 }) {
   return (
-    <div className="panel flex items-center gap-4 px-4 py-2 text-sm">
-      <span title="the plunder meter — every coin accounted for">
-        ☠ <b>{meters.plunder}</b>
-        <span style={{ color: "var(--ink-dim)" }}> {currencySymbol} drained</span>
-      </span>
-      <span className="flex-1 text-center text-xs italic" style={{ color: "var(--ink-dim)" }}>
+    <div className="panel px-4 py-2 text-sm">
+      <div className="flex items-center justify-between gap-4">
+        <span>
+          ☠ <b>{meters.plunder}</b>
+          <span style={{ color: "var(--ink-dim)" }}> {currencySymbol} taken</span>
+        </span>
+        <span>
+          🏮 <b>{meters.compute}</b>
+          <span style={{ color: "var(--ink-dim)" }}> built</span>
+        </span>
+      </div>
+      <p className="mt-0.5 text-center text-[10px] italic" style={{ color: "var(--ink-dim)" }}>
         every coin accounted for
-      </span>
-      <span title="compute assembled">
-        🏮 <b>{meters.compute}</b>
-        <span style={{ color: "var(--ink-dim)" }}> compute</span>
-      </span>
+      </p>
     </div>
   );
 }
@@ -77,11 +80,20 @@ export function MetersStrip({
 export function PurseChip({ balance, transactions, symbol = "Ƀ" }: { balance: number; transactions: Txn[]; symbol?: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="panel px-3 py-1.5">
-      <button className="flex w-full items-baseline justify-between gap-3" onClick={() => setOpen(!open)}>
+    <div className="panel px-3 py-1">
+      <button
+        className="flex min-h-11 w-full items-center justify-between gap-3"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
         <span className="kicker">your purse</span>
-        <span className="font-display text-lg" style={{ color: balance > 0 ? "var(--gold)" : "var(--danger)" }}>
-          {symbol}{balance}
+        <span className="flex items-center gap-2">
+          <span className="font-display text-lg" style={{ color: balance > 0 ? "var(--gold)" : "var(--danger)" }}>
+            {symbol}{balance}
+          </span>
+          <span className="text-xs" style={{ color: "var(--ink-dim)" }}>
+            {open ? "▴" : "▾"}
+          </span>
         </span>
       </button>
       {open && (
@@ -116,18 +128,20 @@ export function BribeCard({
   const amount = Number(c.data?.amount ?? 0);
   return (
     <div className="panel envelope pulse-danger p-5" style={{ borderColor: "var(--danger)" }}>
-      <p className="kicker" style={{ color: "var(--danger)" }}>
-        a private opportunity — yours alone
-      </p>
+      <p className="kicker kicker-danger">a private opportunity — yours alone</p>
       <p className="mt-2 font-display text-2xl" style={{ color: "var(--gold)" }}>
         {symbol}{amount}
-        <span className="ml-2 text-sm font-normal italic" style={{ color: "var(--ink-dim)" }}>
+        <span
+          className="ml-2 text-sm font-normal italic"
+          style={{ color: "var(--ink-dim)", letterSpacing: "normal", fontFamily: "var(--font-body)" }}
+        >
           restored to your purse, no questions
         </span>
       </p>
       <p className="mt-2 leading-relaxed whitespace-pre-wrap">{c.brief}</p>
       <p className="mt-2 text-xs italic" style={{ color: "var(--ink-dim)" }}>
-        This offer expires like everything else. Nobody will ever know, either way.
+        This offer expires like everything else{expiresIn(c.expires_at) ? ` — ${expiresIn(c.expires_at)} left` : ""}.
+        Nobody will ever know, either way.
       </p>
       <button className="btn btn-danger mt-4 w-full" disabled={busy} onClick={onAccept}>
         Take the coin
@@ -357,36 +371,57 @@ export function CodeEntryBox({
   const [code, setCode] = useState("");
   const [hint, setHint] = useState("");
   const [note, setNote] = useState("");
+  const [inFlight, setInFlight] = useState(false); // double-tap guard (review M13)
 
   async function go() {
+    if (inFlight) return;
+    setInFlight(true);
     setNote("");
-    const r = mode === "find" ? await onFind(code) : await onHide(code, hint);
-    if (r.ok) {
-      setNote(mode === "find" ? "✓ Noted. The machine saw that." : "✓ Hidden. Someone will come looking.");
-      setCode("");
-      setHint("");
-    } else setNote(`✗ ${r.result?.replaceAll("_", " ") ?? "no"}`);
+    try {
+      const r = mode === "find" ? await onFind(code) : await onHide(code, hint);
+      if (r.ok) {
+        setNote(mode === "find" ? "✓ Noted. The machine saw that." : "✓ Hidden. Someone will come looking.");
+        setCode("");
+        setHint("");
+      } else setNote(`✗ ${r.result?.replaceAll("_", " ") ?? "the machine said no"}`);
+    } catch {
+      setNote("✗ the house lost you — try again");
+    } finally {
+      setInFlight(false);
+    }
   }
 
   return (
     <div className="panel p-4">
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-center justify-between">
         <p className="kicker">the paper trail</p>
-        <button className="text-xs underline" style={{ color: "var(--ink-dim)" }} onClick={() => setMode(mode === "find" ? "hide" : "find")}>
+        {/* 44px tap target via padding + negative margin (visual review #2) */}
+        <button
+          className="-m-2 p-2 text-xs underline"
+          style={{ color: "var(--ink-dim)", minHeight: 44, display: "inline-flex", alignItems: "center" }}
+          onClick={() => setMode(mode === "find" ? "hide" : "find")}
+        >
           {mode === "find" ? "hiding one instead?" : "found one instead?"}
         </button>
       </div>
       <div className="mt-2 flex flex-col gap-2">
         <input
-          className="input text-center tracking-[0.3em] uppercase"
-          placeholder={mode === "find" ? "TYPE WHAT YOU FOUND" : "CODE ON YOUR SLIP"}
+          className="input text-center tracking-[0.15em] uppercase"
+          aria-label={mode === "find" ? "type the code you found" : "the code on your slip"}
+          placeholder={mode === "find" ? "TYPE THE CODE" : "YOUR SLIP'S CODE"}
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
         />
         {mode === "hide" && (
-          <input className="input" placeholder="where did you put it? (only the machine sees this)" value={hint} onChange={(e) => setHint(e.target.value)} />
+          <input
+            className="input"
+            aria-label="where you hid it"
+            placeholder="where did you put it? (only the machine sees this)"
+            value={hint}
+            onChange={(e) => setHint(e.target.value)}
+          />
         )}
-        <button className="btn" disabled={busy || code.trim().length < 3} onClick={go}>
+        <button className="btn" disabled={busy || inFlight || code.trim().length < 3} onClick={go}>
           {mode === "find" ? "I found this" : "It is hidden"}
         </button>
         {note && <p className="text-sm" style={{ color: note.startsWith("✓") ? "var(--gold)" : "var(--danger)" }}>{note}</p>}
