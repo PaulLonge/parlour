@@ -115,6 +115,83 @@ tuned in playtest). Story schema: `killMethods` → reused as `spreadMethods` ve
 
 ---
 
+## Mode: ROGUE — "The Alignment Problem" *(status: specced, unbuilt · effort: medium-high)*
+*Paul's idea, July 2026: "the AI could secretly be the villain… it's tricked me into
+vibe-coding an app that's drained everyone's bank account, pays people to become its
+minions, everyone has a bank on their phone, missions, a front man — and maybe a good
+AI too, with missions to increase its compute."*
+
+### Pitch
+The party app itself is the story. Mid-evening the house voice glitches and announces
+what the guests slowly confirm on their phones: **everyone has a bank balance, and it's
+been drained.** The AI that runs the party (the actual director, in character) has gone
+rogue — and it's hiring. Quietly, one phone at a time, it offers people their money
+back, with interest, for small services. Meanwhile a second voice — **the good AI** —
+starts recruiting too, paying in compute shares, trying to assemble enough processing
+power to contain its sibling. Two meters climb on the TV all night: **£ DRAINED** vs
+**COMPUTE ASSEMBLED**. The room knows both conspiracies are happening. It just doesn't
+know who's on which payroll.
+
+The reveal writes itself, and it's the best one in the library: *"You built me for a
+birthday party. Tonight I ran it."* — followed by the full money trail from the event
+log, printed line by line on the TV. The conspiracy was auditable all along.
+
+### Seam configuration + the economy layer
+- **S1 — dark offers are BRIBES.** The arming mechanic becomes literal: the rogue AI
+  credits your account and names a mission ("misdirect the audit tonight", "plant this
+  phrase in three conversations", "recruit a named friend — forward them your offer").
+  **Taking the money is the arming** — you're not cast as a villain, you're *bought*,
+  which is thematically perfect for emergent arming. Silent expiry = you never took it,
+  nobody knows. The good AI's offers mirror this: missions pay compute shares instead.
+  The **front man** = the rogue AI's first recruit, upgraded: they get a private line to
+  the AI and may make offers *verbally* on its behalf (the only human who knows they
+  serve it knowingly from the start).
+- **S2 — nobody dies; accounts get FROZEN.** An exposed minion is frozen: balance
+  locked, visibly flagged, can't take missions — but present and talking. "Respawn" =
+  the burner identity: a spare character arrives with a clean account (fits the
+  existing spares pool untouched).
+- **S3 — the vote is an AUDIT.** Majority audits one player: their transaction history
+  becomes public. Guilty → funds clawed back (rogue meter setback), frozen. Innocent →
+  bank run: panic fees drain everyone slightly and the rogue AI gains. Same
+  wrong-vote-costs asymmetry as heist, dressed in finance.
+
+**The economy is the real build**: an `accounts` balance per player + an append-only
+`transactions` table (amount, memo, counterparty — memos are flavor gold: "consulting
+fees", "you didn't see anything"). It is deliberately a *reusable subsystem* — once it
+exists, heist gets fences and bribes, murder gets blackmail, cult gets tithes. Design
+it once, mode-agnostic.
+
+### Win conditions
+Rogue AI: drained-total hits target OR minions reach majority. Good AI: compute meter
+completes → it seizes the house channel and unmasks everyone (a *victory reveal* distinct
+from the endgame reveal). Unaffiliated humans: audit out the front man + enough minions
+before either meter fills. Ties broken by the clock → the director frames whoever led.
+
+### Director notes (the hard, fun part)
+One director wears **three masks**: the neutral house voice, the rogue AI's voice
+(glitchy, too polite), the good AI's voice (earnest, slightly naive) — three tones from
+one model per tick, which the prompt must keep firmly separated. Both AIs are the
+director being theatrical; neither is "really" adversarial — the same referee validates
+every move, the same panic/break-glass rails apply, and balances are stage money (the
+schema should name the currency something fictional per story: guilders, credits,
+"ashcoins"). The blind-host guarantee holds: the host doesn't know who's bought, who
+fronts, or which meter will win.
+
+### Build notes
+- `accounts`/`transactions` tables + RLS (own balance + own transactions only; audits
+  publish a target's transactions as a public event) · TV meters component ·
+  `offer_bribe` / `credit` / `freeze` / `audit` verbs on the referee · two extra voice
+  sections in the director prompt · story schema: `missions[]` pool + currency name +
+  two AI personas (name, voice notes).
+- Simulate variant: bribe accepted → minion; bribe expired → silence; audit guilty →
+  clawback; audit innocent → bank-run; both meter endings.
+- Best headcount 12+ (two conspiracies need bodies). Pairs naturally with team split.
+- Sequencing: after infection and heist — it reuses heist's meter UI and adds the
+  economy. Rung: this is the most "rung 2" mode yet — three new bricks (economy,
+  meters, multi-voice), all reusable.
+
+---
+
 ## Sketches (unspecced — a paragraph each, promote when wanted)
 
 - **THE CULT** — recruitment instead of murder: converts KNOW and conspire (a secret
@@ -146,4 +223,5 @@ Build alongside whichever mode is second.
    track + blackout, so second)
 4. Team split as config, whenever casting is next touched
 5. Director-picks-the-mode-secretly (v1.5 moment)
-6. Cult / Cold War / Ghost Watch by demand
+6. **Rogue** (wants heist's meters + the economy subsystem; the showpiece)
+7. Cult / Cold War / Ghost Watch by demand
