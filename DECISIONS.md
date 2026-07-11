@@ -17,6 +17,18 @@ B-numbers are build-time engineering calls made inside the codebase.
 - **D16 generation QA** — `/api/story/samples` generates throwaway-theme challenges so Paul can vet generation quality without spoiling his own party.
 - **Clone-vs-scratch (researched)** — nothing clone-able exists (verified July 2026: murder-mystery repos are wrong-language/single-player/AI-vs-AI sims). Base = fresh Next.js + Supabase. Zod adopted for LLM output validation.
 
+- **D18 — the party runs ROGUE, opened by THE HIJACK (July 2026).** Paul's pick for the
+  30th: the "Alignment Problem" mode (docs/modes.md), framed as **pirate fancy dress
+  night hijacked by the evil AI**. The evening opens as an innocent pirate party running
+  a deliberately-slightly-naff decoy murder mystery (built v1, playtested September);
+  at the arrival-threshold moment the app "crashes", doubloon balances appear, and the
+  rogue AI takes over. **The fallback is invisible**: if ROGUE isn't ready or fails
+  October testing, the hijack never fires and the decoy runs as the real v1 game — a
+  complete, tested night. Costume brief ("pirates!") can go out immediately; it spoils
+  nothing because it IS the decoy. Build order therefore: v1 stays priority 1 (it's now
+  the opening act AND the safety net), then economy subsystem + meters + hijack beat +
+  rogue seams, target: October playtest #2.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.

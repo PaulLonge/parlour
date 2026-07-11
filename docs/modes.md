@@ -177,12 +177,33 @@ schema should name the currency something fictional per story: guilders, credits
 "ashcoins"). The blind-host guarantee holds: the host doesn't know who's bought, who
 fronts, or which meter will win.
 
+### THE HIJACK OPENING — the plan for Paul's 30th (D18)
+The party is billed, honestly, as **pirate fancy dress night** with a party game. Act 1
+runs a DECOY: the built v1 murder mystery wearing a cheesy pirate skin ("Murder at the
+Admiral's Table") — the app plays it straight, tuned slightly naff on purpose. At the
+arrival-threshold moment (same gate as v1's inciting incident), the HIJACK fires
+instead of a murder: the TV glitches, the decoy game "crashes", every phone gains a
+doubloon balance, and the rogue AI voice takes credit for plundering the chest — then
+starts hiring. Guests keep their pirate characters and costumes; the rogue layer runs
+on top (bribes in doubloons, audits at the captain's table, frozen = *marooned*, the
+good AI = the ship's quartermaster-AI rebuilding the fleet's charts, or whatever the
+generator invents in register).
+
+**Why this de-risks the ambitious pick**: the fallback is invisible. If ROGUE fails
+October testing, the hijack never fires and the decoy murder mystery IS the party —
+complete, tested, nobody the wiser. The costume brief goes out months early ("pirates!")
+and spoils nothing, because pirate night is exactly what the evening pretends to be.
+Reveal gains a third layer: *you thought it was pirate night; the pirates thought it
+was murder night; it was never either.*
+
 ### Build notes
 - `accounts`/`transactions` tables + RLS (own balance + own transactions only; audits
   publish a target's transactions as a public event) · TV meters component ·
   `offer_bribe` / `credit` / `freeze` / `audit` verbs on the referee · two extra voice
   sections in the director prompt · story schema: `missions[]` pool + currency name +
-  two AI personas (name, voice notes).
+  two AI personas (name, voice notes) · the `hijack` beat: a scripted takeover sequence
+  (glitch effects on TV + phones, balance grant, rogue AI's opening announcement) that
+  the director fires ONCE at the threshold gate — before it, the engine runs pure v1.
 - Simulate variant: bribe accepted → minion; bribe expired → silence; audit guilty →
   clawback; audit innocent → bank-run; both meter endings.
 - Best headcount 12+ (two conspiracies need bodies). Pairs naturally with team split.
