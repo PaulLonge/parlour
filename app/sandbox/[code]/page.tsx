@@ -14,7 +14,14 @@ export default function Sandbox({ params }: { params: Promise<{ code: string }> 
   const g = useGame(code);
   const [busy, setBusy] = useState(false);
   const [newName, setNewName] = useState("");
-  const [notes, setNotes] = useState("");
+  const [possessNote, setPossessNote] = useState("");
+  const [notes, setNotes] = useState(() => {
+    try {
+      return localStorage.getItem(`parlour-verdict-${code.toUpperCase()}`) ?? "";
+    } catch {
+      return "";
+    }
+  });
 
   if (g.loading) return null;
   if (!g.game)
@@ -28,8 +35,15 @@ export default function Sandbox({ params }: { params: Promise<{ code: string }> 
 
   async function possess(name: string) {
     setBusy(true);
-    await g.actions.join(name, true); // takeover — the sandbox IS the device swap
-    setBusy(false);
+    setPossessNote("");
+    try {
+      const r = await g.actions.join(name, true); // takeover — the sandbox IS the device swap
+      if (!r.ok && !r.playerId && !r.rejoined) setPossessNote(`couldn't become ${name}: ${r.error ?? "unknown"}`);
+    } catch {
+      setPossessNote("network hiccup — try again");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -96,6 +110,11 @@ export default function Sandbox({ params }: { params: Promise<{ code: string }> 
             Add
           </button>
         </form>
+        {possessNote && (
+          <p className="mt-2 text-sm" style={{ color: "var(--danger)" }}>
+            {possessNote}
+          </p>
+        )}
         <div className="mt-3 flex gap-2">
           <Link href={`/g/${g.game.code}`} className="btn w-full text-center">
             ▶ Play as {g.me?.name ?? "…"} (their phone)
@@ -132,13 +151,7 @@ export default function Sandbox({ params }: { params: Promise<{ code: string }> 
           onChange={(e) => {
             setNotes(e.target.value);
             try {
-              localStorage.setItem(`parlour-verdict-${g.game!.code}`, e.target.value);
-            } catch {}
-          }}
-          onFocus={() => {
-            try {
-              const saved = localStorage.getItem(`parlour-verdict-${g.game!.code}`);
-              if (saved && !notes) setNotes(saved);
+              localStorage.setItem(`parlour-verdict-${code.toUpperCase()}`, e.target.value);
             } catch {}
           }}
         />

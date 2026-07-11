@@ -21,6 +21,7 @@ import {
 } from "@/lib/client/rogue-cards";
 import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
 import { Accordion, InfoDot, TabBar } from "@/lib/client/ui";
+import { SandboxBar } from "@/lib/client/SandboxBar";
 
 const PHASE_LABEL: Record<string, string> = {
   none: "",
@@ -192,6 +193,7 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
   return (
     <main className={`mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pb-24 ${themeClass}`}>
       <GlitchOverlay active={glitching} />
+      {Number(game.config?.timeScale ?? 1) > 1 && <SandboxBar g={g} />}
 
       <header>
         <div className="flex items-baseline justify-between gap-3">
