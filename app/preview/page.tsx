@@ -121,11 +121,12 @@ export default function Preview() {
               </header>
 
               <div className="mt-4 flex flex-col gap-4">
-                <CharacterSheet ch={celia} defaultOpen />
+                <CharacterSheet ch={celia} />
                 <ChallengeOffer c={MOCK_KILL as never} aliveNames={MOCK_CANDIDATES.map((c) => c.name)} onComplete={() => {}} />
-                <ChallengeOffer c={MOCK_SOCIAL as never} aliveNames={[]} onComplete={() => {}} />
                 <VoteTable candidates={MOCK_CANDIDATES} votedId={voted} onVote={setVoted} />
-                {MOCK_MESSAGES.map((m) => (
+                <MessageEnvelope m={MOCK_MESSAGES[0] as never} />
+                <ChallengeOffer c={MOCK_SOCIAL as never} aliveNames={[]} onComplete={() => {}} />
+                {MOCK_MESSAGES.slice(1).map((m) => (
                   <MessageEnvelope key={m.id} m={m as never} />
                 ))}
                 <DeadBanner status="dead" />
