@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-11 (rev 3 — feels-slow nudge is hosts-only)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-11 (rev 4 — hosts get the conductor's readout)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -91,6 +91,10 @@ Purse, The Wrong'un, The Phoenix, The Ghost).
 - **Sandbox mode** (host testing): create a game at 10× time, and a switcher strip on
   the player screen possesses any player in one tap — the whole cast playable solo
   from one phone.
+- **The conductor's readout** (hosts only, live): current phase and minutes-in, when
+  the machine last acted, flag acknowledgment, and an anonymized plain-words ticker
+  of recent director moves ("a coin was dangled", "mail was intercepted") — the pulse
+  without the plot; hosts stay blind to *who*.
 
 ## The tech stack
 

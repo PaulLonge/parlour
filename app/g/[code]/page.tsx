@@ -891,6 +891,76 @@ function LiveVote({ g }: { g: ReturnType<typeof useGame> }) {
   );
 }
 
+// D43: the conductor's readout — live, private, anonymized. What "the machine
+// heard you" actually looks like.
+type Pulse = {
+  phase: string;
+  minutesInPhase: number | null;
+  machineLastActedMinsAgo: number | null;
+  flag: { minsAgo: number | null; mine: boolean; movesSince: number | null } | null;
+  ticker: { what: string; minsAgo: number | null }[];
+};
+
+function ConductorStrip({ g }: { g: ReturnType<typeof useGame> }) {
+  const [pulse, setPulse] = useState<Pulse | null>(null);
+  const code = g.game!.code;
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/host/pulse", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+        if (res.ok && alive) setPulse(await res.json());
+      } catch {}
+    };
+    load();
+    const t = setInterval(load, 30_000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [code, g.publicEvents.length]); // refreshes with the event stream too
+
+  if (!pulse) return null;
+  const ago = (m: number | null) => (m === null ? "—" : m < 1 ? "now" : `${m}m ago`);
+  return (
+    <div className="mt-3 rounded p-3 text-xs" style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <span>
+          <b style={{ color: "var(--ink)" }}>{pulse.phase}</b>
+          <span style={{ color: "var(--ink-dim)" }}>
+            {pulse.minutesInPhase !== null && ` · ${pulse.minutesInPhase}m in`}
+          </span>
+        </span>
+        <span style={{ color: "var(--ink-dim)" }}>machine acted {ago(pulse.machineLastActedMinsAgo)}</span>
+      </div>
+      {pulse.flag && (
+        <p className="mt-1.5" style={{ color: "var(--gold)" }}>
+          ⏭ {pulse.flag.mine ? "your" : "a"} flag, {ago(pulse.flag.minsAgo)} —{" "}
+          {pulse.flag.movesSince === 0
+            ? "nothing yet. It knows."
+            : `${pulse.flag.movesSince} thing${pulse.flag.movesSince === 1 ? "" : "s"} have happened since`}
+        </p>
+      )}
+      {pulse.ticker.length > 0 && (
+        <ul className="mt-1.5 flex flex-col gap-0.5" style={{ color: "var(--ink-dim)" }}>
+          {pulse.ticker.slice(0, 5).map((t, i) => (
+            <li key={i}>
+              · {t.what} <span className="opacity-60">({ago(t.minsAgo)})</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-1.5 italic opacity-60" style={{ color: "var(--ink-dim)" }}>
+        who did what stays sealed — this is the pulse, not the plot
+      </p>
+    </div>
+  );
+}
+
 function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
   const game = g.game!;
   const [open, setOpen] = useState(false);
@@ -911,6 +981,7 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
   return (
     <div className="panel p-5">
       <p className="kicker">Host — ✦</p>
+      <ConductorStrip g={g} />
       <div className="mt-3 flex flex-wrap gap-2">
         {!sealed && (
           <button

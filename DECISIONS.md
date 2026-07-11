@@ -181,6 +181,14 @@ B-numbers are build-time engineering calls made inside the codebase.
   vote is open; never announced. The control gradient: drag-flag = soft private
   nudge, break-glass = hard public controls. Ships as a "⏭ feels slow" button in
   Host tools.
+- **D43 — the conductor's readout (Paul, same session).** "Signal strength" is
+  invisible; hosts get a LIVE strip instead (Host tools, polls /api/host/pulse +
+  refreshes with the event stream): current phase + minutes-in, when the machine
+  last acted, flag acknowledgment ("your flag, 2m ago — 4 things have happened
+  since"), and a plain-words anonymized ticker of recent director actions ("a coin
+  was dangled", "mail was intercepted"). Aggregates only — the host stays blind to
+  WHO (D24), never to whether the night has a pulse. Paul + Co-Host are on Pixels
+  (Android Chrome), so no platform caveats.
 
 ## Build decisions (Claude, build session)
 
