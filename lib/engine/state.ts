@@ -59,15 +59,27 @@ export type GameState = {
   openChallenges: ChallengeRow[];
   alive: PlayerRow[];
   traitorsAlive: PlayerRow[];
+  recentDragFlags: string[]; // player names who flagged "dragging" in the last 15 min (D42)
 };
 
 export async function loadState(admin: SupabaseClient, gameId: string): Promise<GameState> {
-  const [{ data: game, error: ge }, { data: players, error: pe }, { data: challenges, error: ce }] =
-    await Promise.all([
-      admin.from("games").select("*").eq("id", gameId).single(),
-      admin.from("players").select("*").eq("game_id", gameId),
-      admin.from("challenges").select("*").eq("game_id", gameId).eq("status", "offered"),
-    ]);
+  const since = new Date(Date.now() - 15 * 60000).toISOString();
+  const [
+    { data: game, error: ge },
+    { data: players, error: pe },
+    { data: challenges, error: ce },
+    { data: dragEvents },
+  ] = await Promise.all([
+    admin.from("games").select("*").eq("id", gameId).single(),
+    admin.from("players").select("*").eq("game_id", gameId),
+    admin.from("challenges").select("*").eq("game_id", gameId).eq("status", "offered"),
+    admin
+      .from("events")
+      .select("payload")
+      .eq("game_id", gameId)
+      .eq("type", "flagged_dragging")
+      .gte("created_at", since),
+  ]);
   if (ge || !game) throw new Error(`loadState: game not found (${ge?.message})`);
   if (pe) throw new Error(`loadState: players failed (${pe.message})`);
   if (ce) throw new Error(`loadState: challenges failed (${ce.message})`);
@@ -81,6 +93,9 @@ export async function loadState(admin: SupabaseClient, gameId: string): Promise<
     openChallenges: (challenges ?? []) as ChallengeRow[],
     alive,
     traitorsAlive: alive.filter((p: PlayerRow) => p.role === "traitor"),
+    recentDragFlags: [
+      ...new Set((dragEvents ?? []).map((e) => String((e.payload as { player?: string })?.player ?? "?"))),
+    ],
   };
 }
 
@@ -138,6 +153,10 @@ export function summarizeForDirector(s: GameState): string {
   }
   const faithful = s.alive.length - s.traitorsAlive.length;
   lines.push(`Balance: ${s.traitorsAlive.length} traitor(s) vs ${faithful} faithful alive.`);
+  if (s.recentDragFlags.length)
+    lines.push(
+      `PACING (D42): ${s.recentDragFlags.length} "dragging" flag(s) in the last 15 min from: ${s.recentDragFlags.join(", ")}. Feed the flaggers first; compress if it clusters; escalate to the HOST's phone if ≥ a third of living players have flagged. Never let a flag interrupt an open vote — and notice WHO flags during accusations.`
+    );
   if (s.traitorsAlive.length === 0 && g.status === "round")
     lines.push(`NOTE: no traitors alive — consider arming or moving to endgame.`);
   if (s.traitorsAlive.length >= faithful && g.status === "round")

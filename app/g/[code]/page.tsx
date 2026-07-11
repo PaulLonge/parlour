@@ -414,7 +414,8 @@ function NowPanel({
         <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
           Nothing is asked of you. Right now. Enjoy the party — it will find you.
           <span className="mt-1 block text-xs not-italic" style={{ color: "var(--ink-dim)" }}>
-            (And if you ever want a quieter night: hold the ◦ button. Private, instant, always okay.)
+            (Want a quieter night? Hold the ◦ button. Bored instead?{" "}
+            <DragFlagLink g={g} />)
           </span>
         </div>
       )}
@@ -832,6 +833,25 @@ function AboutContent({ mode, hijacked, cost }: { mode: string; hijacked: boolea
       <p><b style={{ color: "var(--ink)" }}>Votes.</b> Assemblies end in banishments. The banished are revealed. Choose carefully.</p>
       <p><b style={{ color: "var(--ink)" }}>Need out?</b> Hold the ◦ button. Private, instant, always okay.</p>
     </div>
+  );
+}
+
+// D42: the private "this is dragging" signal — quiet by design, never a tally
+function DragFlagLink({ g }: { g: ReturnType<typeof useGame> }) {
+  const [state, setState] = useState<"idle" | "sent">("idle");
+  if (state === "sent")
+    return <span style={{ color: "var(--gold)" }}>Noted — quietly. Something will find you.</span>;
+  return (
+    <button
+      className="underline"
+      style={{ color: "var(--ink-dim)" }}
+      onClick={async () => {
+        await g.actions.flagDragging();
+        setState("sent");
+      }}
+    >
+      tell the machine this is dragging
+    </button>
   );
 }
 

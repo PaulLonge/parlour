@@ -175,7 +175,21 @@ export function MissionCard({
       <p className="kicker">{side === "rogue" ? "⚙ a task, quietly" : "🏮 honest work"}</p>
       <p className="mt-2 leading-relaxed whitespace-pre-wrap">{c.brief}</p>
 
-      {verification === "glyph" ? (
+      {verification === "choice" ? (
+        submitted ? (
+          <p className="mt-3 text-sm italic" style={{ color: "var(--ink-dim)" }}>
+            Answered. The ledger remembers.
+          </p>
+        ) : (
+          <div className="mt-3 flex flex-col gap-2">
+            {(Array.isArray(c.data?.options) ? (c.data.options as string[]) : []).map((opt) => (
+              <button key={opt} className="btn btn-ghost text-left" disabled={busy} onClick={() => onRespond(opt)}>
+                {opt}
+              </button>
+            ))}
+          </div>
+        )
+      ) : verification === "glyph" ? (
         submitted ? (
           <p className="mt-3 text-sm italic" style={{ color: "var(--gold)" }}>
             ✓ Verified. You were really there.

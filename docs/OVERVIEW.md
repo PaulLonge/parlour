@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-11** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-11 (rev 2 — quizzes, mini-games, the dragging flag)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -55,7 +55,8 @@ and other players' testimony — never phantom sensors).
 | **Petitions** | Players pitch their own schemes in free text | Granted (formalized as a paid mission), declined in voice, or **monkey's-pawed**: exactly what you asked for, worded to cost you |
 | **Forgeries** | A mission grants "compose as an AI"; drafts parse through the director | Forward / edit / expose-to-one-witness — double-bluffable against its author |
 | **The post** | Player-to-player notes, carried by the machine | Requires an earned **stamp** (no stamp → go talk in person) + postage; surveilled mail is held/edited/dropped/leaked; **wiretaps** copy correspondence silently; signatures prove nothing |
-| **Volunteering & panic** | "More, please" and hold-◦-for-out | Both private; the game escalates the eager and quietly eases off anyone who needs it |
+| **Quizzes & mini-games** | Tap-answer quizzes (about the host, about each other) and parley-scripted game rounds, paid in credits | Deterministic verification; drinking prompts always carry a "sip or confess" out |
+| **The three private signals** | Hold-◦ (panic = *less*), "more please" (volunteer), "this is dragging" (bored) | All private, never public tallies; the dragging flag feeds the flagger first, compresses if clustered, and pings the host only past a ⅓-of-the-room threshold |
 
 The reveal replays the receipts: every meter jump timestamped against its bribe,
 names withheld, times damningly public — plus the petitions ledger and the arrival

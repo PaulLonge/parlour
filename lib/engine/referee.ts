@@ -333,6 +333,8 @@ export async function applyDirectorMoves(
               codeText: move.codeText,
               shownPlayerName: move.shownPlayerName,
               expected: move.expected,
+              options: move.options,
+              correctIndex: move.correctIndex,
             },
             expires_at: expires,
           });

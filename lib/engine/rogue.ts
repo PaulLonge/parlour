@@ -131,6 +131,25 @@ export async function submitResponse(
     return { ok: false, result: "glyph_mismatch" }; // retry allowed — maybe they showed you an old window
   }
 
+  // --- rung 1b: tap-choice quizzes (D41) — deterministic, one shot ---
+  if (verification === "choice") {
+    const options = Array.isArray(c.data?.options) ? (c.data.options as string[]) : [];
+    const idx = options.findIndex((o) => o === text || String(options.indexOf(o)) === text);
+    if (idx === -1) return { ok: false, result: "not_an_option" };
+    const correct = c.data?.correctIndex;
+    const paying = correct === undefined || correct === null || Number(correct) === idx;
+    await admin
+      .from("challenges")
+      .update({ response: { chose: options[idx], at: new Date().toISOString() } })
+      .eq("id", c.id);
+    await adjudicate(admin, gameId, c.id, paying ? "complete" : "reject");
+    await emit(admin, gameId, "quiz_answered", {
+      payload: { challengeId: c.id, paying },
+      actorId: playerId,
+    });
+    return { ok: true, result: paying ? "verified" : "wrong_answer" };
+  }
+
   // --- rung 2: expected-answer missions (passphrases, signals, tokens) ---
   const expected = Array.isArray(c.data?.expected) ? (c.data.expected as string[]) : null;
   if (expected?.length) {

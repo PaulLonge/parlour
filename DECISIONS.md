@@ -158,6 +158,22 @@ B-numbers are build-time engineering calls made inside the codebase.
   Maintenance rule (also in AGENTS.md): any change to mechanics or stack updates
   OVERVIEW.md's date in the same commit.
 
+- **D41 — quizzes & mini-games are content, not engine (Paul, July 2026).** Quizzes =
+  choice-verification missions (tappable answers, deterministic; `correctIndex`
+  optional so opinion polls pay too): about-the-Commissioner, about-each-other (from
+  intake), CALICO loyalty tests. Mini-game rounds (incl. drinking games) = a parley
+  script + a mission burst; every drinking prompt carries a no-alcohol out ("sip or
+  confess"). Pacing filler, never during votes.
+- **D42 — the dragging flag, as challenged and reshaped.** Paul proposed "everyone can
+  flag to move on; me + AI rule on it." Challenge accepted and sustained on three
+  counts: public tallies = negativity theater (→ flags are PRIVATE, never displayed);
+  weaponizable by losing minions (→ advisory only, never interrupts votes, flagger
+  identity is itself telemetry); "Paul co-signs every lull" re-hires the host as
+  operator (→ the director acts alone under existing powers — feed the flagger first,
+  compress if clustered — and escalates to Paul's phone only past ⅓-of-living-players,
+  where he rules via break-glass). Reframed as the third private signal: panic = less,
+  volunteer = more, dragging = "nothing's happening for me." Cooldown 10 min/player.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.

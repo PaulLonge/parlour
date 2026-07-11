@@ -101,11 +101,19 @@ export const OfferMission = z.object({
   brief: z.string(),
   amount: z.number().min(1),
   verification: z
-    .enum(["submission", "cross", "code", "self", "forgery", "glyph"])
+    .enum(["submission", "cross", "code", "self", "forgery", "glyph", "choice"])
     .describe(
-      "D21/D32: how completion is proven. 'glyph' = tap-verified proximity handshake; 'forgery' grants the hacked-AI compose right"
+      "D21/D32/D41: how completion is proven. 'glyph' = tap-verified proximity handshake; 'choice' = tap one of the offered options (quizzes — deterministic); 'forgery' grants the hacked-AI compose right"
     ),
   codeText: z.string().optional().describe("for code missions: which slip code is involved"),
+  options: z
+    .array(z.string())
+    .optional()
+    .describe("for choice missions: 2-5 tappable answers"),
+  correctIndex: z
+    .number()
+    .optional()
+    .describe("for choice missions: index of the paying answer (omit = any choice pays — opinion polls)"),
   shownPlayerName: z
     .string()
     .optional()

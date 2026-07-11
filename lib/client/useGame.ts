@@ -267,6 +267,7 @@ export function useGame(code: string) {
       volunteer: () => post("/api/volunteer", { code }),
       sendNote: (to: string, text: string) =>
         post("/api/note", { code, to, text }).then((r) => (refetch(), r)),
+      flagDragging: () => post("/api/flag", { code }),
     }),
     [code, refetch]
   );
