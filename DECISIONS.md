@@ -200,6 +200,38 @@ B-numbers are build-time engineering calls made inside the codebase.
   the generator may let CALICO remember them ("You again."). Purse endgame meaning
   resolved (GAPS #9): THE RICHEST PIRATE is a computed award.
 
+- **D45 — NIGHT 1: THE FIELD TRIAL (Paul, July 2026; design locked, build pending
+  his drinking-game list).** Night 1 is canonically the machine's open audition —
+  no personas, no misdirection, the AI UNNAMED at the pub (CALICO's name stays fresh
+  for the birthday); night-1 records feed night-2 callbacks ("You again. Eleven
+  seconds."). Win = MOST COINS + a front-man unmasking at close. Agreed mechanics:
+  - **Join password per night** (a login word — "yellow"/"blue" style — so the two
+    nights' games never mix; NOT security, a night-selector; words TBD by Paul).
+    Column `join_password` added, server-only.
+  - **Duels** (1v1 wagers): stakes escrowed on accept; both-report settlement,
+    mismatch → machine arbitration. Physical games + PHONE GAMES (pass-and-play on
+    ONE phone — tap-race, reaction — same-device = no sync/fairness problem).
+  - **Dynamic wager caps**: the AI sets stake limits (protect players from going
+    all-in; e.g. ~30% of balance, floor 10), host can override or delegate.
+  - **Table games** (group): initiator taps who's playing (fingers-style roster
+    pick); each tapped player CONFIRMS before their stake escrows; settlement =
+    consensus (2–3 matching winner reports) AND/OR an appointed referee earning a
+    bookie's cut — both mechanisms agreed, use together.
+  - **Side bets are IN**: when a duel is accepted the machine may open a book for
+    spectators.
+  - **Drink-or-pay** is the universal forfeit — and the pay-side can be tribute:
+    "take the shot, or buy the Commissioner one with coins."
+  - **Late-arrival onboarding**: instant join (no roles) + the machine greets
+    latecomers with a house-staked first duel ("pick a victim") + a first-timer
+    orientation message. Expect MANY staggered arrivals at the pub.
+  - **Two card packs, different back designs** (Paul supplies): proposed split —
+    pack A = market/commodity cards (tradeable, machine announces prices), pack B =
+    the machine's instruments (THE BLACK SPOT: receiving one is a summons — duel,
+    audience, or forfeit). Literal pocket-picking is OUT (invasive + conflicts with
+    the no-bags/pockets safety rule); replaced by "the pass" (into their hand,
+    disguised) and "the plant" (plain-sight adjacency: under their pint, on their
+    chair). PENDING Paul's sign-off on this reframe + his drinking-game list.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.

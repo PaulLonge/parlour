@@ -89,6 +89,37 @@ alter table public.forgeries enable row level security;
 create policy forgeries_select_own on public.forgeries
   for select using (author_id in (select id from public.players where auth_uid = auth.uid()));
 
+-- D45: a simple spoken join password ("yellow", "blue") so pub randos can't
+-- wander into the game. Server-only column — clients never see it.
+alter table public.games add column join_password text;
+revoke select on public.games from anon, authenticated;
+grant select (id, code, title, status, round_no, round_phase, paused, config,
+              story_public, created_at, mode, hijacked_at, meters)
+  on public.games to anon, authenticated;
+
+-- D45: wagers — challenge someone to win their coins (7s, pong bounce, RPS...).
+-- Stakes are ESCROWED on acceptance; both parties report the winner; a match
+-- settles, a mismatch goes to the machine for arbitration.
+create table public.wagers (
+  id            uuid primary key default gen_random_uuid(),
+  game_id       uuid not null references public.games(id) on delete cascade,
+  challenger_id uuid not null references public.players(id) on delete cascade,
+  opponent_id   uuid not null references public.players(id) on delete cascade,
+  amount        int not null check (amount > 0),
+  game_desc     text not null,                      -- "7s", "pong bounce", "staring contest"
+  status        text not null default 'proposed',   -- proposed | accepted | settled | declined | disputed | voided
+  challenger_says uuid,                             -- who each party says won
+  opponent_says   uuid,
+  winner_id     uuid references public.players(id),
+  created_at    timestamptz not null default now()
+);
+alter table public.wagers enable row level security;
+create policy wagers_select_mine on public.wagers
+  for select using (
+    challenger_id in (select id from public.players where auth_uid = auth.uid())
+    or opponent_id in (select id from public.players where auth_uid = auth.uid())
+  );
+
 -- notes (D38): player-to-player mail, carried by the machine. Delivery is
 -- instant UNLESS the sender or recipient is under surveillance (held for the
 -- director) — and active wiretaps receive silent copies. The house carries
