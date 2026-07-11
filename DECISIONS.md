@@ -52,6 +52,28 @@ B-numbers are build-time engineering calls made inside the codebase.
   construction. The Wave-1 swarm story predates D20 — a rules-update patch pass brings
   its front-man/parley sections in line before commit.
 
+- **D21 — the interaction model (Paul's read of NO QUARTER, July 2026).** Every mission
+  must resolve through what the app can actually verify: CODE ENTRY (typed paper-slip
+  codes — typed, NOT QR-scanned, Paul's call), CROSS-CONFIRMATION (players verify each
+  other), SUBMISSION (free text the AI judges), SELF-REPORT (flavor only). No mission
+  may assume location/duration/proximity sensing. The AI orchestrates the physical
+  night via hide/find code chains from a host-declared inventory (slips printed, rough
+  room map). Full spec: docs/interaction-model.md.
+- **D22 — votes live in the app.** Accusations and the Unmasking are in-app ballots
+  (existing votes table); the TV dramatizes. Phone chrome stays allegiance-neutral
+  (a glanced screen must never out anyone); factions get color only on the TV.
+  Screen-by-screen storyboard is a prerequisite for the rogue engine build.
+- **D23 — persona weight is config** (full / light / names-only), and generator
+  guardrail intensity is config too. Reference story's full personas stay as playtest
+  content; Paul suspects lighter is right for his crowd.
+- **D24 — blind-host scope narrowed: the surprise is WHO, not WHAT.** Story/twist
+  readable by the host without meaningful loss (allegiances are emergent and unknowable
+  by anyone in advance). sealed_story relaxes to ordinary server-side state; the host
+  fills the setup form knowingly; break-glass = practical concierge ("X left early").
+- **D25 — naming**: the TV is "The Spyglass" (per-story re-skinnable); "ledger" stays
+  only in CALICO's dialogue. (Not leaked from Paul's other projects — the swarm
+  committed to the accountant-villain bit.)
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
