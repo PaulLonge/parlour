@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCaller } from "@/lib/engine/auth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { generateAndSealStory } from "@/lib/director/generate";
+import { generateAndSealStory, sealRogueReference } from "@/lib/director/generate";
 
 export const maxDuration = 300; // story generation is a long LLM call
 
@@ -20,7 +20,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "story already sealed" }, { status: 422 });
 
   const admin = supabaseAdmin();
-  const result = await generateAndSealStory(admin, caller.game.id);
+  const result =
+    (caller.game as { mode?: string }).mode === "rogue"
+      ? await sealRogueReference(admin, caller.game.id)
+      : await generateAndSealStory(admin, caller.game.id);
   // deliberately vague response — the seal stays intact
   return NextResponse.json({
     sealed: result.ok,

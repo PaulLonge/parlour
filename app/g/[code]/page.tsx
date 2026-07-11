@@ -1005,6 +1005,18 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
             🎭 Begin the evening
           </button>
         )}
+        {game.mode === "rogue" && game.status === "act1" && !game.hijacked_at && (
+          <button
+            className="btn btn-danger"
+            disabled={busy}
+            onClick={() => {
+              if (confirm("Fire the takeover NOW? Every phone in the room goes dark at once."))
+                act("fire_hijack");
+            }}
+          >
+            ⚡ Begin the takeover
+          </button>
+        )}
         <Link href={`/tv/${game.code}`} className="btn btn-ghost">
           📺 House channel
         </Link>

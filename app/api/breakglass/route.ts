@@ -17,6 +17,7 @@ const Body = z.object({
     "reveal_twist", // explicit tap only — even break-glass stays blind otherwise
     "end_gracefully",
     "start_party", // lobby → act1 (pre-seal host control, not a seal break)
+    "fire_hijack", // ROGUE: manual takeover trigger (gap #2 — the host's lever)
   ]),
 });
 
@@ -95,6 +96,13 @@ export async function POST(req: Request) {
       await admin.from("games").update({ paused: false, status: "endgame", round_phase: "none" }).eq("id", gameId);
       await emit(admin, gameId, "phase_advanced", { payload: { to: "endgame", via: "breakglass" }, isPublic: true });
       after(() => tickDirector(gameId, "event:breakglass_end").catch(console.error));
+      return NextResponse.json({ ok: true });
+    }
+    case "fire_hijack": {
+      const { fireHijack } = await import("@/lib/engine/rogue");
+      const r = await fireHijack(admin, gameId);
+      if (!r.ok) return NextResponse.json({ error: r.result }, { status: 422 });
+      after(() => tickDirector(gameId, "event:hijack_fired_manually").catch(console.error));
       return NextResponse.json({ ok: true });
     }
     case "start_party": {

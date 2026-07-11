@@ -2,8 +2,10 @@ import { generateObject } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Story, validateStoryStructure, type Character } from "@/lib/schemas/story";
+import { RogueStory } from "@/lib/schemas/rogue";
 import { emit } from "@/lib/engine/state";
 import goldenJson from "@/content/golden-story.json";
+import rogueReferenceJson from "@/content/rogue-reference-story.json";
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -60,6 +62,50 @@ async function seal(
     payload: { title: story.meta.title },
     isPublic: true,
   });
+}
+
+// ROGUE (gap #1): until the rogue generator exists, rogue games seal the
+// hand-refined reference story (NO QUARTER). The PUBLIC branding pre-hijack is
+// the COVER story's title — the app must look like the naff murder mystery it
+// pretends to be. Act-1 personas are dealt in order (they die at the hijack
+// anyway, D29).
+export async function sealRogueReference(
+  admin: SupabaseClient,
+  gameId: string
+): Promise<GenerateResult> {
+  const story = RogueStory.parse(rogueReferenceJson);
+  const { data: players } = await admin
+    .from("players")
+    .select("id, name")
+    .eq("game_id", gameId)
+    .order("created_at");
+  const pool = [...story.characters, ...story.spares];
+  for (const [i, p] of (players ?? []).entries()) {
+    const c = pool[i % pool.length];
+    await admin
+      .from("players")
+      .update({ character: { ...c, forPlayer: p.name } })
+      .eq("id", p.id);
+  }
+  await admin
+    .from("games")
+    .update({
+      sealed_story: story,
+      story_public: {
+        meta: {
+          title: story.meta.coverStoryTitle, // the lie IS the branding (D19)
+          genre: "a murder mystery in three acts",
+          tagline: "Sharpen your cutlasses. Sharpen your alibis.",
+          setting: story.meta.setting,
+        },
+      },
+    })
+    .eq("id", gameId);
+  await emit(admin, gameId, "story_sealed", {
+    payload: { title: story.meta.coverStoryTitle },
+    isPublic: true,
+  });
+  return { ok: true, usedFallback: false, title: story.meta.coverStoryTitle, problems: [] };
 }
 
 export async function generateAndSealStory(

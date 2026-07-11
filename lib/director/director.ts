@@ -64,6 +64,19 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
   if (s.game.status === "ended") return { skipped: "game ended" };
   if (s.game.paused) return { skipped: "paused (break-glass)" };
 
+  // gap #3 (interim): coalesce tick stampedes — event bursts must not run
+  // several directors at once. A tick within the window absorbs this trigger;
+  // its own queue processing will see the same state. Proper advisory lock: backlog.
+  const { data: lastLog } = await admin
+    .from("director_log")
+    .select("created_at")
+    .eq("game_id", gameId)
+    .order("id", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (lastLog && Date.now() - new Date(lastLog.created_at).getTime() < 15_000)
+    return { skipped: "coalesced (tick <15s ago)" };
+
   const expired = await sweepExpiredChallenges(admin, gameId);
 
   const { data: recentEvents } = await admin

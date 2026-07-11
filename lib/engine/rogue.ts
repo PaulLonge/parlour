@@ -85,10 +85,15 @@ export async function acceptOffer(
   if (c.type !== "bribe") return { ok: false, result: "not_a_bribe" };
 
   const amount = Number(c.data.amount ?? 0);
-  await admin
+  // gap #4: atomic claim — the WHERE on status makes a double-tap lose cleanly
+  // instead of double-crediting the purse and the meter
+  const { data: claimed } = await admin
     .from("challenges")
     .update({ status: "completed", completed_at: new Date().toISOString(), response: { accepted: true } })
-    .eq("id", c.id);
+    .eq("id", c.id)
+    .eq("status", "offered")
+    .select("id");
+  if (!claimed?.length) return { ok: false, result: "offer_gone" };
   await credit(admin, gameId, playerId, amount, String(c.data.memo ?? "consulting fees"), "rogue");
   if (me.role === "faithful") await admin.from("players").update({ role: "minion" }).eq("id", me.id);
   // the twist engine: the plunder meter is secretly a live tally of accepted bribes
