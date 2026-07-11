@@ -89,7 +89,7 @@ export function PurseChip({ balance, transactions, symbol = "Ƀ" }: { balance: n
           {transactions.length === 0 && <li>No movements. Yet.</li>}
           {transactions.map((t) => (
             <li key={t.id} className="flex justify-between gap-2">
-              <span className="truncate">{t.memo}</span>
+              <span className="min-w-0 flex-1 break-words">{t.memo}</span>
               <span style={{ color: t.amount >= 0 ? "var(--gold)" : "var(--danger)" }}>
                 {t.amount >= 0 ? "+" : ""}{t.amount}
               </span>
