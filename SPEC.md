@@ -219,7 +219,22 @@ the host can judge quality without unsealing anything.
 
 ---
 
-## 7. Where to look when interrogating
+## 7. The three seams (how future modes plug in)
+
+The referee has exactly three semantic seams; a "mode" (infection, heist, cult…) is a
+configuration of them plus story content — never a new engine:
+
+1. **S1 — the dark offer**: what completing one does (v1: victim dies, actor becomes traitor).
+2. **S2 — elimination**: what "out" means (v1: dead → ghost → respawn as spare).
+3. **S3 — the vote**: what the round table resolves (v1: banish + role reveal).
+
+Everything else in this spec is mode-agnostic. Full mode specs live in `docs/modes.md`.
+Iron rule: a mode ships only with its simulate variant, director-prompt section, and one
+real playtest.
+
+---
+
+## 8. Where to look when interrogating
 
 | Question | Look at |
 |---|---|

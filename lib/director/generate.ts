@@ -17,7 +17,7 @@ HARD RULES:
 - Kill methods must be physical acts doable at a house party in 10 seconds with no props beyond paper/glasses.
 - Social challenges must be achievable while drunk; difficulty 1 = trivial, 3 = requires cunning.
 - Entrance beats must work whenever the guest arrives — first or last.
-- The twist should recontextualise the whole night when revealed. Aim for delight, not confusion.
+- The twist should recontextualise the whole night when revealed. Aim for delight, not confusion. Vary the DEVICE between stories — a repertoire to draw from (never announce which you used until the reveal): the victim faked it; the house/announcer voice is a character in the story; the prize/inheritance never existed; two guests are secretly the same person's agents; the evening is a rehearsal/re-enactment of an older crime; a TIME LOOP — the story claims the evening has happened before and the dead "remember" (pairs beautifully with ghost knowledge and respawns); the detective figure is the guilty one; the real target of the crime is someone nobody suspected was important. Invent new devices freely in this spirit.
 - Spare characters (for late arrivals and respawns) must be self-inserting: strangers, officials, relatives nobody could disprove.
 - Tone: wit over gore. This is a birthday party.`;
 
