@@ -402,13 +402,18 @@ function NowPanel({
         )
       )}
 
-      {rogueLive && game.status === "live" && me.status === "alive" && (
-        <CodeEntryBox
-          busy={busy}
-          onFind={(slip) => g.actions.findCode(slip)}
-          onHide={(slip, hint) => g.actions.hideCode(slip, hint)}
-        />
-      )}
+      {rogueLive &&
+        game.status === "live" &&
+        me.status === "alive" &&
+        (game.config?.mechanics as { codes?: boolean })?.codes !== false && (
+          <CodeEntryBox
+            busy={busy}
+            onFind={(slip) => g.actions.findCode(slip)}
+            onHide={(slip, hint) => g.actions.hideCode(slip, hint)}
+          />
+        )}
+
+      <IntakeCard g={g} />
 
       {g.challenges.length === 0 && !voteOpen && (
         <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
@@ -456,7 +461,9 @@ function InboxPanel({
 }) {
   return (
     <section className="flex flex-col gap-3">
-      {rogueLive && g.me!.status === "alive" && <NoteComposer g={g} />}
+      {rogueLive &&
+        g.me!.status === "alive" &&
+        (g.game!.config?.mechanics as { notes?: boolean })?.notes !== false && <NoteComposer g={g} />}
       {messages.length === 0 && (
         <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
           No letters yet. The house knows where you are.
@@ -831,6 +838,74 @@ function AboutContent({ mode, hijacked, cost }: { mode: string; hijacked: boolea
       <p><b style={{ color: "var(--ink)" }}>Death.</b> If you're murdered, die theatrically — you'll return as someone new. Nobody sits out.</p>
       <p><b style={{ color: "var(--ink)" }}>Votes.</b> Assemblies end in banishments. The banished are revealed. Choose carefully.</p>
       <p><b style={{ color: "var(--ink)" }}>Need out?</b> Hold the ◦ button. Private, instant, always okay.</p>
+    </div>
+  );
+}
+
+// GAPS #8: the slim intake, finally typeable. Shows once (pre-hijack), optional,
+// dismissible; the generator weaves whatever arrives.
+function IntakeCard({ g }: { g: ReturnType<typeof useGame> }) {
+  const me = g.me!;
+  const game = g.game!;
+  const doneKey = `parlour-intake-${game.id}-${me.id}`;
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(doneKey) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [occupation, setOccupation] = useState("");
+  const [relation, setRelation] = useState("");
+  const [arrival, setArrival] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const hasIntake = !!(me as { intake?: Record<string, unknown> }).intake?.occupation;
+  if (dismissed || hasIntake || game.hijacked_at || game.status === "reveal" || game.status === "ended") return null;
+
+  const finish = () => {
+    try {
+      localStorage.setItem(doneKey, "1");
+    } catch {}
+    setDismissed(true);
+  };
+
+  return (
+    <div className="panel p-4">
+      <p className="kicker">the invitation asks (optional — but it makes the story yours)</p>
+      <div className="mt-2 flex flex-col gap-2">
+        <input className="input" aria-label="what do you do?" placeholder="What do you do? (job, hobby, claim to fame)" value={occupation} onChange={(e) => setOccupation(e.target.value)} />
+        <input className="input" aria-label="how do you know the host?" placeholder="How do you know the host?" value={relation} onChange={(e) => setRelation(e.target.value)} />
+        <input className="input" aria-label="when will you arrive?" placeholder="When will you arrive? (e.g. 7:30ish)" value={arrival} onChange={(e) => setArrival(e.target.value)} />
+        <div className="flex gap-2">
+          <button
+            className="btn flex-1"
+            disabled={busy || (!occupation.trim() && !relation.trim() && !arrival.trim())}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await fetch("/api/intake", {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({
+                    code: game.code,
+                    intake: { occupation: occupation.trim(), relationToHost: relation.trim(), expectedArrival: arrival.trim() },
+                  }),
+                });
+                finish();
+                g.refetch();
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            That's me
+          </button>
+          <button className="btn btn-ghost" onClick={finish}>
+            Skip
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

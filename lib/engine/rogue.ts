@@ -233,6 +233,8 @@ export async function hideCode(
   codeText: string,
   locationHint: string
 ) {
+  const sHide = await loadState(admin, gameId);
+  if (!cfg(sHide).mechanics.codes) return { ok: false, result: "no_paper_tonight" }; // D44 pub-lite
   const { data: code } = await admin
     .from("codes")
     .select("id, state")
@@ -352,6 +354,44 @@ export async function resolveUnmasking(admin: SupabaseClient, gameId: string) {
     },
     isPublic: true,
   });
+
+  // GAPS #5/#6: the accountant reports — awards + THE RECEIPTS (Ledger Three:
+  // times damningly public, names withheld) become public events the TV and
+  // phones render during the ceremony.
+  const { computeStats } = await import("./stats");
+  const { awards, cards } = await computeStats(admin, gameId);
+  const { data: bribeTxns } = await admin
+    .from("transactions")
+    .select("amount, memo, created_at")
+    .eq("game_id", gameId)
+    .eq("claimed_source", "rogue")
+    .gt("amount", 0)
+    .order("id");
+  await emit(admin, gameId, "receipts", {
+    payload: {
+      receipts: (bribeTxns ?? []).map((t) => ({
+        at: new Date(t.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+        amount: t.amount,
+        memo: t.memo,
+      })),
+    },
+    isPublic: true,
+  });
+  await emit(admin, gameId, "final_awards", { payload: { awards }, isPublic: true });
+  // personal night-cards go to each player privately
+  for (const card of cards) {
+    const p = s.players.find((x) => x.name === card.name);
+    if (!p) continue;
+    await admin.from("messages").insert({
+      game_id: gameId,
+      player_id: p.id,
+      round_no: s.game.round_no,
+      kind: "system",
+      title: "🧾 Your night, itemised",
+      body: `Offers received: ${card.offersReceived} · taken: ${card.bribesTaken} · declined: ${card.bribesRefused}\nEarned: ${card.earned} · spent: ${card.spent}\nMissions done: ${card.missionsDone} · codes found: ${card.codesFound} · audiences: ${card.audiencesHeld}\nSuspected by ${card.suspectedBy} ${card.suspectedBy === 1 ? "person" : "people"}.\nYou finished as: ${card.burned ? "burned, gloriously" : card.role}.`,
+    });
+  }
+
   return { ok: true, result: humansWin ? "humans_win" : "rogue_wins" };
 }
 

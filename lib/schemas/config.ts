@@ -26,7 +26,27 @@ export const GameConfig = z.object({
   audienceCap: z.number().default(5), // per player per night
   // D38: postage on player-to-player notes (sink #2 + spam throttle)
   notePostage: z.number().default(15),
+  // D44: mechanic toggles — pub-lite disables the props-and-paper layer
+  mechanics: z
+    .object({
+      codes: z.boolean().default(true), // paper slips (needs a venue you control)
+      notes: z.boolean().default(true), // the post (stamps/wiretaps ride on it)
+      forgeries: z.boolean().default(true),
+    })
+    .default({ codes: true, notes: true, forgeries: true }),
+  preset: z.enum(["full", "pub"]).default("full"),
 });
+
+// D44: night 1 is a pub — no props to hide, no TV, shorter and louder.
+// Glyphs, quizzes, bribes, audiences, accusations all shine in a pub; paper
+// chains and the postal service don't.
+export const PUB_PRESET: Partial<z.input<typeof GameConfig>> = {
+  preset: "pub",
+  roundMinutes: 12,
+  killChallengeExpiryMinutes: 8,
+  audienceCost: 150,
+  mechanics: { codes: false, notes: false, forgeries: true },
+};
 export type GameConfig = z.infer<typeof GameConfig>;
 
 export const GAME_STATUSES = [

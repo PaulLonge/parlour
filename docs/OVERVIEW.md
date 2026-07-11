@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-11 (rev 4 — hosts get the conductor's readout)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-11 (rev 5 — stats/awards engine, receipts ceremony, intake form, pub-lite preset for the two-night plan)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.

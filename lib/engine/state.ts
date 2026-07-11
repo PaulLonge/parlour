@@ -153,6 +153,14 @@ export function summarizeForDirector(s: GameState): string {
   }
   const faithful = s.alive.length - s.traitorsAlive.length;
   lines.push(`Balance: ${s.traitorsAlive.length} traitor(s) vs ${faithful} faithful alive.`);
+  if (s.config.preset === "pub" || !s.config.mechanics.codes || !s.config.mechanics.notes)
+    lines.push(
+      `TONIGHT'S TABLE${s.config.preset === "pub" ? " (PUB-LITE)" : ""}: paper codes ${
+        s.config.mechanics.codes ? "on" : "OFF"
+      }, the post ${s.config.mechanics.notes ? "on" : "OFF"}, forgeries ${
+        s.config.mechanics.forgeries ? "on" : "OFF"
+      }. Never offer a mission that needs a disabled mechanic; lean on glyph handshakes, quizzes, bribes, audiences, and spoken passphrases.`
+    );
   if (s.recentDragFlags.length)
     lines.push(
       `PACING (D42a): HOST flag(s) in the last 15 min from: ${s.recentDragFlags.join(", ")} — the hosts find this stretch slow. This is a strong, trusted signal: energize NOW (a mission wave, a quiz burst, a parley, or compress the phase). Both hosts flagging = compress immediately unless a vote is open. Never announce that a flag happened.`

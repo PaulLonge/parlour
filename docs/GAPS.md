@@ -22,26 +22,7 @@
 
 ## IMPORTANT — needed before the September playtest
 
-5. **The awards are prose, not code.** Cheapest Buy / Iron Purse / Wrong'un / Phoenix
-   / Ghost are all COMPUTABLE from the event log (timestamps, refusal counts, vote
-   outcomes) but no stats engine exists. Needed: `computeAwards(gameId)` + reveal
-   integration + personal stat cards ("offered 4 bribes, took 2, suspected by 6").
-6. **The receipts have no renderer.** Ledger Three (the itemized replay of meter
-   jumps vs bribes, times public, names withheld) is the reveal's centerpiece and is
-   currently only a story paragraph. Needs a TV component reading `transactions`.
-7. **Reference story predates half the mechanics.** NO QUARTER's 32 missions were
-   written before the verification taxonomy (D21), glyphs, stamps, wiretaps, and
-   choice-quizzes existed. Needs a content pass: every mission tagged with its
-   verification mode; add quiz/glyph/wiretap/stamp-grant missions to the pools.
-8. **Intake is an API without a form.** The join screen collects a name only; the
-   slim quiz (age, occupation, relations, arrival) has nowhere to be typed. Needed
-   before invitations go out.
-9. **End-of-purse meaning.** Money has sinks (audiences, postage) but no terminal
-   value — final balances currently mean nothing at the reveal. Decide: a Richest
-   Pirate award? Balances buy reveal-ceremony privileges? (Cheap, fun, undecided.)
-10. **BOSUN's early win is prompt-only.** Compute-meter-full → good-AI victory is
-    described to the director but has no enforced check; if the model ignores it,
-    nothing happens. Consider an auto-event at threshold.
+*(#5–#10 all FIXED in the "fix it all" pass — see Fixed, below.)*
 
 ## DECIDE — Paul's calls, nothing blocked but the calendar
 
@@ -63,6 +44,27 @@
   paper-pack export · optional PWA/push · awards-ceremony interactivity ·
   hijacked-theme emoji muting · audience remaining-count · scheme status surface ·
   modal focus-trap hardening · stamps decrement is read-modify-write (low stakes).
+
+## FIXED (this pass)
+
+- **#1–#4 criticals**: rogue story sealing (cover title public), manual hijack lever,
+  director tick coalescing, atomic bribe claims.
+- **#5 stats & awards engine**: `lib/engine/stats.ts` computes six awards (incl. THE
+  RICHEST PIRATE — resolving #9, money's terminal value is a podium moment) + a
+  personal "your night, itemised" card messaged to every player at the unmasking.
+- **#6 the receipts render**: the ceremony emits public `receipts` + `final_awards`
+  events; the TV's CeremonyBoard shows the verdict, the timestamped bribe ledger
+  (names withheld), and the podium.
+- **#7 mission pools refreshed**: all 38 missions verification-tagged; new glyph,
+  choice-quiz (incl. the origin-story quiz and CALICO's catechism: "what is the
+  correct number of mistakes?"), poll, and forgery-grant missions added; schema
+  extended and revalidated clean.
+- **#8 intake form**: an optional, dismissible card on the Now tab (pre-hijack) +
+  `/api/intake` — occupation, relation to host, arrival.
+- **#10 BOSUN's win enforced**: crossing the compute target emits a public
+  `compute_complete` event the director must answer.
+- **D44 two nights**: pub-lite preset (fast rounds, codes/post OFF, cheaper
+  audiences) as a /new checkbox; referee + UI + director all respect tonight's table.
 
 ## UNPROVEN — waiting on the keys
 

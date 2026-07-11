@@ -21,6 +21,11 @@ export const Mission = z.object({
   payout: z.number().positive(),
   purpose: z.string().describe("what this buys the issuing AI, narratively"),
   difficulty: z.number().min(1).max(3),
+  // D21/D32/D41 verification (GAPS #7): how completion is proven
+  verification: z.enum(["submission", "cross", "code", "self", "forgery", "glyph", "choice"]).default("self"),
+  options: z.array(z.string()).optional().describe("choice missions: tappable answers"),
+  correctIndex: z.number().optional().describe("choice missions: the paying answer (omit = poll)"),
+  expected: z.array(z.string()).optional().describe("deterministic accepted answers"),
 });
 
 export const RogueStory = z.object({

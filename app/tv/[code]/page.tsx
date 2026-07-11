@@ -55,6 +55,10 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
   const announces = g.publicEvents.filter((e) => ["announce", "seal_broken", "seal_resumed"].includes(e.type));
   const latest = announces[0];
   const reveal = g.publicEvents.find((e) => e.type === "reveal_roles");
+  const unmasked = g.publicEvents.find((e) => e.type === "unmasking_resolved");
+  const receipts = g.publicEvents.find((e) => e.type === "receipts");
+  const finalAwards = g.publicEvents.find((e) => e.type === "final_awards");
+  const atCeremony = g.game.mode === "rogue" && (g.game.status === "reveal" || g.game.status === "ended");
 
   return (
     <main className={`relative flex min-h-dvh flex-col p-10 ${themeClass}`} style={style}>
@@ -112,7 +116,9 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
       )}
 
       <section className="relative flex flex-1 flex-col items-center justify-center text-center">
-        {reveal && g.game.status !== "round" ? (
+        {atCeremony && unmasked ? (
+          <CeremonyBoard unmasked={unmasked} receipts={receipts} awards={finalAwards} />
+        ) : reveal && g.game.status !== "round" ? (
           <RevealBoard e={reveal} />
         ) : latest ? (
           <p key={latest.id} className="envelope drift max-w-4xl font-display text-5xl leading-snug">
@@ -138,6 +144,70 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
         ))}
       </footer>
     </main>
+  );
+}
+
+// GAPS #6: Ledger Three, rendered — the receipts (times public, names withheld),
+// the verdict, and the awards podium.
+function CeremonyBoard({
+  unmasked,
+  receipts,
+  awards,
+}: {
+  unmasked: PublicEvent;
+  receipts?: PublicEvent;
+  awards?: PublicEvent;
+}) {
+  const u = unmasked.payload as {
+    named?: string;
+    frontman?: string;
+    humansWin?: boolean;
+    minions?: string[];
+  };
+  const rows = ((receipts?.payload as { receipts?: { at: string; amount: number; memo: string }[] })?.receipts ?? []).slice(-10);
+  const pod = (awards?.payload as { awards?: { title: string; winner: string; line: string }[] })?.awards ?? [];
+  return (
+    <div className="envelope w-full max-w-5xl">
+      <h2 className="deco-rule font-display justify-center text-4xl" style={{ color: "var(--gold)" }}>
+        {u.humansWin ? "THE MACHINE LOSES ITS HEAD" : "THE MACHINE KEEPS EVERYTHING"}
+      </h2>
+      <p className="mt-2 text-center text-xl" style={{ color: "var(--ink-dim)" }}>
+        The room named <b style={{ color: "var(--ink)" }}>{u.named}</b> · the hat sat on{" "}
+        <b style={{ color: u.humansWin ? "var(--gold)" : "var(--danger)" }}>{u.frontman}</b> · the payroll:{" "}
+        {(u.minions ?? []).join(", ") || "nobody"}
+      </p>
+
+      {rows.length > 0 && (
+        <div className="mx-auto mt-6 max-w-2xl text-left">
+          <p className="kicker text-center">the receipts — every coin accounted for</p>
+          <ul className="mt-2 flex flex-col gap-1 text-lg" style={{ fontVariantNumeric: "tabular-nums" }}>
+            {rows.map((r, i) => (
+              <li key={i} className="flex justify-between gap-6">
+                <span style={{ color: "var(--ink-dim)" }}>{r.at}</span>
+                <span className="min-w-0 flex-1 truncate-none">{r.memo}</span>
+                <span style={{ color: "var(--danger)" }}>+{r.amount}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {pod.length > 0 && (
+        <div className="mt-8">
+          <p className="kicker text-center">the podium</p>
+          <div className="mt-3 grid grid-cols-2 gap-x-10 gap-y-3 text-left text-lg">
+            {pod.map((a) => (
+              <p key={a.title}>
+                <b style={{ color: "var(--gold)" }}>{a.title}</b> — {a.winner}
+                <span className="block text-sm italic" style={{ color: "var(--ink-dim)" }}>
+                  “{a.line}”
+                </span>
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

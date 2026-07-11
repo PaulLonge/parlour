@@ -190,6 +190,16 @@ B-numbers are build-time engineering calls made inside the codebase.
   WHO (D24), never to whether the night has a pulse. Paul + Co-Host are on Pixels
   (Android Chrome), so no platform caveats.
 
+- **D44 — TWO NIGHTS (Paul, July 2026).** Night 1: a PUB, lighter — different crowd
+  with some overlap. Night 2: the full house party. Implemented as the `pub` preset
+  (a /new checkbox): faster rounds, cheaper audiences, and mechanic toggles — paper
+  codes OFF, the post OFF (no props to hide, no postal intrigue in a loud bar);
+  glyphs, quizzes, bribes, audiences, spoken passphrases carry it. Referee and UI
+  gate disabled mechanics; the director's state summary lists tonight's table.
+  Night 1 doubles as the live playtest for night 2; overlap guests become veterans —
+  the generator may let CALICO remember them ("You again."). Purse endgame meaning
+  resolved (GAPS #9): THE RICHEST PIRATE is a computed award.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.

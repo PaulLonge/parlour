@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PUB_PRESET } from "@/lib/schemas/config";
 
 export default function NewGame() {
   const [title, setTitle] = useState("");
   const [hostName, setHostName] = useState("");
   const [endTime, setEndTime] = useState("23:30");
   const [mode, setMode] = useState<"murder" | "rogue">("rogue");
+  const [pub, setPub] = useState(false);
   const [sandbox, setSandbox] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -28,7 +30,11 @@ export default function NewGame() {
         title: title || "The Gathering",
         hostName,
         mode,
-        config: { targetEndAt: end.toISOString(), ...(sandbox ? { timeScale: 10 } : {}) },
+        config: {
+          targetEndAt: end.toISOString(),
+          ...(pub ? PUB_PRESET : {}),
+          ...(sandbox ? { timeScale: 10 } : {}),
+        },
       }),
     });
     const json = await res.json();
@@ -66,6 +72,10 @@ export default function NewGame() {
             </button>
           </div>
         </div>
+        <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
+          <input type="checkbox" checked={pub} onChange={(e) => setPub(e.target.checked)} />
+          🍺 Pub night (lite — faster rounds, no paper slips or postal service; glyphs, quizzes &amp; bribes carry it)
+        </label>
         <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
           <input type="checkbox" checked={sandbox} onChange={(e) => setSandbox(e.target.checked)} />
           Sandbox (solo test run — time ×10, possess any player)

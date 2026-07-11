@@ -318,6 +318,10 @@ export async function applyDirectorMoves(
           if (!p) throw new Error(`unknown player "${move.playerName}"`);
           if (p.status !== "alive") throw new Error(`${p.name} is ${p.status}`);
           const cfg = GameConfig.parse(s.game.config ?? {});
+          if (move.verification === "forgery" && !cfg.mechanics.forgeries)
+            throw new Error("forgeries disabled tonight (pub-lite)");
+          if (move.verification === "code" && !cfg.mechanics.codes)
+            throw new Error("paper codes disabled tonight (pub-lite)");
           const expires = new Date(
             Date.now() + (move.expiresInMinutes / cfg.timeScale) * 60000
           ).toISOString();

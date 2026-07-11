@@ -22,6 +22,9 @@ export async function sendNote(
   if (s.game.mode !== "rogue" || !s.game.hijacked_at)
     return { ok: false, result: "the_post_office_is_closed" };
 
+  const cfgEarly = GameConfig.parse(s.game.config ?? {});
+  if (!cfgEarly.mechanics.notes) return { ok: false, result: "no_post_office_tonight" }; // D44 pub-lite
+
   const sender = s.players.find((p) => p.id === senderId);
   const recipient = s.players.find(
     (p) => p.name.toLowerCase() === recipientName.toLowerCase()

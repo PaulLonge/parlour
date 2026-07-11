@@ -49,9 +49,19 @@ export async function adjustMeters(
   };
   const { error } = await admin.from("games").update({ meters }).eq("id", s.game.id);
   if (error) throw new Error(`meters update failed: ${error.message}`);
+  const crossedComputeTarget =
+    s.game.meters.compute < (s.config.computeTarget ?? Infinity) &&
+    meters.compute >= (s.config.computeTarget ?? Infinity);
   s.game.meters = meters;
   await emit(admin, s.game.id, "meters_changed", {
     payload: { meters, line: publicLine ?? null },
     isPublic: true, // the evidence drumbeat: every tick is public and arguable
   });
+  // GAPS #10: BOSUN's win condition is enforced, not just promised to a prompt —
+  // the lantern filling emits a public event the director MUST answer.
+  if (crossedComputeTarget && s.game.mode === "rogue" && s.game.status === "live")
+    await emit(admin, s.game.id, "compute_complete", {
+      payload: { note: "the lantern is full — the good AI has enough. Run its victory beat." },
+      isPublic: true,
+    });
 }

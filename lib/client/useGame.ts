@@ -37,6 +37,7 @@ export type Me = {
   balance: number;
   burned: boolean;
   stamps: number;
+  intake: Record<string, unknown> | null;
   character: {
     personaName?: string;
     archetype?: string;
@@ -145,7 +146,7 @@ export function useGame(code: string) {
       supa.from("players_public").select("*").eq("game_id", g.id).order("created_at"),
       supa
         .from("players")
-        .select("id, name, is_host, status, role, balance, burned, stamps, character, arrived_at")
+        .select("id, name, is_host, status, role, balance, burned, stamps, intake, character, arrived_at")
         .maybeSingle(),
       supa
         .from("events")
