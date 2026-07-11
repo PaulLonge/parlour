@@ -117,7 +117,10 @@ export function validateRogueStructure(story: RogueStory, playerNames: string[])
     for (const m of story.missions[side]) {
       const quoted = m.brief.match(/[A-Z][a-z]+ [A-Z][a-z]+/g) ?? [];
       for (const q of quoted)
-        if (!personas.has(q) && all.some((c) => c.personaName.split(" ")[0] === q.split(" ")[0]))
+        if (
+          ![...personas].some((p) => p.includes(q) || q.includes(p)) &&
+          all.some((c) => c.personaName.split(" ")[0] === q.split(" ")[0])
+        )
           problems.push(`mission "${m.brief.slice(0, 40)}…" may reference unknown persona "${q}"`);
     }
   return problems;
