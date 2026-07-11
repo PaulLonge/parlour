@@ -126,6 +126,19 @@ B-numbers are build-time engineering calls made inside the codebase.
   the room's first scare. Rogue identity outranks story skins; murder mode keeps the
   manor/deco/séance themes.
 
+- **D38 — the corrupt postal service (Paul, July 2026).** Player-to-player notes,
+  carried by the machine: postage-priced (economy sink #2), instantly delivered
+  UNLESS sender/recipient is under machine surveillance (held mail → the director's
+  work queue: deliver / small-edit / drop / leak-while-delivering). Player WIRETAPS
+  (premium mission reward) receive silent copies. The machine may forge player-signed
+  notes wholesale — a signature proves nothing, and the About tab says so. Senders
+  are never told whether mail was held: "posted" is all anyone learns.
+  **D38a (Paul's correction, same session): posting rights are GRANTED, not assumed** —
+  sending consumes a STAMP; stamps come only from the director (mission rewards,
+  petition grants, rare room-wide moods). No stamp → "walk over and whisper like an
+  honest pirate." Phones must never replace the room. Prompt rule: one stamp is a
+  gift, three is a plot.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
