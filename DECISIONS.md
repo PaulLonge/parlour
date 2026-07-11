@@ -28,6 +28,17 @@ B-numbers are build-time engineering calls made inside the codebase.
   nothing because it IS the decoy. Build order therefore: v1 stays priority 1 (it's now
   the opening act AND the safety net), then economy subsystem + meters + hijack beat +
   rogue seams, target: October playtest #2.
+- **D19 — D18 revised (Paul, same night): the LONG CON.** No decoy game runs and no
+  fallback is part of the plan — **the murder mystery never existed**; the invitation's
+  promise of one IS the con, and act 1 is pre-game theatre until the hijack. The audit
+  vote is CUT: no mid-game votes, no freezing, no elimination of any kind — deduction
+  runs on economy-bought evidence and framing, parleys replace assemblies, and a single
+  endgame vote (THE UNMASKING) names the front man. Calibration rule, explicit and
+  non-negotiable: **deceive about the genre, never about reality** — the
+  drained-accounts beat must become game-legible within ~a minute (doubloon currency,
+  absurd demands); the gasp is "THIS is the game", never real financial panic. The v1
+  murder engine stays in the repo as engineering insurance only; the September playtest
+  now tests ROGUE's economy loop.
 
 ## Build decisions (Claude, build session)
 

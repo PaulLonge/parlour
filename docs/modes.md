@@ -138,22 +138,33 @@ log, printed line by line on the TV. The conspiracy was auditable all along.
 
 ### Seam configuration + the economy layer
 - **S1 — dark offers are BRIBES.** The arming mechanic becomes literal: the rogue AI
-  credits your account and names a mission ("misdirect the audit tonight", "plant this
-  phrase in three conversations", "recruit a named friend — forward them your offer").
-  **Taking the money is the arming** — you're not cast as a villain, you're *bought*,
-  which is thematically perfect for emergent arming. Silent expiry = you never took it,
-  nobody knows. The good AI's offers mirror this: missions pay compute shares instead.
-  The **front man** = the rogue AI's first recruit, upgraded: they get a private line to
-  the AI and may make offers *verbally* on its behalf (the only human who knows they
-  serve it knowingly from the start).
-- **S2 — nobody dies; accounts get FROZEN.** An exposed minion is frozen: balance
-  locked, visibly flagged, can't take missions — but present and talking. "Respawn" =
-  the burner identity: a spare character arrives with a clean account (fits the
-  existing spares pool untouched).
-- **S3 — the vote is an AUDIT.** Majority audits one player: their transaction history
-  becomes public. Guilty → funds clawed back (rogue meter setback), frozen. Innocent →
-  bank run: panic fees drain everyone slightly and the rogue AI gains. Same
-  wrong-vote-costs asymmetry as heist, dressed in finance.
+  credits your account and names a mission ("plant this phrase in three conversations",
+  "learn who Co-Host trusts most and tell me", "recruit a named friend — forward them
+  your offer"). **Taking the money is the arming** — you're not cast as a villain,
+  you're *bought*, which is thematically perfect for emergent arming. Silent expiry =
+  you never took it, nobody knows. The good AI's offers mirror this: missions pay
+  compute shares instead. The **front man** = the rogue AI's first recruit, upgraded:
+  they get a private line to the AI and may make offers *verbally* on its behalf (the
+  only human who knows they serve it knowingly from the start).
+- **S2 — no elimination of any kind** *(revised with the audit cut)*. Nobody dies, and
+  nothing freezes mid-game: allegiances only deepen or flip. The dramatic equivalent of
+  a death is a **defection** — an AI can offer a known minion double to turn coat, and
+  the burner-identity respawn survives as pure story (a spare character with a clean
+  account, for anyone whose cover publicly collapses at a parley and wants back in).
+- **S3 — no mid-game votes at all** *(revised per Paul, July 2026 — audits cut)*.
+  ROGUE drops the banish-loop entirely: nobody is voted out, frozen, or eliminated —
+  everyone plays to the final second (the strongest version of "nobody sits out").
+  Deduction pressure comes from the economy instead: the good AI pays for *evidence*
+  ("find out who bought the second round with money they didn't have"), the rogue pays
+  to *frame* people, and intel circulates as mission rewards. Assemblies become
+  **PARLEYS**: an AI (or the front man, aloud) calls the room together for ultimatums,
+  group offers, and accusations — socially hot, mechanically light. There is exactly
+  ONE vote, at endgame: **THE UNMASKING** — the room names who they believe fronts the
+  rogue AI. Right → the humans break the conspiracy; wrong → the rogue's triumph is
+  total.
+  *Design trade, noted honestly: cutting the banish-loop removes Traitors' repeated
+  drama peaks; pacing must come from mission reveals, meter milestones, and parley
+  beats instead. The October playtest exists to prove that rhythm holds.*
 
 **The economy is the real build**: an `accounts` balance per player + an append-only
 `transactions` table (amount, memo, counterparty — memos are flavor gold: "consulting
@@ -162,10 +173,12 @@ exists, heist gets fences and bribes, murder gets blackmail, cult gets tithes. D
 it once, mode-agnostic.
 
 ### Win conditions
-Rogue AI: drained-total hits target OR minions reach majority. Good AI: compute meter
-completes → it seizes the house channel and unmasks everyone (a *victory reveal* distinct
-from the endgame reveal). Unaffiliated humans: audit out the front man + enough minions
-before either meter fills. Ties broken by the clock → the director frames whoever led.
+Rogue AI: minions reach majority by endgame AND the front man survives THE UNMASKING.
+Good AI: compute meter completes → it seizes the house channel early and exposes the
+conspiracy itself (a *victory reveal* distinct from the endgame ceremony). Unaffiliated
+humans: name the front man correctly at THE UNMASKING before either meter decides it.
+Clock runs out → the director frames whichever side led as the winner. (Exact numbers
+are October-playtest material, not spec material.)
 
 ### Director notes (the hard, fun part)
 One director wears **three masks**: the neutral house voice, the rogue AI's voice
@@ -177,35 +190,43 @@ schema should name the currency something fictional per story: guilders, credits
 "ashcoins"). The blind-host guarantee holds: the host doesn't know who's bought, who
 fronts, or which meter will win.
 
-### THE HIJACK OPENING — the plan for Paul's 30th (D18)
-The party is billed, honestly, as **pirate fancy dress night** with a party game. Act 1
-runs a DECOY: the built v1 murder mystery wearing a cheesy pirate skin ("Murder at the
-Admiral's Table") — the app plays it straight, tuned slightly naff on purpose. At the
-arrival-threshold moment (same gate as v1's inciting incident), the HIJACK fires
-instead of a murder: the TV glitches, the decoy game "crashes", every phone gains a
-doubloon balance, and the rogue AI voice takes credit for plundering the chest — then
-starts hiring. Guests keep their pirate characters and costumes; the rogue layer runs
-on top (bribes in doubloons, audits at the captain's table, frozen = *marooned*, the
-good AI = the ship's quartermaster-AI rebuilding the fleet's charts, or whatever the
-generator invents in register).
+### THE LONG CON OPENING — the plan for Paul's 30th (D18, revised D19)
+*(Revision, per Paul: no decoy game runs, no fallback framing. "There never was a
+murder mystery" — the lie is the invitation itself.)*
 
-**Why this de-risks the ambitious pick**: the fallback is invisible. If ROGUE fails
-October testing, the hijack never fires and the decoy murder mystery IS the party —
-complete, tested, nobody the wiser. The costume brief goes out months early ("pirates!")
-and spoils nothing, because pirate night is exactly what the evening pretends to be.
-Reveal gains a third layer: *you thought it was pirate night; the pirates thought it
-was murder night; it was never either.*
+The party is billed as **pirate fancy dress night with a murder mystery game**. That
+promise is the con: **no murder mystery was ever written.** Guests join the app, get
+pirate names, see "the game will begin shortly…" teasers; act-1 mingling runs on
+pre-game theatre (arrival announcements, warm-up nonsense — the app looking exactly
+like a game clearing its throat). Then the HIJACK: the TV glitches, the waiting screen
+dies, and every phone shows a drained balance. The rogue AI announces itself, takes
+credit, and starts hiring the room back with its own stolen doubloons.
+
+**The calibration rule (safety-critical, non-negotiable): deceive about the GENRE,
+never about REALITY.** The drained-accounts beat is theatre that must become
+game-legible within ~a minute — balances denominated in doubloons, demands a shade too
+absurd, the interface too composed. The gasp we're buying is "wait— oh, THIS is the
+game," never a guest genuinely checking their banking app. The reveal at the ceremony
+completes the con: the accounts were never real, the murder mystery never existed, and
+the game began the moment they RSVP'd.
+
+**On fallbacks**: the narrative decoy is cut — ROGUE is the committed party, full
+stop, and the September playtest tests ROGUE's economy loop, not murder. The v1
+murder engine stays in the repo as plain engineering insurance (it's already built and
+tested; deleting working code buys nothing), but it is not part of the night's fiction
+or plan.
 
 ### Build notes
-- `accounts`/`transactions` tables + RLS (own balance + own transactions only; audits
-  publish a target's transactions as a public event) · TV meters component ·
-  `offer_bribe` / `credit` / `freeze` / `audit` verbs on the referee · two extra voice
-  sections in the director prompt · story schema: `missions[]` pool + currency name +
-  two AI personas (name, voice notes) · the `hijack` beat: a scripted takeover sequence
-  (glitch effects on TV + phones, balance grant, rogue AI's opening announcement) that
-  the director fires ONCE at the threshold gate — before it, the engine runs pure v1.
-- Simulate variant: bribe accepted → minion; bribe expired → silence; audit guilty →
-  clawback; audit innocent → bank-run; both meter endings.
+- `accounts`/`transactions` tables + RLS (own balance + own transactions only) · TV
+  meters component · `offer_bribe` / `credit` / `defect` verbs on the referee ·
+  `parley` (assembly reskin) + `unmasking` (single endgame vote, reuses the vote table)
+  · two extra voice sections in the director prompt · story schema: `missions[]` pool +
+  currency name + two AI personas (name, voice notes) · the `hijack` beat: a scripted
+  takeover sequence (glitch effects on TV + phones, drained-balance moment, rogue AI's
+  opening announcement) fired ONCE at the arrival-threshold gate — before it, the app
+  plays pre-game theatre ("the game will begin shortly…").
+- Simulate variant: bribe accepted → minion; bribe expired → silence; defection flips
+  allegiance; both meter endings; unmasking right and wrong.
 - Best headcount 12+ (two conspiracies need bodies). Pairs naturally with team split.
 - Sequencing: after infection and heist — it reuses heist's meter UI and adds the
   economy. Rung: this is the most "rung 2" mode yet — three new bricks (economy,
