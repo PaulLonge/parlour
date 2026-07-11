@@ -20,6 +20,7 @@ grant select (id, code, title, status, round_no, round_phase, paused, config,
 -- ---------------------------------------------------------------------------
 alter table public.players add column balance int not null default 0;
 alter table public.players add column burned boolean not null default false;
+alter table public.players add column eager boolean not null default false; -- D34: the lean-in flag (inverse of panic)
 
 -- ---------------------------------------------------------------------------
 -- transactions — append-only money trail. THE RECEIPTS at the reveal (Ledger
@@ -48,7 +49,8 @@ create table public.codes (
   id            uuid primary key default gen_random_uuid(),
   game_id       uuid not null references public.games(id) on delete cascade,
   code          text not null,                       -- BLACKTIDE etc (upper, no spaces)
-  color         text not null default 'red',
+  kind          text not null default 'slip',        -- slip | envelope | note (host-minted)
+  color         text not null default 'parchment',   -- single colour (D-single-colour); field kept for other hosts
   state         text not null default 'printed',     -- printed | assigned | hidden | found | retired
   hider_id      uuid references public.players(id),
   finder_id     uuid references public.players(id),
@@ -85,6 +87,20 @@ create table public.forgeries (
 alter table public.forgeries enable row level security;
 create policy forgeries_select_own on public.forgeries
   for select using (author_id in (select id from public.players where auth_uid = auth.uid()));
+
+-- petitions (D34): players propose their own schemes; the director grants,
+-- declines in voice, or twists them. One open petition per player at a time.
+create table public.petitions (
+  id         uuid primary key default gen_random_uuid(),
+  game_id    uuid not null references public.games(id) on delete cascade,
+  player_id  uuid not null references public.players(id) on delete cascade,
+  text       text not null,
+  status     text not null default 'pending',   -- pending | granted | declined | twisted
+  created_at timestamptz not null default now()
+);
+alter table public.petitions enable row level security;
+create policy petitions_select_own on public.petitions
+  for select using (player_id in (select id from public.players where auth_uid = auth.uid()));
 
 -- atomic balance updates (service-role only)
 create or replace function public.increment_balance(p_player_id uuid, p_amount int)

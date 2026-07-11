@@ -16,6 +16,7 @@ export type PlayerRow = {
   panic: boolean;
   balance: number;
   burned: boolean; // exposed ex-front-man (ROGUE) — stays in play, never fronts again
+  eager: boolean; // D34 lean-in flag — wants a bigger role
 };
 
 export type Meters = { plunder: number; compute: number; confidence: number };
@@ -112,7 +113,7 @@ export function summarizeForDirector(s: GameState): string {
   const fmt = (p: PlayerRow) =>
     `${p.name}${p.is_host ? " (HOST)" : ""} [${p.status}${
       p.role !== "faithful" ? `/${p.role.toUpperCase()}` : ""
-    }${p.burned ? "/BURNED" : ""}${p.panic ? "/PANIC" : ""}]${
+    }${p.burned ? "/BURNED" : ""}${p.panic ? "/PANIC" : ""}${p.eager ? "/EAGER" : ""}]${
       s.game.mode === "rogue" ? ` Ƀ${p.balance}` : ""
     } as ${(p.character as { personaName?: string } | null)?.personaName ?? "(uncast)"}`;
   lines.push(`Players (${s.players.length}):`);

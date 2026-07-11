@@ -94,6 +94,30 @@ B-numbers are build-time engineering calls made inside the codebase.
   self-description, Paul's words: "escape room you build yourself × murder mystery ×
   Traitors."
 
+- **D32 — deterministic-first verification + the physical mechanics menu (Paul, July
+  2026).** Verification ladder: tapped glyphs (zero typing, zero ambiguity — the
+  candle-vs-flame problem removed by construction) → normalized expected-answer
+  matching (close-typo tolerant) → AI judge only for open answers and misses. Eight
+  physical mechanics adopted: glyph handshake (deterministic proximity proof),
+  sealed envelopes, playing-card tokens, spoken passphrases, the dead-drop vessel,
+  environmental signals, host-minted notes (mint_code tool — the AI dictates, a human
+  writes), one QR only on the front door. Slips single-colour (colour must never leak
+  allegiance). Code words over strings (BLACKTIDE not X7Q4ZP).
+- **D33 — audiences with the AIs = the economy sink.** Players buy one-question
+  audiences with CALICO or BOSUN (Ƀ-priced, capped per night), answered in voice by a
+  scoped model call that architecturally cannot leak the front man or others'
+  allegiances (it only holds the asker's own data + public events). Gives faithful
+  players something to SPEND on; gives minions a disinformation market.
+- **D34 — player agency channels.** The lean-in flag ("more, please" — inverse of
+  panic; director escalates eager players) and PETITIONS: players propose their own
+  schemes in free text; the director grants (formalized as a paid mission), declines
+  in voice, or twists. One pending petition per player. Prompt guidance: say yes more
+  than no. Prompts are co-edited with Paul in tandem (spot-check → judge → adjust →
+  commit); prompts to move to content/prompts/*.md. Venue edited only via the setup
+  conversation with a visual state panel; stored as zod-validated JSON in
+  games.config.venue; final validation = the story-requirements vs venue-supply
+  reconciliation checklist.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.

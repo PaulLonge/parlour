@@ -330,6 +330,8 @@ export async function applyDirectorMoves(
               side: move.side,
               verification: move.verification,
               codeText: move.codeText,
+              shownPlayerName: move.shownPlayerName,
+              expected: move.expected,
             },
             expires_at: expires,
           });
@@ -456,6 +458,54 @@ export async function applyDirectorMoves(
             .from("forgeries")
             .update({ status: move.action === "edit" ? "edited" : move.action === "expose" ? "exposed" : "forwarded", final_text: finalText })
             .eq("id", f.id);
+          break;
+        }
+        case "handle_petition": {
+          requireRogue(s);
+          const { data: pet } = await admin
+            .from("petitions")
+            .select("id, player_id, status")
+            .eq("id", move.petitionId)
+            .eq("game_id", gameId)
+            .single();
+          if (!pet) throw new Error("unknown petition");
+          if (pet.status !== "pending") throw new Error(`petition already ${pet.status}`);
+          await admin.from("petitions").update({ status: move.outcome }).eq("id", pet.id);
+          await admin.from("messages").insert({
+            game_id: gameId,
+            player_id: pet.player_id,
+            round_no: s.game.round_no,
+            kind: "info",
+            title: "Your scheme, considered",
+            body: move.reply,
+            claimed_sender: move.replyAs ?? null,
+          });
+          await emit(admin, gameId, "petition_handled", {
+            payload: { petitionId: pet.id, outcome: move.outcome },
+          });
+          detail = move.outcome;
+          break;
+        }
+        case "mint_code": {
+          requireRogue(s);
+          const writer = byName(s, move.writerName);
+          if (!writer) throw new Error(`unknown player "${move.writerName}"`);
+          const { error } = await admin.from("codes").insert({
+            game_id: gameId,
+            code: move.codeText.toUpperCase().trim(),
+            kind: move.kind,
+            state: "assigned",
+          });
+          if (error) throw new Error(error.message);
+          await admin.from("messages").insert({
+            game_id: gameId,
+            player_id: writer.id,
+            round_no: s.game.round_no,
+            kind: "task",
+            title: "✍️ The machine dictates",
+            body: move.instruction,
+          });
+          await emit(admin, gameId, "code_minted", { payload: { kind: move.kind, writer: writer.name } });
           break;
         }
         case "adjust_meters": {

@@ -223,6 +223,10 @@ export function useGame(code: string) {
         post("/api/code/find", { code, slipCode }).then((r) => (refetch(), r)),
       compose: (asSender: string, draft: string) =>
         post("/api/compose", { code, asSender, draft }).then((r) => (refetch(), r)),
+      audience: (ai: "rogue" | "good", question: string) =>
+        post("/api/audience", { code, ai, question }).then((r) => (refetch(), r)),
+      petition: (text: string) => post("/api/petition", { code, text }).then((r) => (refetch(), r)),
+      volunteer: () => post("/api/volunteer", { code }),
     }),
     [code, refetch]
   );

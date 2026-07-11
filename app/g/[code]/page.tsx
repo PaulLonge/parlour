@@ -11,7 +11,15 @@ import {
   PausedBanner,
   DeadBanner,
 } from "@/lib/client/cards";
-import { MetersStrip, PurseChip, BribeCard, MissionCard, CodeEntryBox } from "@/lib/client/rogue-cards";
+import {
+  MetersStrip,
+  PurseChip,
+  BribeCard,
+  MissionCard,
+  CodeEntryBox,
+  GlyphBadge,
+  ActionRow,
+} from "@/lib/client/rogue-cards";
 
 const PHASE_LABEL: Record<string, string> = {
   none: "",
@@ -171,6 +179,7 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
         <>
           <MetersStrip meters={game.meters} />
           <PurseChip balance={me.balance} transactions={g.transactions} />
+          <GlyphBadge gameId={game.id} playerId={me.id} />
         </>
       )}
 
@@ -242,11 +251,24 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
       )}
 
       {game.mode === "rogue" && game.status === "live" && me.status === "alive" && (
-        <CodeEntryBox
-          busy={busy}
-          onFind={(slip) => g.actions.findCode(slip)}
-          onHide={(slip, hint) => g.actions.hideCode(slip, hint)}
-        />
+        <>
+          <CodeEntryBox
+            busy={busy}
+            onFind={(slip) => g.actions.findCode(slip)}
+            onHide={(slip, hint) => g.actions.hideCode(slip, hint)}
+          />
+          <ActionRow
+            aiNames={{
+              rogue: (game.story_public as { ais?: { rogue?: { name?: string } } })?.ais?.rogue?.name,
+              good: (game.story_public as { ais?: { good?: { name?: string } } })?.ais?.good?.name,
+            }}
+            audienceCost={Number(game.config?.audienceCost ?? 250)}
+            busy={busy}
+            onAudience={(ai, q) => g.actions.audience(ai, q)}
+            onPetition={(text) => g.actions.petition(text)}
+            onVolunteer={() => g.actions.volunteer()}
+          />
+        </>
       )}
 
       {(game.round_phase === "vote" ||

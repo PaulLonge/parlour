@@ -80,6 +80,7 @@ const KIND_LABEL: Record<string, { icon: string; label: string }> = {
   info: { icon: "🕯", label: "the house murmurs" },
   ghost_knowledge: { icon: "👻", label: "the dead know things" },
   system: { icon: "⚜", label: "the house" },
+  audience: { icon: "🕯", label: "a paid audience" },
 };
 
 export function MessageEnvelope({ m }: { m: Msg }) {

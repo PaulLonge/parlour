@@ -21,6 +21,9 @@ export const GameConfig = z.object({
   plunderTarget: z.number().default(3000), // meter full = rogue endgame pressure
   computeTarget: z.number().default(100),
   startingBalance: z.number().default(1500),
+  // D33: audiences with the AIs — the economy sink. One question per audience.
+  audienceCost: z.number().default(250),
+  audienceCap: z.number().default(5), // per player per night
 });
 export type GameConfig = z.infer<typeof GameConfig>;
 

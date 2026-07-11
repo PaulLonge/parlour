@@ -38,6 +38,23 @@ export async function fireHijack(admin: SupabaseClient, gameId: string) {
         claimed_source: "vault",
       });
   }
+  // the AI names become public knowledge the moment they speak (D33: the
+  // audience UI needs them; voices/motives stay sealed)
+  const story = s.game.sealed_story as Record<string, any> | null;
+  if (story?.ais) {
+    const pub = (s.game.story_public ?? {}) as Record<string, unknown>;
+    await admin
+      .from("games")
+      .update({
+        story_public: {
+          ...pub,
+          ais: { rogue: { name: story.ais.rogue?.name }, good: { name: story.ais.good?.name } },
+          currency: story.currency ? { name: story.currency.name, symbol: story.currency.symbol } : undefined,
+        },
+      })
+      .eq("id", gameId);
+  }
+
   await emit(admin, gameId, "hijack", {
     payload: { beat: "the game is dead, long live the game" },
     isPublic: true,
@@ -80,7 +97,9 @@ export async function acceptOffer(
   return { ok: true, result: "bought" };
 }
 
-// Submissions & cross-confirmations (D21): free-text answers the director judges.
+// Submissions & cross-confirmations (D21/D32): the verification ladder.
+// Deterministic first (glyphs are tapped; expected-answer missions match
+// locally), AI adjudication only for open answers and near-misses.
 export async function submitResponse(
   admin: SupabaseClient,
   gameId: string,
@@ -91,6 +110,49 @@ export async function submitResponse(
   const s = await loadState(admin, gameId);
   const c = s.openChallenges.find((x) => x.id === challengeId && x.player_id === playerId);
   if (!c) return { ok: false, result: "challenge_not_open" };
+
+  const verification = String(c.data?.verification ?? "submission");
+
+  // --- rung 1: the glyph handshake — fully deterministic, retryable ---
+  if (verification === "glyph") {
+    const shownName = String(c.data?.shownPlayerName ?? c.data?.targetName ?? "");
+    const shown = s.players.find((p) => p.name.toLowerCase() === shownName.toLowerCase());
+    if (!shown) return { ok: false, result: "glyph_target_unknown" };
+    const { glyphMatches } = await import("./glyphs");
+    if (glyphMatches(gameId, shown.id, text.trim().toLowerCase())) {
+      await admin
+        .from("challenges")
+        .update({ response: { tapped: text, at: new Date().toISOString() } })
+        .eq("id", c.id);
+      await adjudicate(admin, gameId, c.id, "complete");
+      await emit(admin, gameId, "glyph_verified", { payload: { challengeId: c.id }, actorId: playerId });
+      return { ok: true, result: "verified" };
+    }
+    return { ok: false, result: "glyph_mismatch" }; // retry allowed — maybe they showed you an old window
+  }
+
+  // --- rung 2: expected-answer missions (passphrases, signals, tokens) ---
+  const expected = Array.isArray(c.data?.expected) ? (c.data.expected as string[]) : null;
+  if (expected?.length) {
+    const { matchAnswer } = await import("./verify");
+    const m = matchAnswer(expected, text);
+    await admin
+      .from("challenges")
+      .update({ response: { text, matched: m, at: new Date().toISOString() } })
+      .eq("id", c.id);
+    if (m === "match" || m === "close") {
+      await adjudicate(admin, gameId, c.id, "complete");
+      return { ok: true, result: "verified" };
+    }
+    // miss → falls through to the AI as backup judge on its next tick
+    await emit(admin, gameId, "response_submitted", {
+      payload: { challengeId: c.id, deterministic: "miss" },
+      actorId: playerId,
+    });
+    return { ok: true, result: "submitted_for_judgment" };
+  }
+
+  // --- rung 3: open answers — the AI judges ---
   await admin
     .from("challenges")
     .update({ response: { text, at: new Date().toISOString() } })
@@ -99,7 +161,6 @@ export async function submitResponse(
     payload: { challengeId: c.id, chars: text.length },
     actorId: playerId,
   });
-  // the director adjudicates on its next tick (completes + pays, or rejects)
   return { ok: true, result: "submitted" };
 }
 
@@ -281,6 +342,29 @@ export async function appointFrontman(admin: SupabaseClient, gameId: string, pla
   await admin.from("games").update({ frontman_player_id: p.id }).eq("id", gameId);
   await emit(admin, gameId, "frontman_appointed", { payload: { player: p.name } }); // private event
   return { ok: true, result: "appointed" };
+}
+
+// --- player agency (D34): petitions — propose your own scheme ---------------
+export async function submitPetition(
+  admin: SupabaseClient,
+  gameId: string,
+  playerId: string,
+  text: string
+) {
+  const { count } = await admin
+    .from("petitions")
+    .select("*", { count: "exact", head: true })
+    .eq("player_id", playerId)
+    .eq("status", "pending");
+  if ((count ?? 0) > 0) return { ok: false, result: "one_scheme_at_a_time" };
+  const { data: p, error } = await admin
+    .from("petitions")
+    .insert({ game_id: gameId, player_id: playerId, text })
+    .select("id")
+    .single();
+  if (error) return { ok: false, result: error.message };
+  await emit(admin, gameId, "petition_submitted", { payload: { petitionId: p.id }, actorId: playerId });
+  return { ok: true, result: "the_machine_will_consider_it" };
 }
 
 // --- forgeries: the hacked-AI mission (D28) ----------------------------------

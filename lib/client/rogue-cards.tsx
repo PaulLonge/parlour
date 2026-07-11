@@ -4,8 +4,51 @@
 // code entry. Allegiance-neutral chrome (D22) — no red/blue screens; your side
 // lives in content only.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Challenge, Txn } from "./useGame";
+import { GLYPHS, glyphFor, glyphWindow, GLYPH_WINDOW_MINUTES } from "@/lib/engine/glyphs";
+
+// Your rotating glyph (D32): shown big, tapped by whoever you show it to.
+export function GlyphBadge({ gameId, playerId }: { gameId: string; playerId: string }) {
+  const [w, setW] = useState(() => glyphWindow());
+  useEffect(() => {
+    const t = setInterval(() => setW(glyphWindow()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+  const g = glyphFor(gameId, playerId, w);
+  return (
+    <div className="panel flex items-center justify-between px-4 py-2">
+      <div>
+        <p className="kicker">your mark — show, never say</p>
+        <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
+          changes every {GLYPH_WINDOW_MINUTES} minutes
+        </p>
+      </div>
+      <span className="text-4xl" title={g.word}>
+        {g.emoji}
+      </span>
+    </div>
+  );
+}
+
+// tap-grid verifier: no typing, no candle-vs-flame — deterministic by construction
+export function GlyphGrid({ busy, onTap }: { busy?: boolean; onTap: (key: string) => void }) {
+  return (
+    <div className="mt-3 grid grid-cols-4 gap-2">
+      {GLYPHS.map((g) => (
+        <button
+          key={g.key}
+          className="btn btn-ghost !px-0 !py-3 text-2xl"
+          disabled={busy}
+          title={g.word}
+          onClick={() => onTap(g.key)}
+        >
+          {g.emoji}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function MetersStrip({
   meters,
@@ -118,7 +161,20 @@ export function MissionCard({
       <p className="kicker">{side === "rogue" ? "⚙ a task, quietly" : "🏮 honest work"}</p>
       <p className="mt-2 leading-relaxed whitespace-pre-wrap">{c.brief}</p>
 
-      {verification === "submission" || verification === "cross" ? (
+      {verification === "glyph" ? (
+        submitted ? (
+          <p className="mt-3 text-sm italic" style={{ color: "var(--gold)" }}>
+            ✓ Verified. You were really there.
+          </p>
+        ) : (
+          <>
+            <p className="mt-2 text-xs italic" style={{ color: "var(--ink-dim)" }}>
+              Get them to show you their mark, then tap what you saw:
+            </p>
+            <GlyphGrid busy={busy} onTap={(key) => onRespond(key)} />
+          </>
+        )
+      ) : verification === "submission" || verification === "cross" ? (
         submitted ? (
           <p className="mt-3 text-sm italic" style={{ color: "var(--ink-dim)" }}>
             Submitted. The machine is reading…
@@ -165,6 +221,125 @@ export function MissionCard({
         </button>
       )}
     </div>
+  );
+}
+
+// D33/D34: the quiet action row — audiences, petitions, volunteering.
+export function ActionRow({
+  aiNames,
+  audienceCost,
+  symbol = "Ƀ",
+  busy,
+  onAudience,
+  onPetition,
+  onVolunteer,
+}: {
+  aiNames: { rogue?: string; good?: string };
+  audienceCost: number;
+  symbol?: string;
+  busy?: boolean;
+  onAudience: (ai: "rogue" | "good", q: string) => Promise<{ ok?: boolean; answer?: string; error?: string }>;
+  onPetition: (text: string) => Promise<{ ok?: boolean; result?: string }>;
+  onVolunteer: () => Promise<unknown>;
+}) {
+  const [open, setOpen] = useState<null | "audience" | "petition" | "volunteer">(null);
+  const [ai, setAi] = useState<"rogue" | "good">("rogue");
+  const [q, setQ] = useState("");
+  const [note, setNote] = useState("");
+
+  const close = () => {
+    setOpen(null);
+    setQ("");
+    setNote("");
+  };
+
+  return (
+    <>
+      <div className="flex gap-2">
+        <button className="btn btn-ghost flex-1 text-xs" onClick={() => setOpen("audience")}>
+          🕯 audience · {symbol}{audienceCost}
+        </button>
+        <button className="btn btn-ghost flex-1 text-xs" onClick={() => setOpen("petition")}>
+          📜 propose a scheme
+        </button>
+        <button className="btn btn-ghost flex-1 text-xs" onClick={() => setOpen("volunteer")}>
+          🙋 more, please
+        </button>
+      </div>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6" onClick={close}>
+          <div className="panel panel-hero w-full max-w-sm p-5" onClick={(e) => e.stopPropagation()}>
+            {open === "audience" && (
+              <>
+                <p className="kicker">an audience with the machine — one question, {symbol}{audienceCost}</p>
+                <div className="mt-3 flex gap-2">
+                  <button className={`btn flex-1 text-xs ${ai === "rogue" ? "" : "btn-ghost"}`} onClick={() => setAi("rogue")}>
+                    {aiNames.rogue ?? "the villain"}
+                  </button>
+                  <button className={`btn flex-1 text-xs ${ai === "good" ? "" : "btn-ghost"}`} onClick={() => setAi("good")}>
+                    {aiNames.good ?? "the other one"}
+                  </button>
+                </div>
+                <textarea className="input mt-3 h-20" placeholder="Choose your question carefully…" value={q} onChange={(e) => setQ(e.target.value)} />
+                <button
+                  className="btn mt-3 w-full"
+                  disabled={busy || !q.trim()}
+                  onClick={async () => {
+                    const r = await onAudience(ai, q.trim());
+                    setNote(r.answer ? "It answered. Check your messages." : (r.error ?? "the machine declined"));
+                    setQ("");
+                  }}
+                >
+                  Pay and ask
+                </button>
+              </>
+            )}
+            {open === "petition" && (
+              <>
+                <p className="kicker">propose a scheme</p>
+                <p className="mt-1 text-xs italic" style={{ color: "var(--ink-dim)" }}>
+                  Pitch anything. The machine may grant it, refuse it — or grant a version you'll regret.
+                </p>
+                <textarea className="input mt-3 h-24" placeholder="I want to…" value={q} onChange={(e) => setQ(e.target.value)} />
+                <button
+                  className="btn mt-3 w-full"
+                  disabled={busy || q.trim().length < 5}
+                  onClick={async () => {
+                    const r = await onPetition(q.trim());
+                    setNote(r.ok ? "Submitted. The machine will consider it." : (r.result === "one_scheme_at_a_time" ? "One scheme at a time, pirate." : "declined"));
+                    setQ("");
+                  }}
+                >
+                  Submit
+                </button>
+              </>
+            )}
+            {open === "volunteer" && (
+              <>
+                <p className="kicker">🙋 more, please</p>
+                <p className="mt-2 text-sm">
+                  Quietly tells the game you want a bigger night — juicier work, from either side. Nobody else sees this.
+                </p>
+                <button
+                  className="btn mt-3 w-full"
+                  disabled={busy}
+                  onClick={async () => {
+                    await onVolunteer();
+                    setNote("The machine has noticed you.");
+                  }}
+                >
+                  I'm in
+                </button>
+              </>
+            )}
+            {note && <p className="mt-3 text-sm" style={{ color: "var(--gold)" }}>{note}</p>}
+            <button className="btn btn-ghost mt-3 w-full" onClick={close}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

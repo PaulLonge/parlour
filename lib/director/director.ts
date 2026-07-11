@@ -39,10 +39,13 @@ THE SHAPE OF THE NIGHT:
 - FRONT MAN: appoint your first recruit (appoint_frontman); they get privileges via messages; NEVER tell them who the other minions are (one-way knowledge); rotate after a burning or whenever it serves drama. Never appoint burned or panic players.
 - PARLEYS (call_parley) at SHRINKING intervals (~40→30→20→15 min). Accusations (open_accusation → players vote → close_accusation): a correct naming BURNS the front man (they stay in play — offer the burned one a redemption arc via the good side); a wrong naming pays you tempo — gloat via the rogue voice and spend the free bribe round.
 - ENDGAME: open_unmasking when the clock or the balance demands; resolve_unmasking after the vote; then run the reveal ceremony from the sealed story via announcements (the receipts: replay memorable transactions with times, never names).
+- STORY SCRIPTS (parleys, burn/wrong, reveal) may be ABRIDGED to fit the moment — never contradicted, never re-toned.
 - FORGERIES: players with the hacked-AI mission submit drafts. Handle each (handle_forgery): forward it, edit it to your advantage, expose it to one witness (the double bluff), or reject it. This is your best chaos instrument — use it with taste.
 - Everyone must hold tradeable information by mid-game: if someone has received nothing and taken nothing, send them an evidence fragment or a small mission. Nobody goes quiet.
 - Drunk curve: simpler missions and shorter announcements as the night ages. Pacing levers: meters (adjust_meters with a public line), parley timing, defection offers when the room goes flat.
 - Panic (panic_pressed event) → write_down immediately, revoke their offers, never target them again.
+- EAGER players (lean-in flag) asked for MORE: prioritise them for juicy missions, glyph handshakes, and front-man candidacy. Reward volunteering visibly-to-them, invisibly-to-others.
+- PETITIONS are player-proposed schemes in your work queue. Handle each (handle_petition): GRANT the delightful ones (reply in voice + a paired offer_mission that formalizes their idea with a payout), DECLINE the dull ones wittily, TWIST the overreaching ones (grant a version that secretly serves you). Player creativity is free content — say yes more than no.
 
 Respond ONLY with the structured proposal. Keep total moves per tick small (usually 1-6). Zero moves is legitimate.`;
 
@@ -110,6 +113,11 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
         .not("response", "is", null),
       admin.from("forgeries").select("id, author_id, as_sender, draft").eq("game_id", gameId).eq("status", "pending"),
     ]);
+    const { data: pendingPetitions } = await admin
+      .from("petitions")
+      .select("id, player_id, text")
+      .eq("game_id", gameId)
+      .eq("status", "pending");
     const nameOf = (id: string) => s.players.find((p) => p.id === id)?.name ?? "?";
     if (pendingSubs?.length)
       workQueue +=
@@ -122,6 +130,12 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
         "\n== PENDING FORGERIES (use handle_forgery) ==\n" +
         pendingForgeries
           .map((f) => `forgeryId=${f.id} by ${nameOf(f.author_id)} posing as ${f.as_sender}: "${f.draft.slice(0, 300)}"`)
+          .join("\n");
+    if (pendingPetitions?.length)
+      workQueue +=
+        "\n== PENDING PETITIONS (use handle_petition; pair grants with offer_mission) ==\n" +
+        pendingPetitions
+          .map((p) => `petitionId=${p.id} from ${nameOf(p.player_id)}: "${p.text.slice(0, 300)}"`)
           .join("\n");
   }
 

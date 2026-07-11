@@ -101,10 +101,42 @@ export const OfferMission = z.object({
   brief: z.string(),
   amount: z.number().min(1),
   verification: z
-    .enum(["submission", "cross", "code", "self", "forgery"])
-    .describe("D21: how completion is proven; 'forgery' grants the hacked-AI compose right"),
+    .enum(["submission", "cross", "code", "self", "forgery", "glyph"])
+    .describe(
+      "D21/D32: how completion is proven. 'glyph' = tap-verified proximity handshake; 'forgery' grants the hacked-AI compose right"
+    ),
   codeText: z.string().optional().describe("for code missions: which slip code is involved"),
+  shownPlayerName: z
+    .string()
+    .optional()
+    .describe("for glyph missions: whose screen must be sighted"),
+  expected: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "deterministic accepted answers (passphrase heard-from names, signal keywords, token names) — matched locally, AI judges only misses"
+    ),
   expiresInMinutes: z.number().min(3).max(90).default(20),
+});
+
+export const HandlePetition = z.object({
+  tool: z.literal("handle_petition"),
+  petitionId: z.string().uuid(),
+  outcome: z.enum(["granted", "declined", "twisted"]),
+  reply: z
+    .string()
+    .describe("in-voice reply to the petitioner; if granted/twisted, pair with an offer_mission move that formalizes it"),
+  replyAs: z.string().optional().describe("claimed sender for the reply"),
+});
+
+export const MintCode = z.object({
+  tool: z.literal("mint_code"),
+  codeText: z.string().min(3).max(20).describe("UPPERCASE nautical word, e.g. GULLSWAKE"),
+  kind: z.enum(["slip", "note"]).default("note"),
+  writerName: z.string().describe("who is told to write it (often the host)"),
+  instruction: z
+    .string()
+    .describe("what to write and where to put it: 'write GULLSWAKE on a blank slip and hide it in the kitchen'"),
 });
 
 export const Adjudicate = z.object({
@@ -179,6 +211,8 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   ResolveUnmasking,
   HandleForgery,
   AdjustMeters,
+  MintCode,
+  HandlePetition,
 ]);
 export type DirectorTool = z.infer<typeof DirectorTool>;
 
