@@ -126,7 +126,15 @@ try {
   // postage requires coins — stake the letter-writers
   await admin.from("players").update({ balance: 100 }).eq("id", byName("Alex").id);
   await admin.from("players").update({ balance: 100 }).eq("id", byName("Sam").id);
-  let n = await sendNote(admin, gid, byName("Alex").id, "Jess", "I think Co-Host took the coin.");
+  // D38a: no stamp, no post
+  let n = await sendNote(admin, gid, byName("Alex").id, "Jess", "premature scribbling");
+  check("stampless note is refused — go talk in person", !n.ok && n.result === "no_stamps", String(n.result));
+  v = await applyDirectorMoves(admin, gid, [
+    { tool: "grant_stamps", playerName: "Alex", everyone: false, count: 2 },
+    { tool: "grant_stamps", playerName: "Sam", everyone: false, count: 1 },
+  ]);
+  check("stamps granted", v.every((x) => x.ok), JSON.stringify(v.filter((x) => !x.ok)));
+  n = await sendNote(admin, gid, byName("Alex").id, "Jess", "I think Co-Host took the coin.");
   check("plain note delivers", n.ok, String(n.result));
   const { data: jessMail } = await admin
     .from("messages")

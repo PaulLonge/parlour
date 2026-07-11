@@ -487,6 +487,34 @@ export async function applyDirectorMoves(
           detail = move.outcome;
           break;
         }
+        case "grant_stamps": {
+          requireRogue(s);
+          const targets = move.everyone
+            ? s.players.filter((p) => p.status === "alive")
+            : move.playerName
+              ? [byName(s, move.playerName)].filter(Boolean)
+              : [];
+          if (!targets.length) throw new Error("no grant target");
+          for (const p of targets as PlayerRow[]) {
+            await admin
+              .from("players")
+              .update({ stamps: ((p as { stamps?: number }).stamps ?? 0) + move.count })
+              .eq("id", p!.id);
+            if (move.flourish)
+              await admin.from("messages").insert({
+                game_id: gameId,
+                player_id: p!.id,
+                round_no: s.game.round_no,
+                kind: "info",
+                title: "✉ Posting rights",
+                body: move.flourish,
+              });
+          }
+          await emit(admin, gameId, "stamps_granted", {
+            payload: { count: move.count, to: move.everyone ? "everyone" : move.playerName },
+          });
+          break;
+        }
         case "tap_wire": {
           requireRogue(s);
           const target = byName(s, move.targetName);

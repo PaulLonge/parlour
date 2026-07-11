@@ -30,9 +30,19 @@ export async function sendNote(
   if (!recipient) return { ok: false, result: "unknown_recipient" };
   if (recipient.id === sender.id) return { ok: false, result: "talking_to_yourself" };
 
+  // D38a (Paul): sending is a PRIVILEGE, not a feature — no stamp, no post.
+  // Stamps arrive as mission rewards and machine moods. Otherwise: go talk.
+  if ((sender as { stamps?: number }).stamps === undefined || (sender as { stamps: number }).stamps < 1)
+    return { ok: false, result: "no_stamps" };
+
   const cfg = GameConfig.parse(s.game.config ?? {});
   const postage = cfg.notePostage;
   if (sender.balance < postage) return { ok: false, result: "insufficient_postage" };
+
+  await admin
+    .from("players")
+    .update({ stamps: (sender as { stamps: number }).stamps - 1 })
+    .eq("id", sender.id);
 
   // is either party watched? (tapper_id null = the machine itself)
   const now = new Date().toISOString();

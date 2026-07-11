@@ -21,6 +21,7 @@ grant select (id, code, title, status, round_no, round_phase, paused, config,
 alter table public.players add column balance int not null default 0;
 alter table public.players add column burned boolean not null default false;
 alter table public.players add column eager boolean not null default false; -- D34: the lean-in flag (inverse of panic)
+alter table public.players add column stamps int not null default 0; -- D38a: posting rights are GRANTED, not assumed — otherwise go talk in person
 
 -- ---------------------------------------------------------------------------
 -- transactions — append-only money trail. THE RECEIPTS at the reveal (Ledger

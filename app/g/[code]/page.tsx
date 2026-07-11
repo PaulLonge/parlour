@@ -477,12 +477,22 @@ function NoteComposer({ g }: { g: ReturnType<typeof useGame> }) {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const postage = Number(g.game!.config?.notePostage ?? 15);
+  const stamps = g.me!.stamps ?? 0;
   const others = g.roster.filter((p) => p.status === "alive" && p.id !== g.me!.id);
+
+  // D38a: no stamp, no post — go talk in person. The composer only exists for
+  // players the machine has granted posting rights.
+  if (stamps < 1)
+    return (
+      <p className="text-center text-xs italic" style={{ color: "var(--ink-dim)" }}>
+        The post office doesn't know you. Posting rights are earned — or you could always just… walk over.
+      </p>
+    );
 
   if (!open)
     return (
       <button className="btn btn-ghost w-full" onClick={() => setOpen(true)}>
-        ✉ Pass a note · {postage}Ƀ postage
+        ✉ Pass a note · {stamps} stamp{stamps === 1 ? "" : "s"} · {postage}Ƀ postage
       </button>
     );
 
@@ -810,7 +820,7 @@ function AboutContent({ mode, hijacked, cost }: { mode: string; hijacked: boolea
         <p><b style={{ color: "var(--ink)" }}>Your mark.</b> The symbol at the bottom of Now. If asked to verify someone, get them to SHOW you theirs — never say yours aloud.</p>
         <p><b style={{ color: "var(--ink)" }}>Accusations.</b> The room may vote to name the machine's human voice — its "front man". Right — they burn (exposed, but still playing). Wrong — everyone pays for it. The night ends with one final naming: get it right, together, or the machine keeps everything.</p>
         <p><b style={{ color: "var(--ink)" }}>Talking to the machines.</b> The Ask tab buys you audiences ({cost} a question), takes your schemes, and hears volunteers.</p>
-        <p><b style={{ color: "var(--ink)" }}>Passing notes.</b> Inbox lets you write to anyone — for postage. The house carries your letters. The house reads your letters. Nothing about that arrangement is in your favour, and a signature proves nothing.</p>
+        <p><b style={{ color: "var(--ink)" }}>Passing notes.</b> With a stamp — earned, never given freely — Inbox lets you write to anyone, for postage. The house carries your letters. The house reads your letters. Nothing about that arrangement is in your favour, and a signature proves nothing. No stamp? Walk over and whisper like an honest pirate.</p>
         <p><b style={{ color: "var(--ink)" }}>Need out?</b> Hold the ◦ button for a moment — a ring fills while you hold. It's private, it's instant, and it's always okay.</p>
       </div>
     );

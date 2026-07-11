@@ -119,6 +119,17 @@ export const OfferMission = z.object({
   expiresInMinutes: z.number().min(3).max(90).default(20),
 });
 
+export const GrantStamps = z.object({
+  tool: z.literal("grant_stamps"),
+  playerName: z.string().optional().describe("omit with everyone=true for a room-wide grant"),
+  everyone: z.boolean().default(false),
+  count: z.number().min(1).max(5).default(1),
+  flourish: z
+    .string()
+    .optional()
+    .describe("optional message accompanying the grant, e.g. 'the post office, feeling generous, issues you a stamp'"),
+});
+
 export const TapWire = z.object({
   tool: z.literal("tap_wire"),
   targetName: z.string(),
@@ -233,6 +244,7 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   HandlePetition,
   TapWire,
   HandleNote,
+  GrantStamps,
 ]);
 export type DirectorTool = z.infer<typeof DirectorTool>;
 
