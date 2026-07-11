@@ -39,6 +39,18 @@ B-numbers are build-time engineering calls made inside the codebase.
   absurd demands); the gasp is "THIS is the game", never real financial panic. The v1
   murder engine stays in the repo as engineering insurance only; the September playtest
   now tests ROGUE's economy loop.
+- **D20 — burnings + the rotating front man; build the factory, not two stories
+  (Paul, same session).** Mid-game votes return in improved form: parley ACCUSATIONS
+  that BURN (right → accused exposed, permanently ineligible as front man, rogue
+  setback, stays in play and is flippable; wrong → rogue gains tempo). The rogue AI
+  re-appoints the front man from its minions after a burning or at will — the
+  deduction target rotates all night; THE UNMASKING targets the *current* front man.
+  On "build November's story at the same time": impossible literally (no guest list;
+  must stay sealed from Paul) — instead the reference story and November share ONE
+  GENERATOR (RogueStory schema + generation prompt + validators); all reference/bot/
+  playtest feedback is encoded into the generator so November inherits it by
+  construction. The Wave-1 swarm story predates D20 — a rules-update patch pass brings
+  its front-man/parley sections in line before commit.
 
 ## Build decisions (Claude, build session)
 

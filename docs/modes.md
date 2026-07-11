@@ -151,20 +151,23 @@ log, printed line by line on the TV. The conspiracy was auditable all along.
   a death is a **defection** — an AI can offer a known minion double to turn coat, and
   the burner-identity respawn survives as pure story (a spare character with a clean
   account, for anyone whose cover publicly collapses at a parley and wants back in).
-- **S3 — no mid-game votes at all** *(revised per Paul, July 2026 — audits cut)*.
-  ROGUE drops the banish-loop entirely: nobody is voted out, frozen, or eliminated —
-  everyone plays to the final second (the strongest version of "nobody sits out").
-  Deduction pressure comes from the economy instead: the good AI pays for *evidence*
-  ("find out who bought the second round with money they didn't have"), the rogue pays
-  to *frame* people, and intel circulates as mission rewards. Assemblies become
-  **PARLEYS**: an AI (or the front man, aloud) calls the room together for ultimatums,
-  group offers, and accusations — socially hot, mechanically light. There is exactly
-  ONE vote, at endgame: **THE UNMASKING** — the room names who they believe fronts the
-  rogue AI. Right → the humans break the conspiracy; wrong → the rogue's triumph is
-  total.
-  *Design trade, noted honestly: cutting the banish-loop removes Traitors' repeated
-  drama peaks; pacing must come from mission reveals, meter milestones, and parley
-  beats instead. The October playtest exists to prove that rhythm holds.*
+- **S3 — accusations BURN, they don't eliminate; the front man ROTATES** *(revised
+  twice: audits cut July 2026, burnings added same session — D20)*.
+  Nobody is ever voted out of the game. At any parley the room may hold an
+  **ACCUSATION** vote naming a suspected front man:
+  - **Right** → the accused is **BURNED**: publicly exposed as the (now former) front
+    man, permanently ineligible for the role, rogue meter setback. They stay fully in
+    play — and a burned minion is famously cheap for the good AI to flip (the
+    redemption arc is a feature, not a bug).
+  - **Wrong** → the rogue gains tempo (a free bribe round / meter bump) and the
+    falsely accused gets a grievance the story can use.
+  After a burning — or whenever it pleases, mid-game — the rogue AI **appoints a new
+  front man from its current minions**: the room's deduction target MOVES. You can be
+  right at nine o'clock and wrong by ten. Deduction pressure between accusations comes
+  from the economy (the good AI pays for evidence, the rogue pays to frame), and the
+  night still ends with **THE UNMASKING**: name the *current* front man, for the win.
+  *This restores the repeated drama peaks the audit-cut removed (accusation votes are
+  the new banishment shocks) while keeping everyone in play to the final second.*
 
 **The economy is the real build**: an `accounts` balance per player + an append-only
 `transactions` table (amount, memo, counterparty — memos are flavor gold: "consulting
