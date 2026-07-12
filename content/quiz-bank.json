@@ -1,23 +1,41 @@
 {
   "_meta": {
-    "note": "D46: the Commissioner's Interview — quiz material about the host (and later guests), elicited CONVERSATIONALLY, never form-filled. The machine (or Claude, in chat) discovers a topic first, then banks a question about it. Wrong-answer options are written to be plausible-but-wrong. Grows until the day before each night.",
+    "note": "D46: the Commissioner's Interview — quiz material about the host (and later guests), elicited CONVERSATIONALLY, never form-filled. Wrong-answer options are plausible-but-wrong. Grows until the day before each night.",
     "lastUpdated": "2026-07-12",
     "process": "Paul chats → a fact is learned → a question is drafted with Paul supplying the true answer → decoys added → banked here. The director samples this bank for quiz missions."
   },
   "facts": [
     {
       "about": "Paul",
-      "fact": "Likes anime (volunteered in chat, 2026-07-12 — topic open for follow-up).",
-      "source": "chat"
+      "fact": "Likes anime; favourite is One Piece.",
+      "source": "chat 2026-07-12"
+    },
+    {
+      "about": "Co-Host",
+      "fact": "Favourite anime is Spy x Family (per Paul — Co-Host may confirm or veto).",
+      "source": "chat 2026-07-12"
     }
   ],
   "questions": [
     {
       "about": "Paul",
       "question": "What is Paul's favourite anime?",
-      "options": ["PENDING — Paul to answer", "(decoys to be added once the truth is known)"],
-      "correctIndex": null,
-      "status": "awaiting-answer"
+      "options": ["Attack on Titan", "One Piece", "Naruto", "Death Note"],
+      "correctIndex": 1,
+      "status": "ready"
+    },
+    {
+      "about": "Co-Host",
+      "question": "What is Co-Host's favourite anime?",
+      "options": ["Spy x Family", "Howl's Moving Castle", "Demon Slayer", "Fruits Basket"],
+      "correctIndex": 0,
+      "status": "ready",
+      "note": "answer supplied by Paul — the machine reserves the right to quiz PAUL on this one, for stakes, in front of Co-Host"
     }
+  ],
+  "openThreads": [
+    "The climbing story friends tell slightly wrong (Paul: 'idk' — revisit)",
+    "Karaoke song / pub order / controversial opinion (Paul: 'idk' — revisit)",
+    "The anime people would ASSUME is Paul's favourite (unanswered — would upgrade Q1's decoys)"
   ]
 }
