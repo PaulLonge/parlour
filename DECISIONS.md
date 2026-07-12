@@ -232,6 +232,17 @@ B-numbers are build-time engineering calls made inside the codebase.
     disguised) and "the plant" (plain-sight adjacency: under their pint, on their
     chair). PENDING Paul's sign-off on this reframe + his drinking-game list.
 
+- **D45a — Field Trial refinements (Paul, July 2026).** Card passing = COVERT TRADES:
+  two consenting players are both briefed ("pass your card to X; let nobody notice"),
+  cross-verified by each phone asking what was received — cooperative stealth
+  replaces adversarial pickpocketing entirely. Phone duels: agreement happens on
+  everyone's own phone; play happens pass-and-play on ONE agreed device (reaction,
+  tap-race). Drinking-game WRITE-INS allowed: free-text in wagers + a curated
+  library (`content/pub-games.json` when built), growable up to the day before by
+  prompting Claude. FINGERS house rules (canon): all fingers on a cup, 3-2-1,
+  guesser calls the number of fingers remaining; right = you're OUT (safe), wrong =
+  still in, celebrate a right guess = back in. Last one in loses.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
