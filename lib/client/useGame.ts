@@ -278,13 +278,18 @@ export function useGame(code: string) {
   const actions = useMemo(
     () => ({
       join: (name: string, takeover = false, intake: Record<string, unknown> = {}, password?: string) => {
-        // remember the night's word per game — possess/takeover flows reuse it
+        // the night's word: read the per-game cache when none supplied; WRITE
+        // only after the server accepts it (review UX#6 — never cache a wrong word)
         let pw = password;
         try {
-          if (pw) localStorage.setItem(`parlour-pw-${code.toUpperCase()}`, pw);
-          else pw = localStorage.getItem(`parlour-pw-${code.toUpperCase()}`) ?? undefined;
+          if (!pw) pw = localStorage.getItem(`parlour-pw-${code.toUpperCase()}`) ?? undefined;
         } catch {}
         return post("/api/join", { code, name, takeover, intake, password: pw }).then((r) => {
+          if (password && (r.ok || r.playerId || r.rejoined)) {
+            try {
+              localStorage.setItem(`parlour-pw-${code.toUpperCase()}`, password);
+            } catch {}
+          }
           refetch();
           return r;
         });

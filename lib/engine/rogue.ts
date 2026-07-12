@@ -205,13 +205,18 @@ export async function adjudicate(
   if (!c) return { ok: false, result: "unknown_challenge" };
   const s = await loadState(admin, gameId);
   if (verdict === "reject") {
-    await admin.from("challenges").update({ status: "expired" }).eq("id", c.id);
+    await admin.from("challenges").update({ status: "expired" }).eq("id", c.id).eq("status", "offered");
     return { ok: true, result: "rejected" };
   }
-  await admin
+  // atomic claim (review #5): a double-submitted answer or repeated director
+  // verdict must not pay twice
+  const { data: claimed } = await admin
     .from("challenges")
     .update({ status: "completed", completed_at: new Date().toISOString() })
-    .eq("id", c.id);
+    .eq("id", c.id)
+    .eq("status", "offered")
+    .select("id");
+  if (!claimed?.length) return { ok: false, result: "already_adjudicated" };
   const side = String((c.data as Record<string, unknown>)?.side ?? "good");
   const amount = payout ?? Number((c.data as Record<string, unknown>)?.amount ?? 0);
   if (side === "good") {

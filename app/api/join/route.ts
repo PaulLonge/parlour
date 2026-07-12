@@ -49,12 +49,15 @@ export async function POST(req: Request) {
   if (game.join_password && password?.trim().toLowerCase() !== game.join_password)
     return NextResponse.json({ needsPassword: true, error: "tonight's word, please" }, { status: 401 });
 
-  const { data: existing } = await admin
+  // exact case-insensitive match in JS — .ilike() treats the joiner's name as
+  // a PATTERN, so "%" or "_ave" could seize an arbitrary player's purse
+  // (review #7, security)
+  const { data: allPlayers } = await admin
     .from("players")
     .select("id, auth_uid, name")
-    .eq("game_id", game.id)
-    .ilike("name", name)
-    .maybeSingle();
+    .eq("game_id", game.id);
+  const existing =
+    (allPlayers ?? []).find((p) => p.name.toLowerCase() === name.trim().toLowerCase()) ?? null;
 
   if (existing) {
     // pseudo-accounts (D14): tapping your own name on a new device = takeover

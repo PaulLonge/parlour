@@ -66,8 +66,17 @@ export function WagerHub({ g }: { g: ReturnType<typeof useGame> }) {
             </button>
             <button
               className="btn btn-ghost flex-1"
+              aria-label={`decline ${nameOf(w.challenger_id)}'s challenge`}
               disabled={busy}
-              onClick={() => g.actions.respondWager(w.id, false)}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  const r = await g.actions.respondWager(w.id, false);
+                  if (!r.ok) setNote(r.result ?? r.error ?? "the house lost that — try again");
+                } finally {
+                  setBusy(false);
+                }
+              }}
             >
               Decline
             </button>
@@ -134,8 +143,8 @@ export function WagerHub({ g }: { g: ReturnType<typeof useGame> }) {
       {openBooks.length > 0 && <SideBetCard g={g} books={openBooks} cap={cap} busy={busy} setBusy={setBusy} setNote={setNote} />}
 
       {note && (
-        <p className="text-sm" style={{ color: "var(--danger)" }}>
-          {note.replaceAll("_", " ")}
+        <p className="text-sm" role="status" aria-live="polite" style={{ color: "var(--danger)" }}>
+          {note === "book_closed" ? "Too slow — that duel just settled." : note.replaceAll("_", " ")}
         </p>
       )}
     </div>
@@ -157,9 +166,10 @@ function ProposeCard({
 }) {
   const [open, setOpen] = useState(false);
   const [opponent, setOpponent] = useState("");
-  const [amount, setAmount] = useState(20);
+  const [amountStr, setAmountStr] = useState("20"); // raw string — clamping onChange fights mobile editing (review UX#3)
   const [game, setGame] = useState(DUEL_PRESETS[0]);
   const [custom, setCustom] = useState("");
+  const [sent, setSent] = useState("");
   const others = useMemo(
     () => g.roster.filter((p) => p.status === "alive" && p.id !== g.me!.id),
     [g.roster, g.me]
@@ -167,12 +177,20 @@ function ProposeCard({
 
   if (!open)
     return (
-      <button className="btn w-full" onClick={() => setOpen(true)}>
-        🎲 Challenge someone · up to ◎{cap}
-      </button>
+      <div>
+        <button className="btn w-full" onClick={() => { setOpen(true); setSent(""); }}>
+          🎲 Challenge someone · up to ◎{cap}
+        </button>
+        {sent && (
+          <p className="mt-1 text-center text-sm" role="status" style={{ color: "var(--gold)" }}>
+            {sent}
+          </p>
+        )}
+      </div>
     );
 
   const gameDesc = game === "Custom…" ? custom : game;
+  const amount = Math.max(1, Math.min(cap, Number(amountStr) || 0)); // clamp at submit, not per-keystroke
   return (
     <div className="panel panel-hero p-4">
       <p className="kicker">throw down</p>
@@ -195,12 +213,14 @@ function ProposeCard({
       <div className="mt-2 flex items-center gap-2">
         <input
           type="number"
+          inputMode="numeric"
+          pattern="[0-9]*"
           className="input"
           aria-label="stake"
           min={1}
           max={cap}
-          value={amount}
-          onChange={(e) => setAmount(Math.max(1, Math.min(cap, Number(e.target.value) || 0)))}
+          value={amountStr}
+          onChange={(e) => setAmountStr(e.target.value)}
         />
         <span className="text-xs whitespace-nowrap" style={{ color: "var(--ink-dim)" }}>
           cap ◎{cap}
@@ -209,13 +229,25 @@ function ProposeCard({
       <div className="mt-3 flex gap-2">
         <button
           className="btn flex-1"
-          disabled={busy || !opponent || !gameDesc.trim() || amount < 1}
+          disabled={busy || !opponent || !gameDesc.trim() || !(Number(amountStr) > 0)}
           onClick={async () => {
             setBusy(true);
-            const r = await g.actions.proposeWager(opponent, amount, gameDesc.trim());
-            setNote(r.ok ? "" : (r.result ?? r.error ?? "no"));
-            if (r.ok) setOpen(false);
-            setBusy(false);
+            try {
+              const r = await g.actions.proposeWager(opponent, amount, gameDesc.trim());
+              if (r.ok) {
+                setSent(`Thrown down at ${opponent} — ◎${amount}, awaiting nerve.`); // success receipt (review UX#8)
+                setNote("");
+                setOpen(false);
+              } else {
+                setNote(
+                  r.result === "already_thrown_down"
+                    ? `You already have a challenge waiting on ${opponent}.`
+                    : (r.result ?? r.error ?? "no")
+                );
+              }
+            } finally {
+              setBusy(false);
+            }
           }}
         >
           Send it

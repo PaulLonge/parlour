@@ -34,20 +34,24 @@ export async function sendNote(
   if (recipient.id === sender.id) return { ok: false, result: "talking_to_yourself" };
 
   const cfg = GameConfig.parse(s.game.config ?? {});
+  const postage = cfg.notePostage;
+  // postage FIRST (review #11): a granted stamp must never burn on a failed send
+  if (sender.balance < postage) return { ok: false, result: "insufficient_postage" };
 
   // D38a (Paul): sending is a PRIVILEGE, not a feature — no stamp, no post.
   // Exception (D45): pub nights run stampless for easy flow.
   if (!cfg.stamplessNotes) {
-    if ((sender as { stamps?: number }).stamps === undefined || (sender as { stamps: number }).stamps < 1)
-      return { ok: false, result: "no_stamps" };
-    await admin
+    const myStamps = (sender as { stamps?: number }).stamps ?? 0;
+    if (myStamps < 1) return { ok: false, result: "no_stamps" };
+    // optimistic-concurrency decrement (review #11): two sends can't share one stamp
+    const { data: burned } = await admin
       .from("players")
-      .update({ stamps: (sender as { stamps: number }).stamps - 1 })
-      .eq("id", sender.id);
+      .update({ stamps: myStamps - 1 })
+      .eq("id", sender.id)
+      .eq("stamps", myStamps)
+      .select("id");
+    if (!burned?.length) return { ok: false, result: "no_stamps" };
   }
-
-  const postage = cfg.notePostage;
-  if (sender.balance < postage) return { ok: false, result: "insufficient_postage" };
 
   // is either party watched? (tapper_id null = the machine itself)
   const now = new Date().toISOString();

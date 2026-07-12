@@ -80,14 +80,31 @@ export default function NewGame() {
               🗡 Classic Murder
             </button>
           </div>
+          {/* a non-technical host picks the whole night's shape here (visual #4) */}
+          <span className="text-xs italic">
+            {mode === "rogue"
+              ? "The Long Con — an AI takes over the party; bribes, schemes and betrayals all evening."
+              : "Classic Murder — one killer among the guests, secrets, and a final accusation."}
+          </span>
         </div>
         <label className="flex flex-col gap-1 text-sm" style={{ color: "var(--ink-dim)" }}>
-          Tonight's word (optional — keeps two nights from mixing; tell it to the table)
-          <input className="input lowercase" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="e.g. yellow" />
+          Tonight's word (optional) — say it aloud to your guests; it keeps your party separate from anyone else's
+          <input
+            className="input lowercase"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="e.g. yellow"
+          />
         </label>
         <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
           <input type="checkbox" checked={pub} onChange={(e) => setPub(e.target.checked)} />
-          🍺 Pub night (lite — faster rounds, no paper slips or postal service; glyphs, quizzes &amp; bribes carry it)
+          <span>
+            🍺 Pub night — lighter &amp; faster, nothing to print
+            <span className="block text-xs italic opacity-70">short rounds; games, dares and bets carry the evening</span>
+          </span>
         </label>
         <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
           <input type="checkbox" checked={sandbox} onChange={(e) => setSandbox(e.target.checked)} />

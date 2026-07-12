@@ -86,17 +86,20 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
   const [newName, setNewName] = useState("");
   const [password, setPassword] = useState("");
   const [needsPassword, setNeedsPassword] = useState(false);
+  const [pendingName, setPendingName] = useState(""); // remembered across a 401 (review UX#4)
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   async function join(name: string) {
     setBusy(true);
     setError("");
+    setPendingName(name);
     try {
       let res = await g.actions.join(name, false, {}, password.trim() || undefined);
       if (res.status === 401 && res.needsPassword) {
         setNeedsPassword(true);
-        setError(password ? "That's not tonight's word." : "");
+        // empty field + still 401 means a CACHED word was sent and rejected (review UX#6)
+        setError(password ? "That's not tonight's word." : "Tonight's word has changed — ask the table.");
         return;
       }
       if (res.status === 409 && res.needsTakeover) {
@@ -123,20 +126,33 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
       </header>
 
       {needsPassword && (
-        <div className="panel panel-hero flex flex-col gap-2 p-5">
+        <form
+          className="panel panel-hero flex flex-col gap-2 p-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (pendingName && password.trim()) join(pendingName);
+          }}
+        >
           <p className="kicker">tonight's word</p>
           <input
-            className="input text-center tracking-[0.3em] lowercase"
+            className="input text-center tracking-[0.15em] lowercase"
             aria-label="tonight's word"
             placeholder="ask the table"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="go"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoFocus
           />
+          <button className="btn" disabled={busy || !password.trim() || !pendingName}>
+            Step inside as {pendingName || "…"}
+          </button>
           <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
-            Two nights, two words — this just makes sure you're joining the right one.
+            Say it aloud at the table — it keeps this night's game separate from any other.
           </p>
-        </div>
+        </form>
       )}
 
       {g.roster.length > 0 && (
@@ -440,7 +456,7 @@ function NowPanel({
           />
         )}
 
-      <IntakeCard g={g} />
+      <IntakeCard key={`${game.id}-${me.id}`} g={g} />
 
       {g.challenges.length === 0 && !voteOpen && (
         <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
@@ -886,6 +902,7 @@ function IntakeCard({ g }: { g: ReturnType<typeof useGame> }) {
   const [relation, setRelation] = useState("");
   const [arrival, setArrival] = useState("");
   const [busy, setBusy] = useState(false);
+  const [intakeErr, setIntakeErr] = useState("");
 
   const hasIntake = !!(me as { intake?: Record<string, unknown> }).intake?.occupation;
   if (dismissed || hasIntake || game.hijacked_at || game.status === "reveal" || game.status === "ended") return null;
@@ -910,8 +927,9 @@ function IntakeCard({ g }: { g: ReturnType<typeof useGame> }) {
             disabled={busy || (!occupation.trim() && !relation.trim() && !arrival.trim())}
             onClick={async () => {
               setBusy(true);
+              setIntakeErr("");
               try {
-                await fetch("/api/intake", {
+                const res = await fetch("/api/intake", {
                   method: "POST",
                   headers: { "content-type": "application/json" },
                   body: JSON.stringify({
@@ -919,8 +937,13 @@ function IntakeCard({ g }: { g: ReturnType<typeof useGame> }) {
                     intake: { occupation: occupation.trim(), relationToHost: relation.trim(), expectedArrival: arrival.trim() },
                   }),
                 });
-                finish();
-                g.refetch();
+                // only dismiss on real success — a 500 must not eat the data (review UX#5)
+                if (res.ok) {
+                  finish();
+                  g.refetch();
+                } else setIntakeErr("The house lost that — try again.");
+              } catch {
+                setIntakeErr("The house lost that — try again.");
               } finally {
                 setBusy(false);
               }
@@ -932,6 +955,11 @@ function IntakeCard({ g }: { g: ReturnType<typeof useGame> }) {
             Skip
           </button>
         </div>
+        {intakeErr && (
+          <p className="text-sm" role="status" style={{ color: "var(--danger)" }}>
+            {intakeErr}
+          </p>
+        )}
       </div>
     </div>
   );

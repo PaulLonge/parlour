@@ -71,11 +71,12 @@ export async function computeStats(admin: SupabaseClient, gameId: string) {
 
   // THE CHEAPEST BUY — fastest bribe acceptance
   const accepted = (challenges ?? [])
-    .filter((c) => c.type === "bribe" && c.status === "completed" && c.completed_at)
+    .filter((c) => c.type === "bribe" && c.status === "completed" && c.completed_at && c.offered_at)
     .map((c) => ({
       player: nameOf(c.player_id),
       secs: (new Date(c.completed_at!).getTime() - new Date(c.offered_at).getTime()) / 1000,
     }))
+    .filter((x) => Number.isFinite(x.secs) && x.secs >= 0) // NaN must not win awards (review #14)
     .sort((a, b) => a.secs - b.secs);
   if (accepted[0])
     awards.push({

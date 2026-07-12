@@ -210,6 +210,13 @@ body {
 }
 .input:focus { outline: 2px solid var(--border-strong); outline-offset: 1px; }
 
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  flex: none;
+}
+
 /* the wax seal — used on secrets */
 .seal-dot {
   width: 2.1rem;

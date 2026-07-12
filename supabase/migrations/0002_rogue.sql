@@ -138,8 +138,10 @@ alter table public.side_bets enable row level security;
 create policy side_bets_select_own on public.side_bets
   for select using (bettor_id in (select id from public.players where auth_uid = auth.uid()));
 
--- wagers are pub-social: an anonym-free public view (the whole point is the
--- table seeing Dave take 60 off Co-Host at thumb war)
+-- wagers are pub-social: the table SHOULD see Dave take 60 off Co-Host — but
+-- only in games the viewer belongs to, and never proposed/declined rows
+-- ("Decline and nobody will ever know" is a promise). Scoped via my_game_ids()
+-- (auth.uid() is the caller's even under owner execution) — review #6.
 create view public.wagers_public
   with (security_invoker = off) as
   select w.id, w.game_id, w.amount, w.game_desc, w.status, w.created_at,
@@ -148,7 +150,9 @@ create view public.wagers_public
   from public.wagers w
   join public.players c on c.id = w.challenger_id
   join public.players o on o.id = w.opponent_id
-  left join public.players win on win.id = w.winner_id;
+  left join public.players win on win.id = w.winner_id
+  where w.status in ('accepted', 'disputed', 'settled', 'voided')
+    and w.game_id in (select public.my_game_ids());
 grant select on public.wagers_public to anon, authenticated;
 
 -- notes (D38): player-to-player mail, carried by the machine. Delivery is
@@ -202,5 +206,18 @@ create or replace function public.increment_balance(p_player_id uuid, p_amount i
 returns void language sql security definer set search_path = public as
 $$ update players set balance = balance + p_amount where id = p_player_id $$;
 revoke execute on function public.increment_balance(uuid, int) from anon, authenticated;
+
+-- conditional debit: refuses to drive a balance negative (review #12).
+-- returns true if the debit happened.
+create or replace function public.debit_if_covered(p_player_id uuid, p_amount int)
+returns boolean language plpgsql security definer set search_path = public as
+$$
+begin
+  update players set balance = balance - p_amount
+   where id = p_player_id and balance >= p_amount;
+  return found;
+end;
+$$;
+revoke execute on function public.debit_if_covered(uuid, int) from anon, authenticated;
 
 alter publication supabase_realtime add table public.transactions;

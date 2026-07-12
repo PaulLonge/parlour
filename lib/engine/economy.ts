@@ -14,6 +14,16 @@ export async function credit(
   memo: string,
   claimedSource: "rogue" | "good" | "vault" | "system" = "system"
 ) {
+  // DEBITS go through the conditional RPC — balances must never go negative
+  // (review #12). Throws on refusal so callers can abort/rollback.
+  if (amount < 0) {
+    const { data: covered, error: dErr } = await admin.rpc("debit_if_covered", {
+      p_player_id: playerId,
+      p_amount: -amount,
+    });
+    if (dErr) throw new Error(`debit failed: ${dErr.message}`);
+    if (!covered) throw new Error("insufficient_balance");
+  }
   const { error: tErr } = await admin.from("transactions").insert({
     game_id: gameId,
     player_id: playerId,
@@ -21,18 +31,22 @@ export async function credit(
     memo,
     claimed_source: claimedSource,
   });
-  if (tErr) throw new Error(`transaction failed: ${tErr.message}`);
-  const { error: bErr } = await admin.rpc("increment_balance", {
-    p_player_id: playerId,
-    p_amount: amount,
-  });
-  // fallback if the RPC isn't installed: read-modify-write (fine at party scale)
-  if (bErr) {
-    const { data: p } = await admin.from("players").select("balance").eq("id", playerId).single();
-    await admin
-      .from("players")
-      .update({ balance: (p?.balance ?? 0) + amount })
-      .eq("id", playerId);
+  if (tErr) {
+    // keep ledger and cache consistent: undo the debit we just took
+    if (amount < 0)
+      try {
+        await admin.rpc("increment_balance", { p_player_id: playerId, p_amount: -amount });
+      } catch {}
+    throw new Error(`transaction failed: ${tErr.message}`);
+  }
+  if (amount > 0) {
+    const { error: bErr } = await admin.rpc("increment_balance", {
+      p_player_id: playerId,
+      p_amount: amount,
+    });
+    // no silent racy fallback (review #8): the RPC ships in the migration —
+    // if it's missing, fail loudly so the operator installs it
+    if (bErr) throw new Error(`increment_balance RPC failed/missing: ${bErr.message}`);
   }
 }
 

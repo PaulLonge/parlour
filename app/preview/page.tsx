@@ -13,6 +13,7 @@ import {
   DeadBanner,
 } from "@/lib/client/cards";
 import { MetersStrip, PurseChip, BribeCard, CodeEntryBox, GlyphBadge, ActionRow } from "@/lib/client/rogue-cards";
+import { MiniGame } from "@/lib/client/minigames";
 import golden from "@/content/golden-story.json";
 
 const THEMES = [
@@ -78,6 +79,7 @@ const MOCK_CANDIDATES = [
 export default function Preview() {
   const [theme, setTheme] = useState<(typeof THEMES)[number]>(THEMES[0]);
   const [voted, setVoted] = useState<string | null>(null);
+  const [demoGame, setDemoGame] = useState<string | null>(null);
 
   return (
     <div className={`themed min-h-dvh ${theme.cls}`}>
@@ -143,6 +145,19 @@ export default function Preview() {
                       m={{ id: "t1", kind: "info", title: "", body: "Do check your purse. Your balance reads zero. Thirty thousand Pieces of Byte — gone, the ledger says, and ledgers never lie. Except, of course, when I write them.", claimed_sender: "CALICO", created_at: "" } as never}
                     />
                     <CodeEntryBox onFind={async () => ({ ok: true })} onHide={async () => ({ ok: true })} />
+                    <div className="panel p-4">
+                      <p className="kicker">phone duels (D45) — tap to demo</p>
+                      <div className="mt-2 flex gap-2">
+                        {["Reaction", "Tap Race", "Steady Hand"].map((m) => (
+                          <button key={m} className="btn btn-ghost flex-1 text-xs" onClick={() => setDemoGame(m)}>
+                            {m}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {demoGame && (
+                      <MiniGame gameName={demoGame} playerA="Paul" playerB="Co-Host" onClose={() => setDemoGame(null)} />
+                    )}
                     <ActionRow aiNames={{ rogue: "CALICO", good: "BOSUN" }} audienceCost={250} onAudience={async () => ({ ok: true })} onPetition={async () => ({ ok: true })} onVolunteer={async () => ({})} />
                   </>
                 ) : theme.rogue ? (

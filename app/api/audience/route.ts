@@ -73,20 +73,35 @@ export async function POST(req: Request) {
   const persona = parsed.data.ai === "rogue" ? story?.ais?.rogue : story?.ais?.good;
   const personaName = persona?.name ?? (parsed.data.ai === "rogue" ? "the machine" : "the other one");
 
-  const { text: answer } = await generateText({
-    model: anthropic(process.env.FAST_MODEL ?? "claude-haiku-4-5-20251001"),
-    system: `You are ${personaName} in a live party game, granting a paid one-question audience to the guest "${me.name}".
+  // pay FIRST — the conditional debit throws if the purse can't cover it, and
+  // paying before the LLM call means a failed call refunds rather than a
+  // successful answer going unpaid
+  try {
+    await credit(admin, game.id, me.id, -cfg.audienceCost, "audience — held in advance", parsed.data.ai);
+  } catch {
+    return NextResponse.json({ error: "your purse couldn't cover it" }, { status: 422 });
+  }
+
+  let answer: string;
+  try {
+    const r = await generateText({
+      model: anthropic(process.env.FAST_MODEL ?? "claude-haiku-4-5-20251001"),
+      system: `You are ${personaName} in a live party game, granting a paid one-question audience to the guest "${me.name}".
 VOICE: ${persona?.voice ?? "in character for your side"}
 HARD RULES (architectural, not optional): You only know what is in this prompt. You must NEVER state or confirm who the front man is, who any OTHER player serves, or anyone else's purse — deflect in voice instead (you are allowed to lie, tease, and mislead; you are not allowed to reveal). You may reference the asking guest's OWN dealings freely. 2-5 sentences. End before you get boring.`,
-    prompt: [
-      `The guest paid ${cfg.audienceCost} for one question.`,
-      `Their own recent dealings: ${JSON.stringify(myTxns ?? [])}`,
-      `Recent public record: ${(pubEvents ?? []).map((e) => e.type).join(", ")}`,
-      `Their question: "${parsed.data.question}"`,
-    ].join("\n"),
-  });
+      prompt: [
+        `The guest paid ${cfg.audienceCost} for one question.`,
+        `Their own recent dealings: ${JSON.stringify(myTxns ?? [])}`,
+        `Recent public record: ${(pubEvents ?? []).map((e) => e.type).join(", ")}`,
+        `Their question: "${parsed.data.question}"`,
+      ].join("\n"),
+    });
+    answer = r.text;
+  } catch {
+    await credit(admin, game.id, me.id, cfg.audienceCost, "audience refunded — the machine was elsewhere", "system").catch(() => {});
+    return NextResponse.json({ error: "the machine was elsewhere — refunded, try again" }, { status: 503 });
+  }
 
-  await credit(admin, game.id, me.id, -cfg.audienceCost, `audience with ${personaName}`, parsed.data.ai);
   await admin.from("messages").insert({
     game_id: game.id,
     player_id: me.id,

@@ -35,6 +35,18 @@ export async function proposeWager(
   if (amount > cap) return { ok: false, result: "over_cap", cap };
   if (amount > me.balance) return { ok: false, result: "insufficient_coins" };
 
+  // one open challenge per pair (review UX#8): a missed success note must not
+  // let re-sends stack duplicate escrow-armed cards on the opponent
+  const { data: dupe } = await admin
+    .from("wagers")
+    .select("id")
+    .eq("game_id", gameId)
+    .eq("status", "proposed")
+    .eq("challenger_id", me.id)
+    .eq("opponent_id", them.id)
+    .limit(1);
+  if (dupe?.length) return { ok: false, result: "already_thrown_down" };
+
   const { data: w, error } = await admin
     .from("wagers")
     .insert({
@@ -74,7 +86,15 @@ export async function respondWager(
   if (w.status !== "proposed") return { ok: false, result: `already_${w.status}` };
 
   if (!accept) {
-    await admin.from("wagers").update({ status: "declined" }).eq("id", wagerId);
+    // gated (review C2): a decline racing an accept must lose, or escrowed
+    // stakes strand forever in a 'declined' row
+    const { data: declined } = await admin
+      .from("wagers")
+      .update({ status: "declined" })
+      .eq("id", wagerId)
+      .eq("status", "proposed")
+      .select("id");
+    if (!declined?.length) return { ok: false, result: "already_handled" };
     await emit(admin, gameId, "wager_declined", { payload: { wagerId } });
     return { ok: true, result: "declined" };
   }
@@ -85,7 +105,8 @@ export async function respondWager(
   if (challenger.balance < w.amount || opponent.balance < w.amount)
     return { ok: false, result: "stakes_no_longer_covered" };
 
-  // atomic-ish acceptance gate, then ESCROW both stakes
+  // atomic acceptance gate, then ESCROW both stakes — with rollback (review C3):
+  // a half-escrowed 'accepted' wager would mint money at settlement
   const { data: claimed } = await admin
     .from("wagers")
     .update({ status: "accepted" })
@@ -93,8 +114,18 @@ export async function respondWager(
     .eq("status", "proposed")
     .select("id");
   if (!claimed?.length) return { ok: false, result: "already_handled" };
-  await credit(admin, gameId, challenger.id, -w.amount, `stake — ${w.game_desc}`, "system");
-  await credit(admin, gameId, opponent.id, -w.amount, `stake — ${w.game_desc}`, "system");
+  let escrowed = 0;
+  try {
+    await credit(admin, gameId, challenger.id, -w.amount, `stake — ${w.game_desc}`, "system");
+    escrowed = 1;
+    await credit(admin, gameId, opponent.id, -w.amount, `stake — ${w.game_desc}`, "system");
+    escrowed = 2;
+  } catch (e) {
+    if (escrowed >= 1)
+      await credit(admin, gameId, challenger.id, w.amount, "stake returned — escrow failed", "system").catch(() => {});
+    await admin.from("wagers").update({ status: "proposed" }).eq("id", wagerId);
+    return { ok: false, result: "escrow_failed_try_again" };
+  }
 
   await emit(admin, gameId, "wager_accepted", {
     payload: { wagerId, challenger: challenger.name, opponent: opponent.name, amount: w.amount, game: w.game_desc },
@@ -145,19 +176,35 @@ export async function settleWager(
   const { data: w } = await admin.from("wagers").select("*").eq("id", wagerId).eq("game_id", gameId).single();
   if (!w) return { ok: false, result: "unknown_wager" };
   if (!["accepted", "disputed"].includes(w.status)) return { ok: false, result: `already_${w.status}` };
+  // winner must be a contestant — a typo'd LLM ruling must not pay a bystander (review #10)
+  if (winnerId && winnerId !== w.challenger_id && winnerId !== w.opponent_id)
+    return { ok: false, result: "winner_must_be_a_contestant" };
   const s = await loadState(admin, gameId);
   const challenger = s.players.find((p) => p.id === w.challenger_id);
   const opponent = s.players.find((p) => p.id === w.opponent_id);
 
+  // THE settle claim (review C1): exactly one caller wins this update; a
+  // simultaneous both-report can otherwise pay the pot twice
+  const { data: claimed } = await admin
+    .from("wagers")
+    .update({ status: winnerId ? "settled" : "voided", winner_id: winnerId })
+    .eq("id", wagerId)
+    .in("status", ["accepted", "disputed"])
+    .select("id");
+  if (!claimed?.length) return { ok: false, result: "already_settled" };
+
   if (!winnerId) {
-    await admin.from("wagers").update({ status: "voided" }).eq("id", wagerId);
     await credit(admin, gameId, w.challenger_id, w.amount, "stake refunded — the machine voids the book", "system");
     await credit(admin, gameId, w.opponent_id, w.amount, "stake refunded — the machine voids the book", "system");
-    // refund side bets
     const { data: bets } = await admin.from("side_bets").select("*").eq("wager_id", wagerId).eq("status", "open");
     for (const b of bets ?? []) {
-      await credit(admin, gameId, b.bettor_id, b.amount, "side bet refunded", "system");
-      await admin.from("side_bets").update({ status: "refunded" }).eq("id", b.id);
+      const { data: bc } = await admin
+        .from("side_bets")
+        .update({ status: "refunded" })
+        .eq("id", b.id)
+        .eq("status", "open")
+        .select("id");
+      if (bc?.length) await credit(admin, gameId, b.bettor_id, b.amount, "side bet refunded", "system");
     }
     await emit(admin, gameId, "wager_voided", { payload: { wagerId }, isPublic: true });
     return { ok: true, result: "voided" };
@@ -165,18 +212,20 @@ export async function settleWager(
 
   const winner = winnerId === w.challenger_id ? challenger : opponent;
   const loser = winnerId === w.challenger_id ? opponent : challenger;
-  await admin.from("wagers").update({ status: "settled", winner_id: winnerId }).eq("id", wagerId);
   await credit(admin, gameId, winnerId, w.amount * 2, `won — ${w.game_desc}`, "system");
 
-  // side bets: 1:1 against the house
+  // side bets: 1:1 against the house — each bet claimed atomically (review #1/#4)
   const { data: bets } = await admin.from("side_bets").select("*").eq("wager_id", wagerId).eq("status", "open");
   for (const b of bets ?? []) {
-    if (b.backing_id === winnerId) {
+    const won = b.backing_id === winnerId;
+    const { data: bc } = await admin
+      .from("side_bets")
+      .update({ status: won ? "won" : "lost" })
+      .eq("id", b.id)
+      .eq("status", "open")
+      .select("id");
+    if (bc?.length && won)
       await credit(admin, gameId, b.bettor_id, b.amount * 2, `side bet won — backed ${winner?.name}`, "rogue");
-      await admin.from("side_bets").update({ status: "won" }).eq("id", b.id);
-    } else {
-      await admin.from("side_bets").update({ status: "lost" }).eq("id", b.id);
-    }
   }
 
   await emit(admin, gameId, "wager_settled", {
@@ -208,16 +257,38 @@ export async function placeSideBet(
   const cap = wagerCap(me.balance, cfg);
   if (amount > cap || amount > me.balance) return { ok: false, result: "over_cap", cap };
 
-  const { error } = await admin.from("side_bets").insert({
-    game_id: gameId,
-    wager_id: wagerId,
-    bettor_id: me.id,
-    backing_id: backing.id,
-    amount,
-  });
+  const { data: bet, error } = await admin
+    .from("side_bets")
+    .insert({
+      game_id: gameId,
+      wager_id: wagerId,
+      bettor_id: me.id,
+      backing_id: backing.id,
+      amount,
+    })
+    .select("id")
+    .single();
   if (error)
     return { ok: false, result: error.message.includes("duplicate") ? "one_bet_per_book" : error.message };
-  await credit(admin, gameId, me.id, -amount, `side bet — backing ${backing.name}`, "system");
+  try {
+    await credit(admin, gameId, me.id, -amount, `side bet — backing ${backing.name}`, "system");
+  } catch {
+    await admin.from("side_bets").delete().eq("id", bet.id); // unfunded bet must not live (review #4)
+    return { ok: false, result: "stake_failed_try_again" };
+  }
+  // if the wager settled between our status check and now, the sweep missed
+  // this bet — self-refund rather than strand it open forever (review #4)
+  const { data: wNow } = await admin.from("wagers").select("status").eq("id", wagerId).single();
+  if (wNow && !["accepted", "disputed"].includes(wNow.status)) {
+    const { data: bc } = await admin
+      .from("side_bets")
+      .update({ status: "refunded" })
+      .eq("id", bet.id)
+      .eq("status", "open")
+      .select("id");
+    if (bc?.length) await credit(admin, gameId, me.id, amount, "side bet refunded — book closed", "system");
+    return { ok: false, result: "book_closed" };
+  }
   await emit(admin, gameId, "side_bet_placed", { payload: { wagerId }, actorId: me.id });
   return { ok: true, result: "the_house_notes_your_confidence" };
 }

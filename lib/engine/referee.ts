@@ -503,6 +503,8 @@ export async function applyDirectorMoves(
             .single();
           if (!w) throw new Error("unknown wager");
           const winner = move.winnerName ? byName(s, move.winnerName) : null;
+          // a typo'd ruling must ERROR, not silently become a void (review #10)
+          if (move.winnerName && !winner) throw new Error(`unknown winner "${move.winnerName}"`);
           const r = await settleWager(admin, gameId, move.wagerId, winner?.id ?? null);
           if (!r.ok) throw new Error(r.result);
           for (const pid of [w.challenger_id, w.opponent_id])
