@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { emit } from "@/lib/engine/state";
+import { tickDirector } from "@/lib/director/director";
 import type { Story, Character } from "@/lib/schemas/story";
 
 const Body = z.object({
@@ -83,7 +84,8 @@ export async function POST(req: Request) {
     const used = new Set(
       (others ?? []).map((p) => (p.character as Character | null)?.personaName).filter(Boolean)
     );
-    character = story.spares.find((c) => !used.has(c.personaName)) ?? null;
+    // ?. — rogue/tutorial stories may carry no murder-shaped spares
+    character = story.spares?.find((c) => !used.has(c.personaName)) ?? null;
   }
 
   // ROGUE: purses show the starting balance until the hijack "zeroes" them;
@@ -113,5 +115,8 @@ export async function POST(req: Request) {
     actorId: player.id,
     isPublic: true,
   });
+  // D47: the induction's first step waits for the second phone — joins advance it
+  if ((game.config as { tutorial?: boolean } | null)?.tutorial)
+    after(() => tickDirector(game.id, "event:player_joined").catch(console.error));
   return NextResponse.json({ playerId: player.id, rejoined: false });
 }

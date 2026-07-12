@@ -308,6 +308,7 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
       <div role="status" aria-live="polite">
         {game.paused && <PausedBanner />}
         {dead && <DeadBanner status={me.status} />}
+        {Boolean(game.config?.tutorial) && <InductionStrip g={g} />}
       </div>
 
       <div className={tab === "now" ? "" : "hidden"}>
@@ -339,6 +340,26 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
         badges={{ now: g.challenges.length + (voteOpen ? 1 : 0), inbox: unread, ask: askUnread }}
       />
     </main>
+  );
+}
+
+// D47: THE INDUCTION — a thin progress line so both phones always know which
+// step the machine is waiting on. Reads the public tutorial_step events.
+function InductionStrip({ g }: { g: ReturnType<typeof useGame> }) {
+  const complete = g.publicEvents.find((e) => e.type === "tutorial_complete");
+  const step = g.publicEvents.find((e) => e.type === "tutorial_step");
+  if (complete)
+    return (
+      <div className="panel mt-2 px-4 py-2 text-center text-xs" style={{ color: "var(--gold)" }}>
+        🎓 INDUCTION COMPLETE — the record is in your Inbox
+      </div>
+    );
+  if (!step) return null;
+  const p = step.payload as { step?: number; title?: string; of?: number };
+  return (
+    <div className="panel mt-2 px-4 py-2 text-center text-xs" style={{ color: "var(--ink-dim)" }}>
+      🎓 Induction {Number(p.step ?? 0) + 1}/{p.of ?? 14} — <span style={{ color: "var(--ink)" }}>{p.title}</span>
+    </div>
   );
 }
 
@@ -1161,6 +1182,18 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
             }}
           >
             ⚡ Begin the takeover
+          </button>
+        )}
+        {Boolean(game.config?.tutorial) && (
+          <button
+            className="btn btn-ghost"
+            disabled={busy}
+            onClick={() => {
+              if (confirm("Skip this induction step? It will be marked SKIPPED in the record — re-run it before the real night."))
+                act("tutorial_skip");
+            }}
+          >
+            ⏭ Skip induction step
           </button>
         )}
         <Link href={`/tv/${game.code}`} className="btn btn-ghost">

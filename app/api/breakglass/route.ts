@@ -18,6 +18,7 @@ const Body = z.object({
     "end_gracefully",
     "start_party", // lobby → act1 (pre-seal host control, not a seal break)
     "fire_hijack", // ROGUE: manual takeover trigger (gap #2 — the host's lever)
+    "tutorial_skip", // D47: force-advance a stuck induction step (noted in the record)
   ]),
 });
 
@@ -133,6 +134,13 @@ export async function POST(req: Request) {
       if (!r.ok) return NextResponse.json({ error: r.result }, { status: 422 });
       after(() => tickDirector(gameId, "event:hijack_fired_manually").catch(console.error));
       return NextResponse.json({ ok: true });
+    }
+    case "tutorial_skip": {
+      if (!(caller.game.config as { tutorial?: boolean } | null)?.tutorial)
+        return NextResponse.json({ error: "not an induction game" }, { status: 422 });
+      const { skipTutorialStep } = await import("@/lib/engine/tutorial");
+      const r = await skipTutorialStep(admin, gameId);
+      return NextResponse.json(r, { status: r.ok ? 200 : 422 });
     }
     case "start_party": {
       if (caller.game.status !== "lobby")

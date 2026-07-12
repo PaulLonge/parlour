@@ -114,5 +114,11 @@ HARD RULES (architectural, not optional): You only know what is in this prompt. 
   await emit(admin, game.id, "audience_held", {
     payload: { player: me.name, ai: parsed.data.ai },
   });
+  // D47: the induction's audience step completes on this event — nudge the runner
+  if ((game.config as { tutorial?: boolean } | null)?.tutorial) {
+    const { after } = await import("next/server");
+    const { tickDirector } = await import("@/lib/director/director");
+    after(() => tickDirector(game.id, "event:audience_held").catch(console.error));
+  }
   return NextResponse.json({ ok: true, answer });
 }

@@ -106,8 +106,19 @@
 ## UNPROVEN — waiting on the keys
 
 - **Everything.** Zero lines have executed against a database. First hour with keys:
-  both migrations → `npm run simulate` + `npm run simulate:rogue` → deploy → a full
-  sandbox playthrough on Paul's Pixel → REAL director spot-checks (replacing the
-  Fable-executed ones Paul already reviewed).
+  both migrations → `npm run simulate` + `npm run simulate:rogue` → deploy → **THE
+  INDUCTION (D47) on Paul's + Co-Host's phones** → REAL director spot-checks
+  (replacing the Fable-executed ones Paul already reviewed).
+- **What the induction covers vs doesn't (D47).** Covers, machine-verified on two
+  real phones: join/passwords, arrivals, inbox, expected/choice/glyph
+  verification, the hijack + vault lie, a bribe + meter tick, stamps + a note,
+  slip find, the full wager escrow/duel/both-report loop, accusation → burning,
+  unmasking → receipts/awards, realtime pushes both directions. Does NOT cover:
+  the LLM director's judgement/taste/latency (only the optional audience step
+  touches the model); adjudication of open answers; forgeries, petitions,
+  monkey's-paw twists, wiretap theatre (director-judgement paths — simulate +
+  the pub night are their tests); crowd scale (2 phones ≠ 15 on pub wifi);
+  hostile-network behaviour; the murder-mode game; November's generated story;
+  and the social read — whether any of it is FUN needs a room, not a script.
 - Real-world latency of the event→tick→move loop; Anthropic spend per hour of party;
   Supabase realtime behavior on party wifi; the glitch on real Android/iOS Safari.

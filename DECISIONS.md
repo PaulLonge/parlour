@@ -253,7 +253,34 @@ B-numbers are build-time engineering calls made inside the codebase.
   Cut: Ring of Fire, Medusa, Questions, Governor, Freeze, flip cup, Spoof. Write-ins
   accepted until the day before via prompting Claude.
 
-## Build decisions (Claude, build session)
+- **D46 — the Commissioner's Interview (Paul, July 2026).** *(Entry backfilled —
+  the decision predates it in `content/quiz-bank.json` and the director prompt.)*
+  Quiz-bank material about the host (later: guests) is elicited CONVERSATIONALLY
+  in chat — never form-filled — then banked as choice questions with plausible
+  decoys. The director samples the bank for quiz missions. Banked so far: Paul's
+  favourite anime (One Piece), Co-Host's (Spy x Family, per Paul). Open threads
+  live in the bank file.
+
+- **D47 — THE INDUCTION (Paul + Claude, July 2026).** The sandbox family gains a
+  guided two-phone tutorial/QA mode: a `/new` checkbox creates a rogue game whose
+  director is a DETERMINISTIC step-runner (`lib/engine/tutorial.ts` +
+  `content/tutorial-script.ts`) — no LLM, no cost, reproducible. Fourteen steps
+  teach every mechanic in-voice ("THE MACHINE runs staff induction"), and each
+  step is verified by the REAL mechanic it teaches (arrivals, expected-answer +
+  choice + glyph verification, a bribe, stamps + a note, a handed slip typed in,
+  a full escrowed wager + duel + both-report, an optional LLM audience, an
+  accusation → burning, the unmasking → receipts/awards). Completing it is
+  machine-verified proof those features work on two real phones — the QA record
+  is the event log, summarised into each player's Inbox at the end. Setup goes
+  through `applyDirectorMoves` (script proposes, referee disposes, logged to
+  director_log); the step pointer is the latest `tutorial_step` event; hosts get
+  a "skip step" lever (skips are noted in the record). Decisions within: voice =
+  in-character-lite; lives at `/new`, not `/sandbox` (it's a real game two phones
+  join normally); Co-Host sees the whole toolbox (consistent with D24 — the
+  surprise is WHO, not WHAT). Side effects promoted to all games: `/api/vote`
+  now ticks the director (a completed vote must close promptly even with no TV
+  heartbeat); notes/audience tick only in tutorial games (D38's
+  surveillance-delay stands elsewhere).
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
 - **B2 — realtime = postgres_changes + refetch, not broadcast channels.** Any relevant table change triggers a scoped refetch (`lib/client/useGame.ts`). RLS (WALRUS) guarantees a phone can only ever receive its own rows, so scoped delivery is *architectural*, with zero channel-auth code. Latency ~50–200ms is fine for beats. If fan-out ever feels slow, migrate to RLS-authorized broadcast channels (researched pattern) — isolated to `useGame`.

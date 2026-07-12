@@ -1,0 +1,398 @@
+import type { DirectorTool } from "@/lib/schemas/tools";
+
+// ---------------------------------------------------------------------------
+// THE INDUCTION (D47): a deterministic, two-phone tutorial/QA run for the
+// hosts. No LLM drives this — a fixed step list, executed through the SAME
+// referee as the real director, each step verified by the REAL mechanic it
+// teaches (delivered note, matched glyph, settled wager…). Completing the
+// induction is machine-verified proof that every feature works on real
+// phones over real wifi. Placeholders: {{host}}, {{second}}, {{code}}, {{sym}}.
+// ---------------------------------------------------------------------------
+
+export type TutorialCondition =
+  | { kind: "players"; count: number } // players joined
+  | { kind: "arrived"; count: number } // players tapped "I have arrived"
+  | { kind: "event"; type: string; count: number } // events of type since step start
+  | { kind: "notes"; count: number } // rows in notes (the post office moved)
+  | { kind: "votes"; count: number } // votes cast this round
+  | { kind: "auto" }; // advances on the next tick
+
+export type TutorialStep = {
+  key: string;
+  title: string; // shown on the TV line + the conductor's record
+  moves: DirectorTool[]; // referee-validated setup + instructions
+  done: TutorialCondition;
+  optional?: "llm"; // auto-skipped when no ANTHROPIC_API_KEY is set
+};
+
+// Sealed at create for tutorial games: gives the hijack an AI name to publish,
+// the audience route a voice, and the UI a currency. Single-voice by design —
+// the good AI's "(unused…)" name is filtered at the hijack (R3 convention).
+export const TUTORIAL_STORY = {
+  meta: {
+    title: "THE INDUCTION",
+    coverStoryTitle: "THE INDUCTION",
+    setting: "wherever you are both standing",
+    tagline: "the machine trains its instruments",
+  },
+  currency: { name: "Training Credits", symbol: "◎", drainedAmountClaim: "all of them" },
+  ais: {
+    rogue: {
+      name: "THE MACHINE",
+      voice:
+        "dry, precise, faintly amused; a machine running a mandatory staff induction. Patient, never cruel, quietly proud of its paperwork. This is training — answer questions helpfully, in voice.",
+    },
+    good: { name: "(unused tonight)" },
+  },
+  twist: { summary: "none — this is training; the only secret is how fond the machine is of its staff" },
+};
+export const TUTORIAL_STORY_PUBLIC = {
+  meta: { title: "THE INDUCTION", tagline: "the machine trains its instruments" },
+};
+
+const N = (i: number) => `🎓 INDUCTION — step ${i + 1} of 14`;
+
+export const TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    key: "assemble",
+    title: "Assembly",
+    moves: [
+      { tool: "announce", text: "STAFF INDUCTION — session open. Two instruments required.", viaAnnouncer: false },
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "info",
+        title: N(0),
+        body: "Welcome. You are instrument one. Have your second open this same address on THEIR OWN phone, enter code {{code}}, and tap their name to join. I will proceed when I can see you both. (Stuck at any point tonight? Your host panel has a 'skip induction step' button. Using it is noted in your file.)",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "players", count: 2 },
+  },
+  {
+    key: "arrive",
+    title: "The doors open",
+    moves: [
+      { tool: "advance_phase", to: "act1" },
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "task",
+        title: N(1),
+        body: "Both of you: on the Now tab, tap '🚪 I have arrived at the party'. Arrivals are story events — at the real party, latecomers get written in the moment they tap this.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "task",
+        title: N(1),
+        body: "Welcome, instrument two. On the Now tab, tap '🚪 I have arrived at the party'. I proceed when both of you have.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "arrived", count: 2 },
+  },
+  {
+    key: "letters",
+    title: "The post arrives",
+    moves: [
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "secret",
+        title: "A letter, sealed",
+        body: "Private mail lands in your Inbox tab, like this one. Nobody else can read it. Your word, for the mission that follows, is LANTERN.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "secret",
+        title: "A letter, sealed",
+        body: "Private mail lands in your Inbox tab, like this one. Nobody else can read it. Your word, for the mission that follows, is CUTLASS.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{host}}",
+        side: "good",
+        brief: "Reading comprehension. A letter in your Inbox contains a word in capitals. Type it here. (Missions verify themselves — a correct answer pays instantly, no judge required.)",
+        amount: 50,
+        verification: "submission",
+        expected: ["LANTERN"],
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{second}}",
+        side: "good",
+        brief: "Reading comprehension. A letter in your Inbox contains a word in capitals. Type it here. (Missions verify themselves — a correct answer pays instantly, no judge required.)",
+        amount: 50,
+        verification: "submission",
+        expected: ["CUTLASS"],
+        expiresInMinutes: 60,
+      },
+    ],
+    done: { kind: "event", type: "challenge_completed", count: 2 },
+  },
+  {
+    key: "takeover",
+    title: "THE TAKEOVER",
+    moves: [
+      { tool: "hijack" },
+      {
+        tool: "offer_mission",
+        playerName: "{{host}}",
+        side: "good",
+        brief: "Observation check. Look at YOUR PURSE on the Now tab. What does it read?",
+        amount: 50,
+        verification: "choice",
+        options: ["Zero — everything is gone", "Exactly what it was", "It doubled, somehow"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{second}}",
+        side: "good",
+        brief: "Observation check. Look at YOUR PURSE on the Now tab. What does it read?",
+        amount: 50,
+        verification: "choice",
+        options: ["Zero — everything is gone", "Exactly what it was", "It doubled, somehow"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "announce",
+        text: "That was the hijack: at the real party, THIS is the moment the promised game dies and every purse 'reads zero'. Tonight it is a drill. Note the meters that just appeared — the skull is what I take, the lantern is what honest work builds.",
+        viaAnnouncer: false,
+      },
+    ],
+    done: { kind: "event", type: "quiz_answered", count: 2 },
+  },
+  {
+    key: "offer",
+    title: "A private opportunity",
+    moves: [
+      {
+        tool: "offer_bribe",
+        playerName: "{{second}}",
+        amount: 150,
+        memo: "consulting fees",
+        mission: "Accept this and say nothing to {{host}} about it. That is the whole job. (Accepting a bribe is private, instant, and entirely your business. It also has consequences. It always does.)",
+        publicTrace: "someone in this room just invoiced the machine",
+        expiresInMinutes: 45,
+      },
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "info",
+        title: N(4),
+        body: "I have made {{second}} an offer. Watch the ☠ skull meter on your Now tab — when coins move, EVERYONE sees the meter move. Nobody sees whose pocket. That arithmetic is the whole game.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "event", type: "bribe_accepted", count: 1 },
+  },
+  {
+    key: "handshake",
+    title: "The glyph handshake",
+    moves: [
+      {
+        tool: "offer_mission",
+        playerName: "{{host}}",
+        side: "good",
+        brief: "Face-to-face verification. Ask {{second}} to show you the MARK at the bottom of their Now tab — they show, they never say. Tap the matching symbol here. It changes every ten minutes, so hearsay goes stale fast.",
+        amount: 100,
+        verification: "glyph",
+        shownPlayerName: "{{second}}",
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "task",
+        title: N(5),
+        body: "{{host}} is about to ask to see your mark — the symbol at the bottom of your Now tab. SHOW it; never say it aloud. This is how I know two of my instruments actually stood in the same place.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "event", type: "glyph_verified", count: 1 },
+  },
+  {
+    key: "post",
+    title: "The post office",
+    moves: [
+      {
+        tool: "grant_stamps",
+        playerName: "{{second}}",
+        everyone: false,
+        count: 1,
+        flourish: "The post office, feeling generous during training, issues you ONE stamp.",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "task",
+        title: N(6),
+        body: "You hold a stamp — posting rights, earned never given. Open your Inbox tab, tap '✉ Pass a note', and write something to {{host}}. Postage comes from your purse. I carry all letters. I also read them.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "info",
+        title: N(6),
+        body: "{{second}} is writing to you. Watch your Inbox. A note that arrives 'from {{second}}' was CARRIED by me — remember tonight that a signature proves nothing.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "notes", count: 1 },
+  },
+  {
+    key: "paper",
+    title: "Paper",
+    moves: [
+      {
+        tool: "mint_code",
+        codeText: "GROGWATCH",
+        kind: "slip",
+        writerName: "{{host}}",
+        instruction:
+          "Write GROGWATCH on any scrap of paper — receipt, napkin, anything — and hand it to {{second}}. At the real party, slips like this are HIDDEN, and finding one pays.",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "task",
+        title: N(7),
+        body: "{{host}} has been told to hand you a scrap of paper with a word on it. When it reaches you, type that word into 'found a slip' on your Now tab. Paper is the layer of this game your phone cannot fake.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "event", type: "code_found", count: 1 },
+  },
+  {
+    key: "wager",
+    title: "The wager",
+    moves: [
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "task",
+        title: N(8),
+        body: "Time to gamble. On your Now tab, open the wagers panel and CHALLENGE {{host}}: 50{{sym}} on a Reaction duel. When they accept, your stakes go into MY escrow. Play the duel on ONE phone (pass it between you), then — this part matters — BOTH of you report the winner on your OWN phones. Match, and I pay out. Disagree, and you will both explain yourselves to me.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "task",
+        title: N(8),
+        body: "{{second}} is about to challenge you to a duel for coins. Accept it on your Now tab, play it out on one phone, then report the winner on YOUR OWN phone. Both reports must agree before anyone is paid.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "event", type: "wager_settled", count: 1 },
+  },
+  {
+    key: "audience",
+    title: "An audience with the machine",
+    optional: "llm",
+    moves: [
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "task",
+        title: N(9),
+        body: "One of you: open the Ask tab and spend 50{{sym}} on a question to me. Anything. I answer in my own voice, and I am under no obligation to be useful. (This is the only step tonight that needs my full attention — if I stay silent for a minute, use your skip button; the wiring for it is tested separately.)",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "info",
+        title: N(9),
+        body: "Audiences cost coins on purpose — questions are the most valuable thing in this game, so they are priced like it.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "event", type: "audience_held", count: 1 },
+  },
+  {
+    key: "accusation",
+    title: "The accusation",
+    moves: [
+      { tool: "appoint_frontman", playerName: "{{second}}" },
+      { tool: "open_accusation" },
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "task",
+        title: N(10),
+        body: "The room may vote to name my human voice — my 'front man'. Name them RIGHTLY and they burn: exposed, but still playing. Name them WRONGLY and everyone pays for it. For training purposes I confess: tonight it is {{second}} — they took my coin at step 5. Cast the room's verdict on your Now tab: vote {{second}}.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "secret",
+        title: N(10),
+        body: "Bad news: you were my front man the moment you took that bribe, and for training purposes I have just told {{host}} so. Sit there and look innocent anyway. Burning is not elimination — nobody leaves my game.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "votes", count: 1 },
+  },
+  {
+    key: "verdict",
+    title: "The burning",
+    moves: [
+      { tool: "close_accusation" },
+      {
+        tool: "announce",
+        text: "Verdict in. A burning is theatre, not an exit: the burned player is exposed, keeps playing, and can never front for me again. A WRONG verdict, at the real party, hands me tempo instead. Choose carefully in November.",
+        viaAnnouncer: false,
+      },
+    ],
+    done: { kind: "event", type: "accusation_closed", count: 1 },
+  },
+  {
+    key: "unmasking",
+    title: "THE UNMASKING",
+    moves: [
+      { tool: "open_unmasking" },
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "task",
+        title: N(12),
+        body: "The night always ends with ONE final naming, together. Cast the final vote on your Now tab — anyone will do; this is a drill. Then watch what follows: receipts, awards, and everybody's night, itemised.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "info",
+        title: N(12),
+        body: "The final naming is two-sided: name the front man rightly and the room wins; miss, and I keep everything. Tonight the house wins either way. The house enjoys training.",
+        claimedSender: "THE MACHINE",
+      },
+    ],
+    done: { kind: "votes", count: 1 },
+  },
+  {
+    key: "curtain",
+    title: "Receipts, awards, the truth",
+    moves: [
+      { tool: "resolve_unmasking" },
+      {
+        tool: "announce",
+        text: "INDUCTION COMPLETE. Check your Inbox for your night, itemised — every coin you touched was on the books the whole time. It always is.",
+        viaAnnouncer: false,
+      },
+    ],
+    done: { kind: "auto" },
+  },
+];

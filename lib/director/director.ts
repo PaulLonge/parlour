@@ -66,6 +66,14 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
   if (s.game.status === "ended") return { skipped: "game ended" };
   if (s.game.paused) return { skipped: "paused (break-glass)" };
 
+  // D47: THE INDUCTION — tutorial games are driven by the deterministic
+  // step-runner, never the LLM. Runs BEFORE the coalesce window: its ticks
+  // are a handful of cheap queries and must react to every player action.
+  if (s.config.tutorial) {
+    const { tutorialTick } = await import("@/lib/engine/tutorial");
+    return tutorialTick(admin, s);
+  }
+
   // gap #3 (interim): coalesce tick stampedes — event bursts must not run
   // several directors at once. A tick within the window absorbs this trigger;
   // its own queue processing will see the same state. Proper advisory lock: backlog.

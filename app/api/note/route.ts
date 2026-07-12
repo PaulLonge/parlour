@@ -22,5 +22,12 @@ export async function POST(req: Request) {
 
   const admin = supabaseAdmin();
   const result = await sendNote(admin, caller.game.id, caller.player.id, parsed.data.to, parsed.data.text);
+  // D47 only: the induction's post-office step completes on delivery. Real
+  // games keep the no-tick rule above — surveillance deserves its delay.
+  if (result.ok && (caller.game.config as { tutorial?: boolean } | null)?.tutorial) {
+    const { after } = await import("next/server");
+    const { tickDirector } = await import("@/lib/director/director");
+    after(() => tickDirector(caller.game.id, "event:note_sent").catch(console.error));
+  }
   return NextResponse.json(result, { status: result.ok ? 200 : 422 });
 }

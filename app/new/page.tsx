@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PUB_PRESET } from "@/lib/schemas/config";
+import { PUB_PRESET, TUTORIAL_PRESET } from "@/lib/schemas/config";
 
 export default function NewGame() {
   const [title, setTitle] = useState("");
@@ -12,6 +12,7 @@ export default function NewGame() {
   const [pub, setPub] = useState(false);
   const [password, setPassword] = useState("");
   const [sandbox, setSandbox] = useState(false);
+  const [tutorial, setTutorial] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -30,11 +31,12 @@ export default function NewGame() {
       body: JSON.stringify({
         title: title || "The Gathering",
         hostName,
-        mode,
+        mode: tutorial ? "rogue" : mode,
         password: password.trim() || undefined,
         config: {
           targetEndAt: end.toISOString(),
           ...(pub ? PUB_PRESET : {}),
+          ...(tutorial ? TUTORIAL_PRESET : {}),
           ...(sandbox ? { timeScale: 10 } : {}),
         },
       }),
@@ -109,6 +111,15 @@ export default function NewGame() {
         <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
           <input type="checkbox" checked={sandbox} onChange={(e) => setSandbox(e.target.checked)} />
           Sandbox (solo test run — time ×10, possess any player)
+        </label>
+        <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
+          <input type="checkbox" checked={tutorial} onChange={(e) => setTutorial(e.target.checked)} />
+          <span>
+            🎓 Staff induction — the guided two-phone walkthrough
+            <span className="block text-xs italic opacity-70">
+              for the hosts: the machine teaches every mechanic and verifies each one works. ~30 min, two phones, no AI cost
+            </span>
+          </span>
         </label>
         {error && <p className="text-sm" style={{ color: "var(--accent)" }}>{error}</p>}
         <button className="btn" onClick={create} disabled={busy || !hostName.trim()}>

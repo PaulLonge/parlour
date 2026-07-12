@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-12 (rev 7 — review round 3: the cross-cutting pass; join flow unbricked, murder/rogue machinery mode-gated, pub post office opened)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-12 (rev 8 — THE INDUCTION: a guided two-phone tutorial/QA mode, D47; plus rev 7's cross-cutting review fixes)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -129,10 +129,22 @@ modes, 2 SQL migrations.
   other phone in realtime; sandbox `timeScale` now compresses kill-offer and
   wiretap timers too; the rogue's plunder target now emits its own public
   crossing event, symmetric with the good AI's compute target.
+- **THE INDUCTION (D47, new):** tick "🎓 Staff induction" at `/new` and the game
+  becomes a guided two-phone tutorial — a deterministic script (no LLM, no cost)
+  plays director, THE MACHINE teaches all fourteen mechanics in voice, and each
+  step only advances when the real mechanic verifies it happened (a delivered
+  note, a matched glyph, a settled wager…). It doubles as the QA harness: a
+  completed induction is machine-verified proof the engine works on two real
+  phones, and the record lands in both Inboxes. Hosts get a skip lever; skips
+  are noted. What it deliberately does NOT cover: the LLM director's judgement
+  (only the optional audience step touches the model), crowd-scale load, and
+  forgeries/petitions/wiretaps (director-judgement mechanics — exercised by
+  `simulate:rogue` instead).
 - **Not yet executed:** the app has never touched a live database — awaiting a
   Supabase project + Anthropic API key (~15 min of setup, `README.md` has the
-  checklist). First run: migrations → both simulate scripts → deploy → sandbox
-  playthrough.
+  checklist). First run: migrations → both simulate scripts → deploy → **the
+  induction on Paul's and Co-Host's phones** (it was built to be exactly this
+  first-hour test).
 - **Designed, not built:** the PDCA setup dialogue (host ↔ AI planning the physical
   night), the slip print-sheet page, TTS house voice, costume portraits, paper-pack
   export, November's story content (unblocked — the surprise is WHO, not WHAT).

@@ -39,6 +39,9 @@ export const GameConfig = z.object({
   stamplessNotes: z.boolean().default(false), // pub: easier flow, no stamps needed
   wagerCapPct: z.number().min(0.05).max(1).default(0.3), // AI-adjustable stake ceiling
   wagerCapFloor: z.number().default(10), // …but you can always bet at least this
+  // D47: THE INDUCTION — deterministic two-phone tutorial/QA; a scripted
+  // step-runner replaces the LLM director entirely for these games
+  tutorial: z.boolean().default(false),
 });
 
 // D44/D45: night 1 is THE FIELD TRIAL — a pub, openly AI-run, no personas,
@@ -53,6 +56,20 @@ export const PUB_PRESET: Partial<z.input<typeof GameConfig>> = {
   plunderTarget: 1500,
   computeTarget: 60,
   stamplessNotes: true,
+  mechanics: { codes: true, notes: true, forgeries: true },
+};
+// D47: THE INDUCTION — Paul + Co-Host, two phones, ~30 minutes. Cheap prices so
+// 500 credits comfortably cover every lesson; targets set out of reach so no
+// endgame-pressure event fires mid-training; stamps stay ON (they're a lesson).
+export const TUTORIAL_PRESET: Partial<z.input<typeof GameConfig>> = {
+  tutorial: true,
+  startingBalance: 500,
+  audienceCost: 50,
+  audienceCap: 3,
+  notePostage: 10,
+  plunderTarget: 999999,
+  computeTarget: 999999,
+  stamplessNotes: false,
   mechanics: { codes: true, notes: true, forgeries: true },
 };
 export type GameConfig = z.infer<typeof GameConfig>;
