@@ -35,17 +35,25 @@ export const GameConfig = z.object({
     })
     .default({ codes: true, notes: true, forgeries: true }),
   preset: z.enum(["full", "pub"]).default("full"),
+  // D45: THE FIELD TRIAL knobs
+  stamplessNotes: z.boolean().default(false), // pub: easier flow, no stamps needed
+  wagerCapPct: z.number().min(0.05).max(1).default(0.3), // AI-adjustable stake ceiling
+  wagerCapFloor: z.number().default(10), // …but you can always bet at least this
 });
 
-// D44: night 1 is a pub — no props to hide, no TV, shorter and louder.
-// Glyphs, quizzes, bribes, audiences, accusations all shine in a pub; paper
-// chains and the postal service don't.
+// D44/D45: night 1 is THE FIELD TRIAL — a pub, openly AI-run, no personas,
+// no misdirection. Slips are CARRIED not hidden (Paul brings them); the post
+// runs stampless for easy flow; wagers and table games carry the night.
 export const PUB_PRESET: Partial<z.input<typeof GameConfig>> = {
   preset: "pub",
   roundMinutes: 12,
   killChallengeExpiryMinutes: 8,
   audienceCost: 150,
-  mechanics: { codes: false, notes: false, forgeries: true },
+  startingBalance: 500,
+  plunderTarget: 1500,
+  computeTarget: 60,
+  stamplessNotes: true,
+  mechanics: { codes: true, notes: true, forgeries: true },
 };
 export type GameConfig = z.infer<typeof GameConfig>;
 

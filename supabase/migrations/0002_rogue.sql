@@ -120,6 +120,37 @@ create policy wagers_select_mine on public.wagers
     or opponent_id in (select id from public.players where auth_uid = auth.uid())
   );
 
+-- D45: side bets — back a side on someone else's accepted duel. 1:1 against
+-- the house (the machine pays winners and pockets losers; simple and in
+-- character). Settled when the wager settles.
+create table public.side_bets (
+  id         uuid primary key default gen_random_uuid(),
+  game_id    uuid not null references public.games(id) on delete cascade,
+  wager_id   uuid not null references public.wagers(id) on delete cascade,
+  bettor_id  uuid not null references public.players(id) on delete cascade,
+  backing_id uuid not null references public.players(id),  -- which contestant
+  amount     int not null check (amount > 0),
+  status     text not null default 'open',                  -- open | won | lost | refunded
+  created_at timestamptz not null default now(),
+  unique (wager_id, bettor_id)
+);
+alter table public.side_bets enable row level security;
+create policy side_bets_select_own on public.side_bets
+  for select using (bettor_id in (select id from public.players where auth_uid = auth.uid()));
+
+-- wagers are pub-social: an anonym-free public view (the whole point is the
+-- table seeing Dave take 60 off Co-Host at thumb war)
+create view public.wagers_public
+  with (security_invoker = off) as
+  select w.id, w.game_id, w.amount, w.game_desc, w.status, w.created_at,
+         c.name as challenger, o.name as opponent,
+         win.name as winner
+  from public.wagers w
+  join public.players c on c.id = w.challenger_id
+  join public.players o on o.id = w.opponent_id
+  left join public.players win on win.id = w.winner_id;
+grant select on public.wagers_public to anon, authenticated;
+
 -- notes (D38): player-to-player mail, carried by the machine. Delivery is
 -- instant UNLESS the sender or recipient is under surveillance (held for the
 -- director) — and active wiretaps receive silent copies. The house carries

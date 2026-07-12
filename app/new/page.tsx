@@ -10,6 +10,7 @@ export default function NewGame() {
   const [endTime, setEndTime] = useState("23:30");
   const [mode, setMode] = useState<"murder" | "rogue">("rogue");
   const [pub, setPub] = useState(false);
+  const [password, setPassword] = useState("");
   const [sandbox, setSandbox] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -30,6 +31,7 @@ export default function NewGame() {
         title: title || "The Gathering",
         hostName,
         mode,
+        password: password.trim() || undefined,
         config: {
           targetEndAt: end.toISOString(),
           ...(pub ? PUB_PRESET : {}),
@@ -72,6 +74,10 @@ export default function NewGame() {
             </button>
           </div>
         </div>
+        <label className="flex flex-col gap-1 text-sm" style={{ color: "var(--ink-dim)" }}>
+          Tonight's word (optional — keeps two nights from mixing; tell it to the table)
+          <input className="input lowercase" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="e.g. yellow" />
+        </label>
         <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-dim)" }}>
           <input type="checkbox" checked={pub} onChange={(e) => setPub(e.target.checked)} />
           🍺 Pub night (lite — faster rounds, no paper slips or postal service; glyphs, quizzes &amp; bribes carry it)

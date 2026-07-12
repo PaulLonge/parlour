@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-11 (rev 5 — stats/awards engine, receipts ceremony, intake form, pub-lite preset for the two-night plan)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-12 (rev 6 — THE FIELD TRIAL built: wagers, side bets, phone duels, night passwords, the pub story)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -56,6 +56,8 @@ and other players' testimony — never phantom sensors).
 | **Forgeries** | A mission grants "compose as an AI"; drafts parse through the director | Forward / edit / expose-to-one-witness — double-bluffable against its author |
 | **The post** | Player-to-player notes, carried by the machine | Requires an earned **stamp** (no stamp → go talk in person) + postage; surveilled mail is held/edited/dropped/leaked; **wiretaps** copy correspondence silently; signatures prove nothing |
 | **Quizzes & mini-games** | Tap-answer quizzes (about the host, about each other) and parley-scripted game rounds, paid in credits | Deterministic verification; drinking prompts always carry a "sip or confess" out |
+| **Wagers** (night 1's engine) | Challenge anyone — pub games or one-device phone duels (Reaction, Tap Race, Steady Hand); stakes escrow on accept; both report the winner | Mismatched reports go to the machine for arbitration ("two testimonies, one lie"); AI-set stake caps stop anyone going all-in |
+| **Side bets** | Back a contestant on someone else's accepted duel, 1:1 against the house | The Spyglass announces settlements — the whole pub sees who took whose coins |
 | **The private signals** | Guests: hold-◦ (panic = *less*) and "more please" (volunteer). Hosts: "⏭ feels slow" | All private, never public tallies. Guest boredom is detected from *behavior* (the director feeds anyone going quiet); the feels-slow nudge is hosts-only — the room's two calibrated sensors — sitting below break-glass in the control gradient |
 
 The reveal replays the receipts: every meter jump timestamped against its bribe,

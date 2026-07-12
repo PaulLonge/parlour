@@ -9,6 +9,7 @@ const Body = z.object({
   title: z.string().min(1).max(80).default("The Gathering"),
   hostName: z.string().min(1).max(40),
   mode: z.enum(["murder", "rogue"]).default("murder"),
+  password: z.string().max(30).optional(), // D45: the night selector word
   config: GameConfig.partial().default({}),
 });
 
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-  const { title, hostName, mode, config } = parsed.data;
+  const { title, hostName, mode, password, config } = parsed.data;
 
   const admin = supabaseAdmin();
   const code = Array.from(
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
   const fullConfig = GameConfig.parse(config);
   const { data: game, error: gErr } = await admin
     .from("games")
-    .insert({ code, title, mode, config: fullConfig })
+    .insert({ code, title, mode, config: fullConfig, join_password: password?.trim().toLowerCase() || null })
     .select()
     .single();
   if (gErr) return NextResponse.json({ error: gErr.message }, { status: 500 });

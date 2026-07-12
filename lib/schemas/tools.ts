@@ -127,6 +127,22 @@ export const OfferMission = z.object({
   expiresInMinutes: z.number().min(3).max(90).default(20),
 });
 
+export const ResolveWager = z.object({
+  tool: z.literal("resolve_wager"),
+  wagerId: z.string().uuid(),
+  winnerName: z
+    .string()
+    .optional()
+    .describe("omit to VOID (refund both) — for disputes where nobody deserves the pot"),
+  ruling: z.string().describe("your verdict, in voice, sent to both contestants"),
+});
+
+export const SetWagerCap = z.object({
+  tool: z.literal("set_wager_cap"),
+  pct: z.number().min(0.05).max(1).describe("max stake as a fraction of a player's balance"),
+  note: z.string().optional(),
+});
+
 export const GrantStamps = z.object({
   tool: z.literal("grant_stamps"),
   playerName: z.string().optional().describe("omit with everyone=true for a room-wide grant"),
@@ -253,6 +269,8 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   TapWire,
   HandleNote,
   GrantStamps,
+  ResolveWager,
+  SetWagerCap,
 ]);
 export type DirectorTool = z.infer<typeof DirectorTool>;
 

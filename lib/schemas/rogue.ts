@@ -64,15 +64,16 @@ export const RogueStory = z.object({
       .string()
       .describe("D20: when/how the rogue re-appoints after a burning or at will"),
   }),
-  characters: z.array(Character).min(4),
-  spares: z.array(Character).min(3),
+  // mins relaxed for persona-less nights (D45: THE FIELD TRIAL has no characters)
+  characters: z.array(Character),
+  spares: z.array(Character),
   missions: z.object({
-    rogue: z.array(Mission).min(10).describe("bribes: recruitment, misdirection, framing"),
-    good: z.array(Mission).min(10).describe("compute-paid: evidence, counter-intel, protection"),
+    rogue: z.array(Mission).describe("bribes: recruitment, misdirection, framing"),
+    good: z.array(Mission).describe("compute-paid: evidence, counter-intel, protection"),
   }),
   parleys: z
     .array(z.object({ trigger: z.string(), script: z.string() }))
-    .min(3)
+    .min(1)
     .describe("room-gathering beats; accusations (D20) happen here"),
   accusation: z.object({
     burnScript: z.string().describe("house-channel text when an accusation lands — the BURNING"),

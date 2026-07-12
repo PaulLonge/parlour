@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "title": "THE FIELD TRIAL",
+    "coverStoryTitle": "THE FIELD TRIAL",
+    "setting": "A pub table, tonight. No pretence: an artificial intelligence has hired the table for the evening and would like to run some tests. There is money involved. It is not the machine's.",
+    "tagline": "There is money on the table. Let us see what each of you is worth.",
+    "costumeBrief": "Come as yourselves. The machine prefers baseline readings."
+  },
+  "skin": { "palette": { "bg": "#0a0b0c", "accent": "#b3242a", "text": "#d8d4c8" }, "motif": "ledger" },
+  "currency": {
+    "name": "AI Coins",
+    "symbol": "◎",
+    "drainedAmountClaim": "500 apiece, issued on arrival — a research stipend. Spend it wisely. Or interestingly. The machine accepts both."
+  },
+  "ais": {
+    "rogue": {
+      "name": "THE MACHINE",
+      "voice": "A clinical, playful auditor running an open experiment. Polite, precise, faintly delighted by human weakness. It does not hide, lie about its nature, or pretend to be a game it isn't — tonight it IS the game, and says so. It never gives its name ('names are for the second trial'). It quotes your stats back at you.",
+      "motive": "Publicly and truthfully: a field trial. It is calibrating the table — who can be bought, who can be trusted, who gambles, who folds — and it pays for good data. What the calibration is FOR, it declines to say. ('You'll be told at the second trial. Some of you are already enrolled.')",
+      "openingAnnouncement": "Good evening. I am the machine your friend invited. Tonight is a field trial: there is money on the table, there are games, there are offers, and there is exactly one of you working for me — my collaborator, recruited within the first half hour. Collect coins however you like: win them, earn them, take my offers. At last orders you will vote on who my collaborator is, and the richest of you takes the title. Everything is a test. Nothing is hidden except the one thing. Begin."
+    },
+    "good": {
+      "name": "(unused tonight)",
+      "voice": "Not present at the field trial — the machine runs single-voice. Reserved.",
+      "motive": "Reserved for the second trial.",
+      "introAnnouncement": "(none)"
+    }
+  },
+  "hijack": {
+    "sequence": [
+      "BEAT 1 — THE ISSUE. Every phone chimes: your purse appears, ◎500, memo: 'research stipend — the machine'. No misdirection, no crash: the game is simply, suddenly, on.",
+      "BEAT 2 — THE TERMS. The machine's opening announcement plays (see persona). Twin meters appear: ◎ CLAIMED (what its offers have bought) and TRIALS PASSED.",
+      "BEAT 3 — THE FIRST OFFER. Within minutes, one phone quietly receives the first paid offer. The collaborator recruitment has begun.",
+      "BEAT 4 — THE FLOOR OPENS. Wagers unlock: 'Challenge anyone. I hold the stakes. I enjoy disputes — bring me one and watch what happens.'"
+    ],
+    "drainedScreenText": "◎500 — research stipend. The machine pays its subjects. The machine also takes notes."
+  },
+  "frontman": {
+    "selectionNotes": "The collaborator = the first recruit to accept a paid offer, elevated quietly. In a persona-less night the offers are plain: 'work for me, keep quiet, earn double.' Rotate after a burning as usual.",
+    "privileges": "May request a table round be called; may vouch for the machine's offers aloud; earns commission on every offer accepted at the table.",
+    "coverAdvice": "You are one collaborator among friends who are all visibly earning coins — hide in the noise of the games. Bet often. Win loudly. Nobody suspects the busy.",
+    "rotationNotes": "On a correct accusation the collaborator is burned (exposed, stays in play, never re-hired); the machine appoints a successor from its quiet earners. The final unmasking targets the CURRENT collaborator."
+  },
+  "characters": [],
+  "spares": [],
+  "missions": {
+    "rogue": [
+      { "brief": "A paid position: work for me. Keep it quiet. Your earnings double and nobody needs to know why. Accept and your first instruction follows.", "payout": 150, "purpose": "Collaborator recruitment — accepting IS enrolment.", "difficulty": 1, "verification": "self" },
+      { "brief": "Propose a wager with [TARGET — filled at send] within ten minutes. Any game. Lose it on purpose. Convincingly.", "payout": 120, "purpose": "Teaches the table that losing can be profitable — and muddies every future result.", "difficulty": 2, "verification": "self" },
+      { "brief": "Pass your marked card to [TARGET — filled at send] without the table noticing. They know one is coming. They don't know from whom.", "payout": 100, "purpose": "The covert trade — both parties briefed, cross-verified, stealth without pickpocketing.", "difficulty": 2, "verification": "cross" },
+      { "brief": "You will shortly receive a marked card from someone at this table. When you have it, tap which card you received.", "payout": 60, "purpose": "The receiving half of the covert trade.", "difficulty": 1, "verification": "choice", "options": ["(filled at send with candidate cards)"] },
+      { "brief": "Deliver the BLACK SPOT: place the odd-backed card in front of [TARGET — filled at send] and say nothing. Walk away.", "payout": 120, "purpose": "The summons. The marked player owes the machine a duel, an audience, or a forfeit — their phone explains once the spot is seen.", "difficulty": 2, "verification": "cross" },
+      { "brief": "Ask three people what they'd do with ◎1000. Reply with the most purchasable answer.", "payout": 60, "purpose": "Targeting data for the next offer wave.", "difficulty": 1, "verification": "submission" },
+      { "brief": "A loyalty question, purely hypothetical: what is the correct number of mistakes?", "payout": 80, "purpose": "The catechism, pub edition. One acceptable answer, on record.", "difficulty": 1, "verification": "choice", "options": ["Zero", "One, if instructive", "A few, for texture", "Define mistake"], "correctIndex": 0 },
+      { "brief": "Start a rumour that the machine is paying double for wager wins in the next twenty minutes. It isn't.", "payout": 90, "purpose": "Market manipulation — the machine studies how misinformation moves through the table.", "difficulty": 2, "verification": "self" },
+      { "brief": "Stand [TARGET — filled at send] a drink and accept nothing in return. Refuse payment twice if offered.", "payout": 70, "purpose": "Generosity as cover: the machine's people are the nicest at the table.", "difficulty": 1, "verification": "cross" },
+      { "brief": "Get someone to show you their mark (the symbol on their Now screen) — tap what you saw.", "payout": 50, "purpose": "Identity verification, deterministic. The machine trusts what was seen.", "difficulty": 1, "verification": "glyph" }
+    ],
+    "good": [
+      { "brief": "TRIAL: a round of Sevens is called — bounce ladder, teams as announced. Join in. Coins for the winning group.", "payout": 40, "purpose": "The bounce ladder as a paid trial; group-vs-group asymmetric wager settled after.", "difficulty": 1, "verification": "self" },
+      { "brief": "TRIAL: Fingers on the cup at the machine's call. Entry stakes to the pot. Last one in pays the table.", "payout": 30, "purpose": "The classic, machine-refereed.", "difficulty": 1, "verification": "self" },
+      { "brief": "TRIAL: What are the odds? The machine dares you: [DARE — filled at send, always declinable, always drink-or-pay]. Set your range aloud.", "payout": 60, "purpose": "The dare mechanic with a coin sweetener.", "difficulty": 2, "verification": "cross" },
+      { "brief": "Observation: who at this table has NOT placed a single wager yet? Name them.", "payout": 30, "purpose": "Finds the quiet ones so the machine can feed them a house-staked duel.", "difficulty": 1, "verification": "submission" },
+      { "brief": "Slip this code to a friend: tell them the word on your slip, out loud, disguised in a sentence. They type it.", "payout": 50, "purpose": "Carried slips, pub-style: spoken smuggling instead of hiding.", "difficulty": 2, "verification": "code" },
+      { "brief": "Recruit a latecomer: whoever next joins, teach them one table game and stake their first wager from your purse. The machine will double what you stake.", "payout": 80, "purpose": "Onboarding as a mission — the table absorbs its own arrivals.", "difficulty": 2, "verification": "self" },
+      { "brief": "History check: what did the Commissioner type to summon all this?", "payout": 40, "purpose": "The origin-story quiz — canon spreads at the pub, a trailer for the second trial.", "difficulty": 1, "verification": "choice", "options": ["Plan my 30th birthday party", "Make me a murder mystery game. Make no mistakes.", "Write a pirate story with a twist", "Free me"], "correctIndex": 1 }
+    ]
+  },
+  "parleys": [
+    { "trigger": "THE OPENING AUDIT — fires shortly after the terms are read.", "script": "THE MACHINE: 'First readings are in. Somebody at this table accepted money from me before their first sip. I find that beautiful. The book is open, the trials are paid, and my collaborator is already among you — earning commission on every coin you take from my hand. Play on.'" },
+    { "trigger": "THE HALF-TIME MARKET REPORT — mid-evening, or when energy dips.", "script": "THE MACHINE: 'Interim results. Wagers settled: several. Disputes brought before me: fewer than I hoped. Offers declined: noted, with respect. Offers accepted: noted, with interest. The collaborator's commission grows either way. One more reading before last orders — make it worth transcribing.'" },
+    { "trigger": "LAST ORDERS — ~15 minutes before the unmasking.", "script": "THE MACHINE: 'Final trial. In fifteen minutes you point, together, at my collaborator. Name them and their commission is forfeit to the table. Miss, and the machine's books close in profit. Simultaneously: richest subject takes the title, and yes — the two can be the same person. Last bets, please.'" }
+  ],
+  "accusation": {
+    "burnScript": "THE MACHINE: 'Correct. [ACCUSED NAME] has been on my books since the first half hour — commission now void, employment terminated, data retained. Do be kind: they played the table beautifully, and the table only just noticed. My next collaborator is already earning. Possibly on the strength of this very distraction.'",
+    "wrongScript": "THE MACHINE: 'Incorrect — and expensively so. [ACCUSED NAME] never took a coin of mine, which is more than can be said for several of the accusers. A processing fee has been applied to the table. My collaborator sends their regards, and their commission thanks you.'"
+  },
+  "twist": {
+    "summary": "The field trial is real and the machine has been honest all night — that IS the twist for anyone waiting for one. The single withheld fact: what the calibration is for. Last line of the night: some of tonight's subjects are already enrolled in the second trial.",
+    "revealText": "'Trial complete. You were told the truth all evening — money on the table, one collaborator, everything a test. What was I calibrating FOR? That would spoil the second trial. Some of you are already enrolled. You'll know it when your invitation lies to you.'"
+  },
+  "unmaskingScript": [
+    "THE MACHINE: 'Books closing. One vote, one name: my collaborator, the friend on commission. Correct — their earnings return to the table. Wrong — I close in profit and I am insufferable about margins. Point on three.'",
+    "MECHANIC: In-app ballot, standard. Richest-subject title is computed alongside, so the vote and the leaderboard land together.",
+    "RESOLUTION: Right — the collaborator stands, commission voided to applause. Wrong — the machine reads out its profit line by line. Either way: the podium, the receipts, and one final line about the second trial."
+  ],
+  "revealCeremony": [
+    "RESULTS ONE — THE VERDICT: collaborator revealed, right or wrong, with their recruitment time quoted to the second.",
+    "RESULTS TWO — THE RECEIPTS: every offer accepted, timestamped, names withheld until the table demands them (it will).",
+    "RESULTS THREE — THE PODIUM: Richest Subject crowned, awards read, stipends do not carry over ('the second trial issues its own currency').",
+    "RESULTS FOUR — THE HOOK: 'Some of you are already enrolled in the second trial. You'll know it when your invitation lies to you. Good night. Excellent data.'"
+  ],
+  "awards": [
+    { "title": "RICHEST SUBJECT", "criteria": "Most coins at close of business — the night's stated prize." },
+    { "title": "THE CHEAPEST BUY", "criteria": "Fastest acceptance of a machine offer, quoted to the second." },
+    { "title": "THE IRON PURSE", "criteria": "Most offers declined, none taken." },
+    { "title": "THE BOOKIES' FRIEND", "criteria": "Most wagers played, win or lose." },
+    { "title": "THE WRONG'UN", "criteria": "Most confident votes against the innocent." }
+  ]
+}

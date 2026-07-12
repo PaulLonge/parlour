@@ -22,6 +22,7 @@ import {
 import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
 import { Accordion, InfoDot, TabBar } from "@/lib/client/ui";
 import { SandboxBar } from "@/lib/client/SandboxBar";
+import { WagerHub } from "@/lib/client/wager-hub";
 
 const PHASE_LABEL: Record<string, string> = {
   none: "",
@@ -83,6 +84,8 @@ function Center({ children }: { children: React.ReactNode }) {
 // ---------------------------------------------------------------------------
 function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
   const [newName, setNewName] = useState("");
+  const [password, setPassword] = useState("");
+  const [needsPassword, setNeedsPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -90,10 +93,15 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
     setBusy(true);
     setError("");
     try {
-      let res = await g.actions.join(name);
+      let res = await g.actions.join(name, false, {}, password.trim() || undefined);
+      if (res.status === 401 && res.needsPassword) {
+        setNeedsPassword(true);
+        setError(password ? "That's not tonight's word." : "");
+        return;
+      }
       if (res.status === 409 && res.needsTakeover) {
         if (confirm(`"${name}" is already playing on another phone. Is that you? Take over on this device?`))
-          res = await g.actions.join(name, true);
+          res = await g.actions.join(name, true, {}, password.trim() || undefined);
         else return;
       }
       if (!res.ok && !res.playerId) setError(res.error?.toString() ?? "couldn't join");
@@ -113,6 +121,23 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
           {g.game!.story_public?.meta?.tagline ?? "Tap your name to step inside."}
         </p>
       </header>
+
+      {needsPassword && (
+        <div className="panel panel-hero flex flex-col gap-2 p-5">
+          <p className="kicker">tonight's word</p>
+          <input
+            className="input text-center tracking-[0.3em] lowercase"
+            aria-label="tonight's word"
+            placeholder="ask the table"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoFocus
+          />
+          <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
+            Two nights, two words — this just makes sure you're joining the right one.
+          </p>
+        </div>
+      )}
 
       {g.roster.length > 0 && (
         <div className="panel panel-hero flex flex-col gap-3 p-5">
@@ -401,6 +426,8 @@ function NowPanel({
           />
         )
       )}
+
+      {rogueLive && game.status === "live" && me.status === "alive" && <WagerHub g={g} />}
 
       {rogueLive &&
         game.status === "live" &&

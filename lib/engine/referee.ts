@@ -493,6 +493,37 @@ export async function applyDirectorMoves(
           detail = move.outcome;
           break;
         }
+        case "resolve_wager": {
+          requireRogue(s);
+          const { settleWager } = await import("./wagers");
+          const { data: w } = await admin
+            .from("wagers")
+            .select("challenger_id, opponent_id")
+            .eq("id", move.wagerId)
+            .single();
+          if (!w) throw new Error("unknown wager");
+          const winner = move.winnerName ? byName(s, move.winnerName) : null;
+          const r = await settleWager(admin, gameId, move.wagerId, winner?.id ?? null);
+          if (!r.ok) throw new Error(r.result);
+          for (const pid of [w.challenger_id, w.opponent_id])
+            await admin.from("messages").insert({
+              game_id: gameId,
+              player_id: pid,
+              round_no: s.game.round_no,
+              kind: "info",
+              title: "⚖ The machine rules",
+              body: move.ruling,
+            });
+          detail = r.result;
+          break;
+        }
+        case "set_wager_cap": {
+          requireRogue(s);
+          const cfg = { ...(s.game.config as Record<string, unknown>), wagerCapPct: move.pct };
+          await admin.from("games").update({ config: cfg }).eq("id", gameId);
+          await emit(admin, gameId, "wager_cap_changed", { payload: { pct: move.pct, note: move.note } });
+          break;
+        }
         case "grant_stamps": {
           requireRogue(s);
           const targets = move.everyone

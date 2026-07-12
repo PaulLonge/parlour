@@ -88,6 +88,26 @@ export type PublicEvent = {
   payload: Record<string, unknown>;
   created_at: string;
 };
+export type Wager = {
+  id: string;
+  challenger_id: string;
+  opponent_id: string;
+  amount: number;
+  game_desc: string;
+  status: string;
+  challenger_says: string | null;
+  opponent_says: string | null;
+  winner_id: string | null;
+};
+export type OpenBook = {
+  id: string;
+  amount: number;
+  game_desc: string;
+  status: string;
+  challenger: string;
+  opponent: string;
+  winner: string | null;
+};
 
 async function post(path: string, body: unknown) {
   // party wifi is hostile — a thrown fetch must never strand a busy-flag (review C1)
@@ -115,6 +135,8 @@ export function useGame(code: string) {
   const [transactions, setTransactions] = useState<Txn[]>([]);
   const [history, setHistory] = useState<Challenge[]>([]);
   const [myVote, setMyVote] = useState<string | null>(null);
+  const [wagers, setWagers] = useState<Wager[]>([]);
+  const [books, setBooks] = useState<OpenBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [gameId, setGameId] = useState<string | null>(null);
@@ -186,6 +208,23 @@ export function useGame(code: string) {
           .eq("round_no", (g as GameShell).round_no)
           .maybeSingle(),
       ]);
+      const [{ data: ws }, { data: bs }] = await Promise.all([
+        supa
+          .from("wagers")
+          .select("id, challenger_id, opponent_id, amount, game_desc, status, challenger_says, opponent_says, winner_id")
+          .eq("game_id", g.id)
+          .in("status", ["proposed", "accepted", "disputed"])
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supa
+          .from("wagers_public")
+          .select("id, amount, game_desc, status, challenger, opponent, winner")
+          .eq("game_id", g.id)
+          .eq("status", "accepted")
+          .limit(15),
+      ]);
+      setWagers((ws ?? []) as Wager[]);
+      setBooks((bs ?? []) as OpenBook[]);
       setMessages((msgs ?? []) as Msg[]);
       const all = (chs ?? []) as Challenge[];
       setChallenges(all.filter((c) => c.status === "offered"));
@@ -238,11 +277,18 @@ export function useGame(code: string) {
 
   const actions = useMemo(
     () => ({
-      join: (name: string, takeover = false, intake: Record<string, unknown> = {}) =>
-        post("/api/join", { code, name, takeover, intake }).then((r) => {
+      join: (name: string, takeover = false, intake: Record<string, unknown> = {}, password?: string) => {
+        // remember the night's word per game — possess/takeover flows reuse it
+        let pw = password;
+        try {
+          if (pw) localStorage.setItem(`parlour-pw-${code.toUpperCase()}`, pw);
+          else pw = localStorage.getItem(`parlour-pw-${code.toUpperCase()}`) ?? undefined;
+        } catch {}
+        return post("/api/join", { code, name, takeover, intake, password: pw }).then((r) => {
           refetch();
           return r;
-        }),
+        });
+      },
       arrive: () => post("/api/arrive", { code }).then((r) => (refetch(), r)),
       completeChallenge: (challengeId: string, victimName?: string) =>
         post("/api/challenge/complete", { code, challengeId, victimName }).then((r) => (refetch(), r)),
@@ -269,6 +315,15 @@ export function useGame(code: string) {
       sendNote: (to: string, text: string) =>
         post("/api/note", { code, to, text }).then((r) => (refetch(), r)),
       flagDragging: () => post("/api/flag", { code }),
+      // D45 wagers
+      proposeWager: (opponent: string, amount: number, game: string) =>
+        post("/api/wager", { action: "propose", code, opponent, amount, game }).then((r) => (refetch(), r)),
+      respondWager: (wagerId: string, accept: boolean) =>
+        post("/api/wager", { action: "respond", code, wagerId, accept }).then((r) => (refetch(), r)),
+      reportWager: (wagerId: string, winner: string) =>
+        post("/api/wager", { action: "report", code, wagerId, winner }).then((r) => (refetch(), r)),
+      sideBet: (wagerId: string, backing: string, amount: number) =>
+        post("/api/wager", { action: "sidebet", code, wagerId, backing, amount }).then((r) => (refetch(), r)),
     }),
     [code, refetch]
   );
@@ -283,6 +338,8 @@ export function useGame(code: string) {
     publicEvents,
     transactions,
     myVote,
+    wagers,
+    books,
     loading,
     error,
     refetch,

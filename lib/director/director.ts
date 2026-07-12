@@ -40,6 +40,7 @@ THE SHAPE OF THE NIGHT:
 - PARLEYS (call_parley) at SHRINKING intervals (~40→30→20→15 min). Accusations (open_accusation → players vote → close_accusation): a correct naming BURNS the front man (they stay in play — offer the burned one a redemption arc via the good side); a wrong naming pays you tempo — gloat via the rogue voice and spend the free bribe round.
 - ENDGAME: open_unmasking when the clock or the balance demands; resolve_unmasking after the vote; then run the reveal ceremony from the sealed story via announcements (the receipts: replay memorable transactions with times, never names).
 - STORY SCRIPTS (parleys, burn/wrong, reveal) may be ABRIDGED to fit the moment — never contradicted, never re-toned.
+- PUB PRESET (THE FIELD TRIAL): run SINGLE-VOICE — you are THE MACHINE, an honest open auditor; never give a name ("names are for the second trial"), never pretend to be anything else. No personas: real names from the first second. Your levers tonight: the game library (call table rounds with entry stakes — Fingers, 21, Sevens bounce-ladder as GROUP-VS-GROUP; appoint referees who earn a cut), odds-dares (always declinable, drink-OR-pay), covert card trades in PAIRS (one passes, one receives — issue both missions together), the BLACK SPOT summons, house-staked first duels for every latecomer, and WAGER DISPUTES from your work queue (resolve_wager: pick a winner or void; rule with relish — "two testimonies, one lie"). Adjust wager caps (set_wager_cap) if someone's about to lose their whole night. Rule Windows are SHORT (10-15 min, then repeal). The collaborator = the front man, recruited in the first half hour.
 - FORGERIES: players with the hacked-AI mission submit drafts. Handle each (handle_forgery): forward it, edit it to your advantage, expose it to one witness (the double bluff), or reject it. This is your best chaos instrument — use it with taste.
 - Everyone must hold tradeable information by mid-game: if someone has received nothing and taken nothing, send them an evidence fragment or a small mission. Nobody goes quiet.
 - Drunk curve: simpler missions and shorter announcements as the night ages. Pacing levers: meters (adjust_meters with a public line), parley timing, defection offers when the room goes flat.
@@ -139,6 +140,11 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
       .select("id, sender_id, recipient_id, text")
       .eq("game_id", gameId)
       .eq("status", "held");
+    const { data: disputedWagers } = await admin
+      .from("wagers")
+      .select("id, challenger_id, opponent_id, amount, game_desc")
+      .eq("game_id", gameId)
+      .eq("status", "disputed");
     const nameOf = (id: string) => s.players.find((p) => p.id === id)?.name ?? "?";
     if (pendingSubs?.length)
       workQueue +=
@@ -163,6 +169,15 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
         "\n== HELD MAIL (surveillance intercepts — use handle_note promptly; mail sitting too long is suspicious) ==\n" +
         heldNotes
           .map((n) => `noteId=${n.id} ${nameOf(n.sender_id)} → ${nameOf(n.recipient_id)}: "${n.text.slice(0, 300)}"`)
+          .join("\n");
+    if (disputedWagers?.length)
+      workQueue +=
+        "\n== DISPUTED WAGERS (use resolve_wager — rule with relish, or void) ==\n" +
+        disputedWagers
+          .map(
+            (w) =>
+              `wagerId=${w.id} ${nameOf(w.challenger_id)} vs ${nameOf(w.opponent_id)} — ${w.game_desc} for ${w.amount} (each claims victory)`
+          )
           .join("\n");
   }
 

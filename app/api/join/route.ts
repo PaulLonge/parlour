@@ -8,6 +8,7 @@ import type { Story, Character } from "@/lib/schemas/story";
 const Body = z.object({
   code: z.string().min(3).max(8),
   name: z.string().min(1).max(40),
+  password: z.string().max(30).optional(), // D45: the night selector word
   takeover: z.boolean().default(false), // reclaim your name from a new device
   intake: z
     .object({
@@ -34,15 +35,19 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-  const { code, name, takeover, intake } = parsed.data;
+  const { code, name, password, takeover, intake } = parsed.data;
 
   const admin = supabaseAdmin();
   const { data: game } = await admin
     .from("games")
-    .select("id, status, sealed_story, mode, hijacked_at, config")
+    .select("id, status, sealed_story, mode, hijacked_at, config, join_password")
     .eq("code", code.toUpperCase())
     .single();
   if (!game) return NextResponse.json({ error: "game not found" }, { status: 404 });
+
+  // D45: the night-selector word — stops phones wandering into the wrong night
+  if (game.join_password && password?.trim().toLowerCase() !== game.join_password)
+    return NextResponse.json({ needsPassword: true, error: "tonight's word, please" }, { status: 401 });
 
   const { data: existing } = await admin
     .from("players")

@@ -6,6 +6,7 @@ import { RogueStory } from "@/lib/schemas/rogue";
 import { emit } from "@/lib/engine/state";
 import goldenJson from "@/content/golden-story.json";
 import rogueReferenceJson from "@/content/rogue-reference-story.json";
+import pubStoryJson from "@/content/pub-story.json";
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -71,22 +72,25 @@ async function seal(
 // anyway, D29).
 export async function sealRogueReference(
   admin: SupabaseClient,
-  gameId: string
+  gameId: string,
+  variant: "reference" | "pub" = "reference"
 ): Promise<GenerateResult> {
-  const story = RogueStory.parse(rogueReferenceJson);
+  const story = RogueStory.parse(variant === "pub" ? pubStoryJson : rogueReferenceJson);
   const { data: players } = await admin
     .from("players")
     .select("id, name")
     .eq("game_id", gameId)
     .order("created_at");
+  // THE FIELD TRIAL is persona-less (D45): empty pool → nobody gets a character
   const pool = [...story.characters, ...story.spares];
-  for (const [i, p] of (players ?? []).entries()) {
-    const c = pool[i % pool.length];
-    await admin
-      .from("players")
-      .update({ character: { ...c, forPlayer: p.name } })
-      .eq("id", p.id);
-  }
+  if (pool.length)
+    for (const [i, p] of (players ?? []).entries()) {
+      const c = pool[i % pool.length];
+      await admin
+        .from("players")
+        .update({ character: { ...c, forPlayer: p.name } })
+        .eq("id", p.id);
+    }
   await admin
     .from("games")
     .update({

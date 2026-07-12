@@ -20,9 +20,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "story already sealed" }, { status: 422 });
 
   const admin = supabaseAdmin();
+  const isPub =
+    ((caller.game.config as { preset?: string })?.preset ?? "full") === "pub";
   const result =
     (caller.game as { mode?: string }).mode === "rogue"
-      ? await sealRogueReference(admin, caller.game.id)
+      ? await sealRogueReference(admin, caller.game.id, isPub ? "pub" : "reference")
       : await generateAndSealStory(admin, caller.game.id);
   // deliberately vague response — the seal stays intact
   return NextResponse.json({
