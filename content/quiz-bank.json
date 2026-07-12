@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "note": "D46: the Commissioner's Interview — quiz material about the host (and later guests), elicited CONVERSATIONALLY, never form-filled. The machine (or Claude, in chat) discovers a topic first, then banks a question about it. Wrong-answer options are written to be plausible-but-wrong. Grows until the day before each night.",
+    "lastUpdated": "2026-07-12",
+    "process": "Paul chats → a fact is learned → a question is drafted with Paul supplying the true answer → decoys added → banked here. The director samples this bank for quiz missions."
+  },
+  "facts": [
+    {
+      "about": "Paul",
+      "fact": "Likes anime (volunteered in chat, 2026-07-12 — topic open for follow-up).",
+      "source": "chat"
+    }
+  ],
+  "questions": [
+    {
+      "about": "Paul",
+      "question": "What is Paul's favourite anime?",
+      "options": ["PENDING — Paul to answer", "(decoys to be added once the truth is known)"],
+      "correctIndex": null,
+      "status": "awaiting-answer"
+    }
+  ]
+}

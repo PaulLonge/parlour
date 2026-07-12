@@ -42,6 +42,13 @@ export default function NewGame() {
     const json = await res.json();
     setBusy(false);
     if (!res.ok) return setError(json.error?.toString() ?? "something went wrong");
+    // the creator never passes through the join flow — cache tonight's word so
+    // sandbox possession and takeovers on this device don't bounce off it
+    if (password.trim()) {
+      try {
+        localStorage.setItem(`parlour-pw-${json.code}`, password.trim().toLowerCase());
+      } catch {}
+    }
     router.push(sandbox ? `/sandbox/${json.code}` : `/g/${json.code}`);
   }
 

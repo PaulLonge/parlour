@@ -5,6 +5,7 @@ import { loadState, summarizeForDirector } from "@/lib/engine/state";
 import { applyDirectorMoves, sweepExpiredChallenges } from "@/lib/engine/referee";
 import { DirectorProposal } from "@/lib/schemas/tools";
 import type { Story } from "@/lib/schemas/story";
+import quizBank from "@/content/quiz-bank.json";
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -116,6 +117,11 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
       `BURN SCRIPT + WRONG SCRIPT + UNMASKING + REVEAL CEREMONY: in the sealed story — quote them via announcements at the right beats.`,
       `ACCUSATION SCRIPTS: burn="${(rs.accusation?.burnScript ?? "").slice(0, 200)}…" wrong="${(rs.accusation?.wrongScript ?? "").slice(0, 200)}…"`,
     ].join("\n");
+    const ready = (quizBank.questions ?? []).filter(
+      (q: { status?: string; correctIndex?: number | null }) => q.status !== "awaiting-answer" && q.correctIndex !== null
+    );
+    if (ready.length)
+      storyDigest += `\nQUIZ BANK (D46 — personal quizzes, elicited from the host; use as choice missions verbatim): ${JSON.stringify(ready.slice(0, 12))}`;
   }
 
   // rogue work queue: unadjudicated submissions + pending forgeries
