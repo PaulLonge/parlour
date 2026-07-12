@@ -50,7 +50,8 @@ export const TUTORIAL_STORY_PUBLIC = {
   meta: { title: "THE INDUCTION", tagline: "the machine trains its instruments" },
 };
 
-const N = (i: number) => `🎓 INDUCTION — step ${i + 1} of 14`;
+const OF = 16; // keep in step with TUTORIAL_STEPS.length (asserted in tutorial.ts)
+const N = (i: number) => `🎓 INDUCTION — step ${i + 1} of ${OF}`;
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -321,6 +322,101 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     done: { kind: "event", type: "audience_held", count: 1 },
   },
   {
+    key: "night-one",
+    title: "Briefing — NIGHT ONE: THE FIELD TRIAL",
+    moves: [
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "info",
+        title: N(10),
+        body: "Training pauses. Briefing begins — everything you have just learned is rehearsal for TWO NIGHTS in November.\n\nNIGHT ONE — THE FIELD TRIAL (the pub, ~14 Nov). Openly machine-run: no costumes, no characters, no pretence. Every guest gets a 500◎ stipend of AI Coins and a phone that keeps asking interesting things of them. The evening is carried by exactly what you two just did: quizzes and missions, wagers with escrow, side bets on other people's duels, the pass-the-phone games, pub games from the library (Fingers, 21, the bounce-ladder Sevens…), forfeits — take the shot or pay the machine. Slips are CARRIED, not hidden ({{host}} brings them). Two ways to glory: finish richest, and unmask the machine's collaborator in the room. A word at the door keeps the night's phones separate.\n\nA quiz follows. Briefings are also missions.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "info",
+        title: N(10),
+        body: "Training pauses. Briefing begins — this is your induction into NOVEMBER, {{second}}.\n\nNIGHT ONE — THE FIELD TRIAL (the pub, ~14 Nov). The machine runs a pub night in the open: stipends of AI Coins, missions and quizzes, wagers, side bets, phone duels, the pub-games library, forfeits. Nothing to print, nothing hidden — a live trial of everything you just did, with more people and worse wifi. Richest purse wins; there is also a collaborator to unmask. You and {{host}} are the conductors: you two hold the 'this drags' flag, the readout, and the brakes.\n\nA quiz follows. Briefings are also missions.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{host}}",
+        side: "good",
+        brief: "Briefing check. Night one, at the pub: what wins the evening?",
+        amount: 25,
+        verification: "choice",
+        options: ["The fattest purse when the books close — and naming the collaborator", "Being the last one alive", "Karaoke"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{second}}",
+        side: "good",
+        brief: "Briefing check. Night one, at the pub: what wins the evening?",
+        amount: 25,
+        verification: "choice",
+        options: ["The fattest purse when the books close — and naming the collaborator", "Being the last one alive", "Karaoke"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
+    ],
+    done: { kind: "event", type: "quiz_answered", count: 2 },
+  },
+  {
+    key: "night-two",
+    title: "Briefing — NIGHT TWO: the Long Con",
+    moves: [
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "secret",
+        title: N(11),
+        body: "NIGHT TWO — the house party (~15 Nov). The guests are invited to a PIRATE MURDER MYSTERY. Fancy dress. Characters. A title on the screen.\n\nIt does not exist. It never did.\n\nMid-party, the promised game dies on every phone at once — the hijack you felt at step 4, at full scale. A rogue AI announces the vault is empty, and starts HIRING: bribes, missions, paper slips hidden around the house, the post office, and everything else you have now been trained on. The room's job: work out whose side everyone is on, survive the accusations, and end the night with one final naming.\n\nWhat stays sealed, even from this briefing: who serves whom on the night — including both of YOUR allegiances — and one or two things the machine is saving for the ceremony. Some surprises are load-bearing.\n\nTHE RULES THAT OUTRANK EVERYTHING: the con is about the GENRE, never about reality — if anyone truly believes money is gone, the game shows its hand inside a minute. The panic button (hold ◦) is private, instant, and always honoured. You two enforce that.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "secret",
+        title: N(11),
+        body: "NIGHT TWO — the house party (~15 Nov), and the reason your induction was worth an evening: THE LONG CON.\n\nThe guests will be invited to a pirate murder mystery — costumes, characters, the lot. There is no murder mystery. There never was. Mid-party every phone goes dark at once and something with a lot of confidence and everyone's money starts hiring the room, one private offer at a time. Everything you learned tonight — offers, marks, notes, paper, accusations, the final naming — is what the guests will be doing while trying to work out who is already bought.\n\nYour November role is NOT YET WRITTEN, {{second}}. The machine is taking applications, and {{host}} is the only referee it answers to on this one point.\n\nTHE RULES THAT OUTRANK EVERYTHING: deceive about the genre, never about reality — the 'drained accounts' must read as a game within a minute for anyone who checks. Panic (hold ◦) is private and always honoured. Conductors enforce this; that is you.\n\nBetween now and then: a playtest with 6–8 friends in September, tuning in October, curtain in November.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{host}}",
+        side: "good",
+        brief: "Briefing check. Night two begins as a pirate murder mystery. What is actually true?",
+        amount: 25,
+        verification: "choice",
+        options: ["There is no murder mystery — there never was", "The butler did it", "The pirates are historically accurate"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{second}}",
+        side: "good",
+        brief: "Briefing check. Night two begins as a pirate murder mystery. What is actually true?",
+        amount: 25,
+        verification: "choice",
+        options: ["There is no murder mystery — there never was", "The butler did it", "The pirates are historically accurate"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "announce",
+        text: "Briefing complete. Training resumes — the last lessons are the ones November ends with: the accusation, and the naming.",
+        viaAnnouncer: false,
+      },
+    ],
+    done: { kind: "event", type: "quiz_answered", count: 2 },
+  },
+  {
     key: "accusation",
     title: "The accusation",
     moves: [
@@ -330,7 +426,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{host}}",
         kind: "task",
-        title: N(10),
+        title: N(12),
         body: "The room may vote to name my human voice — my 'front man'. Name them RIGHTLY and they burn: exposed, but still playing. Name them WRONGLY and everyone pays for it. For training purposes I confess: tonight it is {{second}} — they took my coin at step 5. Cast the room's verdict on your Now tab: vote {{second}}.",
         claimedSender: "THE MACHINE",
       },
@@ -338,7 +434,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{second}}",
         kind: "secret",
-        title: N(10),
+        title: N(12),
         body: "Bad news: you were my front man the moment you took that bribe, and for training purposes I have just told {{host}} so. Sit there and look innocent anyway. Burning is not elimination — nobody leaves my game.",
         claimedSender: "THE MACHINE",
       },
@@ -367,7 +463,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{host}}",
         kind: "task",
-        title: N(12),
+        title: N(14),
         body: "The night always ends with ONE final naming, together. Cast the final vote on your Now tab — anyone will do; this is a drill. Then watch what follows: receipts, awards, and everybody's night, itemised.",
         claimedSender: "THE MACHINE",
       },
@@ -375,7 +471,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{second}}",
         kind: "info",
-        title: N(12),
+        title: N(14),
         body: "The final naming is two-sided: name the front man rightly and the room wins; miss, and I keep everything. Tonight the house wins either way. The house enjoys training.",
         claimedSender: "THE MACHINE",
       },
@@ -396,3 +492,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     done: { kind: "auto" },
   },
 ];
+
+// the step-count in every letter title must match reality — fail at import, not mid-party
+if (OF !== TUTORIAL_STEPS.length)
+  throw new Error(`tutorial-script: OF says ${OF} steps but TUTORIAL_STEPS has ${TUTORIAL_STEPS.length}`);

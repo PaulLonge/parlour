@@ -131,9 +131,14 @@ modes, 2 SQL migrations.
   crossing event, symmetric with the good AI's compute target.
 - **THE INDUCTION (D47, new):** tick "🎓 Staff induction" at `/new` and the game
   becomes a guided two-phone tutorial — a deterministic script (no LLM, no cost)
-  plays director, THE MACHINE teaches all fourteen mechanics in voice, and each
-  step only advances when the real mechanic verifies it happened (a delivered
-  note, a matched glyph, a settled wager…). It doubles as the QA harness: a
+  plays director, THE MACHINE teaches every mechanic in voice across sixteen
+  steps, and each step only advances when the real mechanic verifies it happened
+  (a delivered note, a matched glyph, a settled wager…). Steps 11–12 are the
+  NOVEMBER BRIEFING — Co-Host's formal intro: what THE FIELD TRIAL and the Long
+  Con each are, the plan through September/October, the conductor duties, and
+  the two rules that outrank everything. The briefing describes both nights'
+  shape and features but withholds allegiances and the ceremony's reserved
+  surprises. It doubles as the QA harness: a
   completed induction is machine-verified proof the engine works on two real
   phones, and the record lands in both Inboxes. Hosts get a skip lever; skips
   are noted. What it deliberately does NOT cover: the LLM director's judgement
