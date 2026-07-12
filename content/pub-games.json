@@ -1,0 +1,118 @@
+{
+  "_meta": {
+    "note": "THE FIELD TRIAL game library (D45b). Curated by Paul, July 2026. Write-ins accepted until the day before the pub night: tell Claude the game + rules and it lands here. Every drinking forfeit is drink-OR-pay (tribute variant: buy the Commissioner a shot).",
+    "lastUpdated": "2026-07-12"
+  },
+  "games": [
+    {
+      "key": "fingers",
+      "name": "Fingers",
+      "type": "group",
+      "equipment": "a cup",
+      "rules": "Everyone puts a finger on the cup. 3-2-1 — the guesser calls how many fingers will remain (players simultaneously keep or pull). Right = you're OUT (safe). Wrong = still in. Celebrate a right guess = back in. Last one in loses the pot.",
+      "appRole": "roster pick + entry stakes; loser settled by consensus reports",
+      "forfeit": "drink-or-pay"
+    },
+    {
+      "key": "twenty-one",
+      "name": "21",
+      "type": "group",
+      "equipment": "nothing",
+      "rules": "Count round the circle to 21. Saying two numbers reverses direction; three numbers skips a player. Mistakes forfeit. Whoever lands 21 invents a new rule for the next round.",
+      "appRole": "stakes + pot; the machine may record invented rules and enforce them by announcement",
+      "forfeit": "drink-or-pay"
+    },
+    {
+      "key": "sevens",
+      "name": "Sevens (Paul's rules — the bounce ladder)",
+      "type": "group-vs-group",
+      "equipment": "ping pong ball, a table",
+      "rules": "Bounce the ball ON then OFF the table once. Next player must do it twice, the next three times, round the circle. Bounce the wrong number (or lose the ball off-table mid-count) and the group starts again at one. Reach seven and the GROUP wins. Two groups may race — asymmetric sizes, times, and wagers allowed; coins settled after.",
+      "appRole": "TEAM WAGER: two rosters, stakes per side, completion reported by consensus/referee — the asymmetric group-vs-group wager type",
+      "forfeit": "losing group pays the pot"
+    },
+    {
+      "key": "odds",
+      "name": "What Are The Odds",
+      "type": "dare",
+      "equipment": "nothing",
+      "rules": "Dare someone: 'odds you do X?' They set a range ('1 in 10'). Countdown, both say a number. Match = they do it. (A dare mechanic more than a game — the machine and players both may issue them, with coin sweeteners.)",
+      "appRole": "the machine issues odds-dares as missions; player-to-player odds ride the duel flow",
+      "forfeit": "the dare itself"
+    },
+    {
+      "key": "never-have-i-ever",
+      "name": "Never Have I Ever",
+      "type": "group",
+      "equipment": "nothing",
+      "rules": "The machine deals the prompts; if you have — drink or pay. STATUS: question content pending Paul's vetting (sample batch first, per the D16 pattern). Keep it cheeky, never cruel; intake data may season it lightly.",
+      "appRole": "machine-dealt prompts to the table; vet before the night",
+      "forfeit": "drink-or-pay"
+    },
+    {
+      "key": "categories",
+      "name": "Categories",
+      "type": "group",
+      "equipment": "nothing",
+      "rules": "A category is named (the machine can deal one). Round the circle till someone repeats or blanks. Loser forfeits.",
+      "appRole": "category dealer + stakes",
+      "forfeit": "drink-or-pay"
+    },
+    {
+      "key": "rps",
+      "name": "Rock Paper Scissors",
+      "type": "duel",
+      "equipment": "nothing",
+      "rules": "Best of three. The canonical instant duel.",
+      "appRole": "escrowed duel, both-report",
+      "forfeit": "stake"
+    },
+    {
+      "key": "physical-trio",
+      "name": "Thumb war / Arm wrestle / Staring contest",
+      "type": "duel",
+      "equipment": "nothing",
+      "rules": "Pick your discipline when you challenge.",
+      "appRole": "escrowed duel, both-report",
+      "forfeit": "stake"
+    },
+    {
+      "key": "reaction",
+      "name": "Reaction",
+      "type": "phone-duel",
+      "equipment": "one phone, passed",
+      "rules": "Agree on your own phones; play on ONE device. Screen turns after a random delay — fastest tap wins; false start loses instantly. Best of three.",
+      "appRole": "in-app minigame, result recorded on the host device",
+      "forfeit": "stake"
+    },
+    {
+      "key": "tap-race",
+      "name": "Tap Race",
+      "type": "phone-duel",
+      "equipment": "one phone, passed",
+      "rules": "Twenty taps against the clock, alternating turns on the same phone. Faster time wins.",
+      "appRole": "in-app minigame",
+      "forfeit": "stake"
+    },
+    {
+      "key": "steady-hand",
+      "name": "Steady Hand",
+      "type": "phone-duel",
+      "equipment": "one phone, passed",
+      "rules": "Hold a finger dead still on the target. First wobble loses. Lethal after three pints.",
+      "appRole": "in-app minigame",
+      "forfeit": "stake"
+    },
+    {
+      "key": "rule-windows",
+      "name": "Rule Windows (Buffalo-lite / table rules)",
+      "type": "background",
+      "equipment": "nothing",
+      "rules": "SHORT-TERM only (Paul's call — not all-night): the machine activates a single table rule for ~10-15 minutes ('weak hand only', 'no first names') then repeals it. Caught = forfeit. THE MACHINE SAW THAT.",
+      "appRole": "machine announces activation + repeal; enforcement by snitch missions and the machine's own theatre",
+      "forfeit": "drink-or-pay"
+    }
+  ],
+  "cut": ["Ring of Fire", "Medusa", "Questions", "Cheers Governor", "Freeze", "Flip cup", "Spoof (redundant with Fingers)"],
+  "unconfirmed": ["Higher card draw / closest-to-21 duels (pack A exists — Paul to confirm)", "Coin flip calls"]
+}

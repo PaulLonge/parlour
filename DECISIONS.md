@@ -243,6 +243,16 @@ B-numbers are build-time engineering calls made inside the codebase.
   guesser calls the number of fingers remaining; right = you're OUT (safe), wrong =
   still in, celebrate a right guess = back in. Last one in loses.
 
+- **D45b — the pub game library, curated (Paul, July 2026).** `content/pub-games.json`
+  is canon: Fingers, 21, SEVENS (Paul's bounce-ladder rules — introduces the
+  GROUP-VS-GROUP ASYMMETRIC WAGER type: two rosters, different sizes/times/stakes,
+  settled after), What Are The Odds (as a dare mechanic), Never Have I Ever
+  (question content pending Paul's vetting), Categories, RPS + the physical trio
+  (duels), Reaction/Tap Race/Steady Hand (one-device phone duels), and RULE WINDOWS
+  (Buffalo-style table rules as machine-activated 10–15 min bursts, NOT all-night).
+  Cut: Ring of Fire, Medusa, Questions, Governor, Freeze, flip cup, Spoof. Write-ins
+  accepted until the day before via prompting Claude.
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
