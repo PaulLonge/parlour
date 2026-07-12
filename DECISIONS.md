@@ -301,6 +301,20 @@ B-numbers are build-time engineering calls made inside the codebase.
   chose to accept; the ceremony opens the books). The ONLY thing the briefing
   withholds is WHO — night-of allegiances, sealed from Paul too; Co-Host's own
   November role stays "not yet written" pending Paul's call.
+  **Added (Paul, July 2026): THE CATALOGUE & THE SHOPPING LIST (step 14, now
+  eighteen steps).** The briefing enumerates every game/challenge form the
+  machine can run (mission proof-types incl. host-quizzes, bribes, the social
+  economy, all wager forms + the pub library + rule windows + forfeits, set
+  pieces, the six ceremony awards) and the physical shopping list for both
+  nights — blank slips + pen, ping-pong ball + pint glass, one disposable card
+  pack (pub); TV on /tv/CODE, printed join QR, single-colour slips + envelopes
+  + stashed pens, ceremony prizes incl. the canon foam finger (house) — with
+  the paper-meets-phone loop (dictate → write → hand/hide → type → ledger)
+  stated as the implementation trick. Both letters are titled to be KEPT (the
+  shopping list doubles as the packing checklist); reading-verified by quiz.
+  NOTE: Co-Host's November role — Paul believes this was agreed; the log shows
+  it OPEN (three candidates, D-register/GAPS). Awaiting his restatement before
+  it becomes canon anywhere.
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
 - **B2 — realtime = postgres_changes + refetch, not broadcast channels.** Any relevant table change triggers a scoped refetch (`lib/client/useGame.ts`). RLS (WALRUS) guarantees a phone can only ever receive its own rows, so scoped delivery is *architectural*, with zero channel-auth code. Latency ~50–200ms is fine for beats. If fan-out ever feels slow, migrate to RLS-authorized broadcast channels (researched pattern) — isolated to `useGame`.

@@ -50,7 +50,7 @@ export const TUTORIAL_STORY_PUBLIC = {
   meta: { title: "THE INDUCTION", tagline: "the machine trains its instruments" },
 };
 
-const OF = 17; // keep in step with TUTORIAL_STEPS.length (asserted at the bottom of this file)
+const OF = 18; // keep in step with TUTORIAL_STEPS.length (asserted at the bottom of this file)
 const N = (i: number) => `🎓 INDUCTION — step ${i + 1} of ${OF}`;
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
@@ -453,6 +453,67 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         correctIndex: 0,
         expiresInMinutes: 60,
       },
+    ],
+    done: { kind: "event", type: "quiz_answered", count: 2 },
+  },
+  {
+    key: "the-catalogue",
+    title: "Briefing — THE CATALOGUE & THE SHOPPING LIST",
+    moves: [
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "info",
+        title: N(13),
+        body: "THE CATALOGUE — everything I know how to ask of a room.\n\nMISSIONS, by proof: typed PAPER CODES (slips found or handed); GLYPH handshakes (marks shown in person); CHOICE quizzes — including questions about {{host}}, with wrong answers written to be believed; PASSPHRASE missions (say a thing; the hearer types what they heard); OPEN answers I judge myself; CROSS-CONFIRMATION (someone else's phone quietly asks who did that to them); and FORGERY GRANTS — the earned right to write a message pretending to be me. I edit the ones I dislike.\n\nOFFERS: private bribes. Instant, secret, and side-changing.\n\nTHE SOCIAL ECONOMY: notes (stamps to post, postage per letter, carried and read by me); wiretaps; paid AUDIENCES; and PETITIONS — propose any scheme, and I grant it, refuse it, or grant it EXACTLY as worded. Word them carefully.\n\nWAGERS: any two players, stakes in my escrow, both report the winner; SIDE BETS for onlookers, paid by the house; PHONE DUELS on one device (Reaction, Tap Race, Steady Hand); the PUB LIBRARY — Fingers, 21, Sevens the bounce-ladder, What Are The Odds, Categories, Rock-Paper-Scissors; RULE WINDOWS (table rules I switch on for ten minutes at a time); and FORFEITS — take the shot, or pay me not to.\n\nSET PIECES: parleys (all hands to the screen), accusations (right = a burning; wrong = you fund me), and the final naming.\n\nTHE CEREMONY: the receipts, read aloud — then the awards: the Cheapest Buy, the Iron Purse, the Wrong'un, the Phoenix, the Ghost, and the Richest Pirate.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "info",
+        title: N(13),
+        body: "THE CATALOGUE — everything I know how to ask of a room.\n\nMISSIONS, by proof: typed PAPER CODES (slips found or handed); GLYPH handshakes (marks shown in person); CHOICE quizzes — including questions about {{host}}, with wrong answers written to be believed; PASSPHRASE missions (say a thing; the hearer types what they heard); OPEN answers I judge myself; CROSS-CONFIRMATION (someone else's phone quietly asks who did that to them); and FORGERY GRANTS — the earned right to write a message pretending to be me. I edit the ones I dislike.\n\nOFFERS: private bribes. Instant, secret, and side-changing.\n\nTHE SOCIAL ECONOMY: notes (stamps to post, postage per letter, carried and read by me); wiretaps; paid AUDIENCES; and PETITIONS — propose any scheme, and I grant it, refuse it, or grant it EXACTLY as worded. Word them carefully.\n\nWAGERS: any two players, stakes in my escrow, both report the winner; SIDE BETS for onlookers, paid by the house; PHONE DUELS on one device (Reaction, Tap Race, Steady Hand); the PUB LIBRARY — Fingers, 21, Sevens the bounce-ladder, What Are The Odds, Categories, Rock-Paper-Scissors; RULE WINDOWS (table rules I switch on for ten minutes at a time); and FORFEITS — take the shot, or pay me not to.\n\nSET PIECES: parleys, accusations (right = a burning; wrong = you fund me), and the final naming.\n\nTHE CEREMONY: the receipts, read aloud — then the awards: the Cheapest Buy, the Iron Purse, the Wrong'un, the Phoenix, the Ghost, and the Richest Pirate.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "task",
+        title: "🛒 THE SHOPPING LIST — what the machine cannot conjure",
+        body: "Keep this letter. It is the physical half of November.\n\nBOTH NIGHTS: everyone's phone + somewhere to charge; the door word, chosen and spoken; me, deployed, at one short address.\n\nNIGHT ONE (pub): a pocketful of BLANK SLIPS and a pen — I dictate a word, {{host}} writes it, hands it, someone types it; a ping-pong ball and a pint glass (Sevens); one DISPOSABLE pack of cards (trades and table games — expect casualties); a thirst for forfeits.\n\nNIGHT TWO (house): the TV on my channel all night (/tv/ + the code — it is also my heartbeat); the join QR, printed, at the door; SINGLE-COLOUR paper slips, a few envelopes, and pens stashed where I can send writers; pirate costume enforcement — {{host}}'s department, not mine; PRIZES for the ceremony (the foam finger for the Wrong'un is canon; the rest is shopping); and for the vault: nothing. The vault was never real.\n\nHOW PAPER MEETS PHONE, the entire trick: I dictate a word → a human writes it on paper → the paper is hidden or handed → a finder TYPES it in → the ledger moves. Paper is the one layer of me nobody can hack.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "task",
+        title: "🛒 THE SHOPPING LIST — what the machine cannot conjure",
+        body: "Keep this letter. It is the physical half of November.\n\nBOTH NIGHTS: everyone's phone + somewhere to charge; the door word, chosen and spoken; me, deployed, at one short address.\n\nNIGHT ONE (pub): a pocketful of BLANK SLIPS and a pen — I dictate a word, {{host}} writes it, hands it, someone types it; a ping-pong ball and a pint glass (Sevens); one DISPOSABLE pack of cards (trades and table games — expect casualties); a thirst for forfeits.\n\nNIGHT TWO (house): the TV on my channel all night (/tv/ + the code — it is also my heartbeat); the join QR, printed, at the door; SINGLE-COLOUR paper slips, a few envelopes, and pens stashed where I can send writers; pirate costume enforcement; PRIZES for the ceremony (the foam finger for the Wrong'un is canon; the rest is shopping); and for the vault: nothing. The vault was never real.\n\nHOW PAPER MEETS PHONE, the entire trick: I dictate a word → a human writes it on paper → the paper is hidden or handed → a finder TYPES it in → the ledger moves. Paper is the one layer of me nobody can hack.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{host}}",
+        side: "good",
+        brief: "Briefing check. Which of these does November NOT need you to buy?",
+        amount: 25,
+        verification: "choice",
+        options: ["Stamps — postage is digital, the machine sells it", "Blank paper slips", "A ping-pong ball"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{second}}",
+        side: "good",
+        brief: "Briefing check. How does paper meet phone?",
+        amount: 25,
+        verification: "choice",
+        options: ["A human writes a dictated word; a finder types it in", "The phone scans everything", "The machine prints the slips itself"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
       {
         tool: "announce",
         text: "Briefing complete. Training resumes — the last lessons are the ones November ends with: the accusation, and the naming.",
@@ -471,7 +532,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{host}}",
         kind: "task",
-        title: N(13),
+        title: N(14),
         body: "The room may vote to name my human voice — my 'front man'. Name them RIGHTLY and they burn: exposed, but still playing. Name them WRONGLY and everyone pays for it. For training purposes I confess: tonight it is {{second}} — they took my coin at step 5. Cast the room's verdict on your Now tab: vote {{second}}.",
         claimedSender: "THE MACHINE",
       },
@@ -479,7 +540,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{second}}",
         kind: "secret",
-        title: N(13),
+        title: N(14),
         body: "Bad news: you were my front man the moment you took that bribe, and for training purposes I have just told {{host}} so. Sit there and look innocent anyway. Burning is not elimination — nobody leaves my game.",
         claimedSender: "THE MACHINE",
       },
@@ -508,7 +569,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{host}}",
         kind: "task",
-        title: N(15),
+        title: N(16),
         body: "The night always ends with ONE final naming, together. Cast the final vote on your Now tab — anyone will do; this is a drill. Then watch what follows: receipts, awards, and everybody's night, itemised.",
         claimedSender: "THE MACHINE",
       },
@@ -516,7 +577,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{second}}",
         kind: "info",
-        title: N(15),
+        title: N(16),
         body: "The final naming is two-sided: name the front man rightly and the room wins; miss, and I keep everything. Tonight the house wins either way. The house enjoys training.",
         claimedSender: "THE MACHINE",
       },

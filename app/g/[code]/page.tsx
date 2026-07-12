@@ -358,7 +358,7 @@ function InductionStrip({ g }: { g: ReturnType<typeof useGame> }) {
   const p = step.payload as { step?: number; title?: string; of?: number };
   return (
     <div className="panel mt-2 px-4 py-2 text-center text-xs" style={{ color: "var(--ink-dim)" }}>
-      🎓 Induction {Number(p.step ?? 0) + 1}/{p.of ?? 17} — <span style={{ color: "var(--ink)" }}>{p.title}</span>
+      🎓 Induction {Number(p.step ?? 0) + 1}/{p.of ?? 18} — <span style={{ color: "var(--ink)" }}>{p.title}</span>
     </div>
   );
 }

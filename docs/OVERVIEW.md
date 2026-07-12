@@ -131,16 +131,20 @@ modes, 2 SQL migrations.
   crossing event, symmetric with the good AI's compute target.
 - **THE INDUCTION (D47, new):** tick "🎓 Staff induction" at `/new` and the game
   becomes a guided two-phone tutorial — a deterministic script (no LLM, no cost)
-  plays director, THE MACHINE teaches every mechanic in voice across seventeen
+  plays director, THE MACHINE teaches every mechanic in voice across eighteen
   steps, and each step only advances when the real mechanic verifies it happened
-  (a delivered note, a matched glyph, a settled wager…). Steps 11–13 are the
+  (a delivered note, a matched glyph, a settled wager…). Steps 11–14 are the
   NOVEMBER BRIEFING — Co-Host's formal intro: what THE FIELD TRIAL and the Long
   Con each are, the plan through September/October, the conductor duties, the
-  two rules that outrank everything, and HOW THE AI WORKS (director proposes /
+  two rules that outrank everything, HOW THE AI WORKS (director proposes /
   referee disposes / append-only ledger; what it can sense and why verification
-  looks the way it does; architectural blindness; the skull-meter confession).
-  Co-Host is briefed to Paul's own knowledge level (his call, July 2026) — the
-  only thing withheld from the briefing is WHO, which is sealed from Paul too. It doubles as the QA harness: a
+  looks the way it does; architectural blindness; the skull-meter confession),
+  THE CATALOGUE (every mission proof-type, offer, social-economy device, wager
+  form, pub game, set piece, and ceremony award), and THE SHOPPING LIST — the
+  physical half of both nights (slips + pen, ping-pong ball, disposable cards,
+  TV channel, printed QR, envelopes, prizes) with the paper-meets-phone loop
+  spelled out. Co-Host is briefed to Paul's own knowledge level (his call, July
+  2026) — the only thing withheld is WHO, which is sealed from Paul too. It doubles as the QA harness: a
   completed induction is machine-verified proof the engine works on two real
   phones, and the record lands in both Inboxes. Hosts get a skip lever; skips
   are noted. What it deliberately does NOT cover: the LLM director's judgement
