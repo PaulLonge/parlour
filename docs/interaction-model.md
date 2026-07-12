@@ -12,8 +12,10 @@ The generator prompt and the RogueStory schema must enforce this.
 | Mode | What it proves | Example |
 |---|---|---|
 | **CODE ENTRY** | a physical event happened | "Type the code on the slip you found behind the map" |
+| **GLYPH** *(D32/D41 — built)* | two humans met face-to-face, deterministically | "Get Co-Host to SHOW you her mark; tap it here" — per-player symbol rotates every 10 min, verified without any AI call |
+| **CHOICE** *(D41 — built)* | knowledge, machine-scored | multiple-choice quiz (incl. the Commissioner's Interview bank); a `correctIndex` scores it instantly, no AI call |
 | **CROSS-CONFIRMATION** | two humans corroborate | You're told to toast someone; their phone later asks "did anyone toast 'new management' at you? Who?" |
-| **SUBMISSION** | knowledge/observation, AI-judged | "Quote her answer word for word" / "Name who you think got a mission this round" |
+| **SUBMISSION** | knowledge/observation — expected-answer match first (D41: normalized edit distance), AI-judged only on misses/open answers | "Quote her answer word for word" / "Name who you think got a mission this round" |
 | **SELF-REPORT** | nothing (honor system) | "Done ✓" — allowed for flavor only, never for payouts above trivial |
 | **PHOTO** *(future)* | visual evidence, vision-model judged | "Photograph the slip where you hid it" — deferred |
 
@@ -45,9 +47,11 @@ The AI then orchestrates the physical night as CHAINS:
 - **Rotating screen codes**: the TV shows a short code during specific beats; typing it
   proves presence-at-that-moment (the only legal "location" mechanic).
 
-Engine model: a `codes` table (code, game_id, state: unplaced/hidden/found, hider,
-finder, timestamps) + missions referencing code ids. Every code event is an events-log
-entry → the evidence drumbeat stays honest.
+Engine model: a `codes` table (code, game_id, kind slip/envelope/note, state:
+printed/assigned/hidden/found/retired, hider, finder, timestamps — see
+`0002_rogue.sql`) + missions referencing code ids. Every code event is an
+events-log entry → the evidence drumbeat stays honest. (The host print-sheet
+page is still backlog — codes are minted by the director/host tools for now.)
 
 ## In-app voting & the screen question (D22)
 
@@ -63,7 +67,9 @@ entry → the evidence drumbeat stays honest.
 
 ## Persona weight is a dial (D23)
 
-`config.personaWeight`:
+`config.personaWeight` *(designed, not yet a real config key — D29 superseded it
+for ROGUE: personas die at the hijack regardless, and the pub night has no
+personas at all; the dial becomes real if/when a second murder-mode party wants it)*:
 - `full` — the NO QUARTER treatment: backstory, secret, mannerism, costume bit.
 - `light` — a name, a costume bit, two hooks. No homework. (Likely right for Paul's crowd; September playtest decides.)
 - `names` — guests are themselves, with purses and missions. Zero acting burden.

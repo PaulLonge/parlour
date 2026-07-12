@@ -19,6 +19,8 @@ export async function fireHijack(admin: SupabaseClient, gameId: string) {
   if (s.game.status !== "act1") return { ok: false, result: "hijack_requires_act1" };
 
   const c = cfg(s);
+  const story = s.game.sealed_story as Record<string, any> | null;
+  const sym = story?.currency?.symbol ?? "Ƀ";
   await admin
     .from("games")
     .update({ status: "live", round_phase: "none", hijacked_at: new Date().toISOString() })
@@ -34,21 +36,26 @@ export async function fireHijack(admin: SupabaseClient, gameId: string) {
         game_id: gameId,
         player_id: p.id,
         amount: 0,
-        memo: `PLUNDERED — ${c.startingBalance} Ƀ, the ledger says. The ledger lies.`,
+        memo: `PLUNDERED — ${c.startingBalance} ${sym}, the ledger says. The ledger lies.`,
         claimed_source: "vault",
       });
   }
   // the AI names become public knowledge the moment they speak (D33: the
-  // audience UI needs them; voices/motives stay sealed)
-  const story = s.game.sealed_story as Record<string, any> | null;
+  // audience UI needs them; voices/motives stay sealed). A single-voice night
+  // (the pub FIELD TRIAL marks its good AI "(unused tonight)") publishes no
+  // good name at all — the UI hides that door rather than labelling it.
   if (story?.ais) {
     const pub = (s.game.story_public ?? {}) as Record<string, unknown>;
+    const goodName: string | undefined = story.ais.good?.name;
     await admin
       .from("games")
       .update({
         story_public: {
           ...pub,
-          ais: { rogue: { name: story.ais.rogue?.name }, good: { name: story.ais.good?.name } },
+          ais: {
+            rogue: { name: story.ais.rogue?.name },
+            ...(goodName && !goodName.startsWith("(") ? { good: { name: goodName } } : {}),
+          },
           currency: story.currency ? { name: story.currency.name, symbol: story.currency.symbol } : undefined,
         },
       })

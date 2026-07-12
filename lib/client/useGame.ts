@@ -26,6 +26,8 @@ export type GameShell = {
   story_public: {
     meta?: { title?: string; genre?: string; tagline?: string; setting?: string };
     skin?: { palette?: { bg?: string; accent?: string; text?: string }; motif?: string };
+    currency?: { name?: string; symbol?: string };
+    ais?: { rogue?: { name?: string }; good?: { name?: string } };
   } | null;
 };
 export type Me = {
@@ -144,8 +146,10 @@ export function useGame(code: string) {
 
   const refetch = useCallback(async () => {
     const upper = code.toUpperCase();
+    // games_public, not games: a fresh device has no membership yet, and the
+    // join screen must render from this read (review R3 #1)
     const { data: g, error: gErr } = await supa
-      .from("games")
+      .from("games_public")
       .select(
         "id, code, title, status, round_no, round_phase, paused, mode, hijacked_at, meters, config, story_public"
       )
@@ -169,6 +173,7 @@ export function useGame(code: string) {
       supa
         .from("players")
         .select("id, name, is_host, status, role, balance, burned, stamps, intake, character, arrived_at")
+        .eq("game_id", g.id) // without this, a second game on the device returns 2 rows and maybeSingle errors (review R3 #2)
         .maybeSingle(),
       supa
         .from("events")
@@ -266,6 +271,7 @@ export function useGame(code: string) {
         .on("postgres_changes", { event: "*", schema: "public", table: "transactions", filter: f }, refetch)
         .on("postgres_changes", { event: "*", schema: "public", table: "games", filter: `id=eq.${gameId}` }, refetch)
         .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: f }, refetch)
+        .on("postgres_changes", { event: "*", schema: "public", table: "wagers", filter: f }, refetch)
         .subscribe();
       channelRef.current = ch;
     })();

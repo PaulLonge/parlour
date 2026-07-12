@@ -278,6 +278,29 @@ B-numbers are build-time engineering calls made inside the codebase.
   arming-by-acceptance, code chains, wrongful-vs-burning accusations, rotation rules,
   and the two-sided unmasking. All compile-verified only; first execution awaits keys.
 
+- **B11 — review round 3, the cross-cutting pass (2026-07-12).** Three parallel
+  reviewers (visual regression via Playwright, whole-repo architecture, docs-vs-code
+  drift) after the D45 build. Architecture found the round's showstopper: **the
+  join flow was unreachable** — the `games` RLS policy required membership, but a
+  fresh device needs the game shell before it can render the join screen at all.
+  Fixed with `games_public` (owner-executed view over the already-granted safe
+  columns, mirroring `players_public`; the room code is the capability). Same
+  pass: `useGame` players fetch scoped by game_id (second game on a device
+  bricked the first); `getCaller` uppercases codes (lowercase URL = every action
+  404'd); NoteComposer honours `stamplessNotes`; referee switch gained
+  `default: throw` (unmatched tools were logging silent OK verdicts); murder
+  machinery mode-gated against rogue games (advance_phase to `round.*`, kill
+  challenges; breakglass `skip_to_assembly` becomes a parley, `end_gracefully`
+  runs the full unmasking ceremony); `plunder_complete` crossing event (CALICO's
+  win pressure is code now, like BOSUN's); wagers added to realtime; timeScale
+  applied to kill-offer/wiretap expiries; single-voice nights show one Ask door;
+  currency symbol flows from story_public (pub pays ◎). Visual round confirmed
+  every round-2 fix as-rendered; docs round de-drifted README/SPEC/modes/
+  runbook/interaction-model (its one false positive — "no git repo" — was the
+  reviewer running git outside the space-containing path; repo verified fine).
+  Remaining work orders → GAPS.md (simulate the wager economy; prune dead
+  schema/config).
+
 ## Not built yet (deliberate, ordered by likely value)
 
 1. Pre-party intake/invitation drip flow (currently intake rides the join call; a nicer form + invite links wanted before September playtest)

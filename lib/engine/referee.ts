@@ -137,11 +137,15 @@ export async function applyDirectorMoves(
           if (!p) throw new Error(`unknown player "${move.playerName}"`);
           if (p.status !== "alive" && !(p.status === "lobby" && s.game.status === "act1"))
             throw new Error(`${p.name} is ${p.status}, cannot receive challenges`);
+          if (move.type === "kill" && s.game.mode === "rogue")
+            throw new Error("kill challenges are murder-mode machinery — rogue nights arm via bribes (review R3 #6)");
           if (move.type === "kill" && p.panic)
             throw new Error(`${p.name} pressed panic — never arm them`);
           if (move.type === "kill" && !["act1", "round"].includes(s.game.status))
             throw new Error(`kill challenges only in act1/rounds`);
-          const expires = new Date(Date.now() + move.expiresInMinutes * 60000).toISOString();
+          const chCfg = GameConfig.parse(s.game.config ?? {});
+          // timeScale applies here too, or sandbox runs wait real-time expiries (review R3 #9)
+          const expires = new Date(Date.now() + (move.expiresInMinutes / chCfg.timeScale) * 60000).toISOString();
           const { error } = await admin.from("challenges").insert({
             game_id: gameId,
             player_id: p.id,
@@ -176,6 +180,11 @@ export async function applyDirectorMoves(
           break;
         }
         case "advance_phase": {
+          // rogue games run on their own machinery (hijack / parley / accusation /
+          // unmasking tools). The murder LEGAL map must never walk one into
+          // `round.*` — there is no road back from there (review R3 #6).
+          if (s.game.mode === "rogue" && !["act1", "reveal", "ended"].includes(move.to))
+            throw new Error(`advance_phase → ${move.to} is murder machinery; rogue nights use hijack/parley/unmasking tools`);
           const err = await setPhase(admin, s, move.to as PhaseKey);
           if (err) throw new Error(err);
           break;
@@ -601,6 +610,12 @@ export async function applyDirectorMoves(
             move.line
           );
           break;
+        }
+        default: {
+          // exhaustiveness backstop (review R3 #5): a tool added to the union
+          // without a case must fail loudly, never log a silent ok-verdict.
+          const unhandled: never = move;
+          throw new Error(`unhandled tool ${(unhandled as { tool?: string }).tool}`);
         }
       }
     } catch (e) {

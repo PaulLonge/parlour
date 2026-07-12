@@ -283,7 +283,7 @@
   ],
   "awards": [
     { "title": "Best Performance", "criteria": "The guest who most convincingly became their character" },
-    { "title": "Deadliest Guest", "criteria": "The traitor with the most kills — or the near-est miss" },
+    { "title": "Deadliest Guest", "criteria": "The traitor with the most kills — or the nearest miss" },
     { "title": "Sharpest Eye", "criteria": "The guest whose accusations were most often right" },
     { "title": "Most Dramatic Death", "criteria": "The victim who died like they meant it" },
     { "title": "Best Costume", "criteria": "The guest who dressed like the invitation threatened them" }

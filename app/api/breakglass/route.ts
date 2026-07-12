@@ -67,6 +67,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ paused: false });
     }
     case "skip_to_assembly": {
+      // mode-aware (review R3 #6): forcing a rogue game into `round.assembly`
+      // strands it in the murder machine. The rogue analogue of "gather
+      // everyone NOW" is a parley.
+      if (caller.game.mode === "rogue") {
+        if (caller.game.status !== "live")
+          return NextResponse.json({ error: "no gathering to force before the takeover" }, { status: 422 });
+        await admin
+          .from("games")
+          .update({ paused: false, round_phase: "parley", round_no: caller.game.round_no + 1 })
+          .eq("id", gameId);
+        await emit(admin, gameId, "parley_called", {
+          payload: { by: "the house", script: "All hands to the screen. Now.", via: "breakglass" },
+          isPublic: true,
+        });
+        after(() => tickDirector(gameId, "event:breakglass_skip").catch(console.error));
+        return NextResponse.json({ ok: true });
+      }
       await admin.from("games").update({ paused: false, status: "round", round_phase: "assembly" }).eq("id", gameId);
       await emit(admin, gameId, "phase_advanced", {
         payload: { to: "round.assembly", via: "breakglass" },
@@ -93,6 +110,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ twist: story?.twist?.summary ?? "(no story sealed)" });
     }
     case "end_gracefully": {
+      // mode-aware (review R3 #6): a live rogue night ends through THE
+      // UNMASKING — receipts, awards, the ceremony — never a bare endgame
+      // that skips resolveUnmasking.
+      if (caller.game.mode === "rogue" && caller.game.status === "live") {
+        await admin
+          .from("games")
+          .update({ paused: false, status: "unmasking", round_phase: "none", round_no: caller.game.round_no + 1 })
+          .eq("id", gameId);
+        await emit(admin, gameId, "unmasking_opened", { payload: { via: "breakglass" }, isPublic: true });
+        after(() => tickDirector(gameId, "event:breakglass_end").catch(console.error));
+        return NextResponse.json({ ok: true });
+      }
       await admin.from("games").update({ paused: false, status: "endgame", round_phase: "none" }).eq("id", gameId);
       await emit(admin, gameId, "phase_advanced", { payload: { to: "endgame", via: "breakglass" }, isPublic: true });
       after(() => tickDirector(gameId, "event:breakglass_end").catch(console.error));

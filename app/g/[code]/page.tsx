@@ -30,7 +30,8 @@ const PHASE_LABEL: Record<string, string> = {
   murder_window: "The candles gutter…",
   body_found: "Something has happened.",
   assembly: "🔔 Assembly — gather everyone",
-  vote: "🗳️ The vote is open",
+  // no ballot-box emoji: it renders near-black on the dark themes (review R3 visual #2)
+  vote: "▣ The vote is open",
   banishment: "Judgement",
   parley: "🏴 Parley — gather at the screen",
   accusation: "☠ An accusation is on the table — vote now",
@@ -297,7 +298,7 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
             (game.mode === "rogue" ? "The game will begin shortly… sharpening cutlasses…" : "Guests are gathering…")}
           {game.status === "round" && `Round ${game.round_no} — ${PHASE_LABEL[game.round_phase] ?? ""}`}
           {game.status === "live" && (PHASE_LABEL[game.round_phase] || "New management. Watch your purse.")}
-          {game.status === "unmasking" && "🗳 THE UNMASKING — one name, together"}
+          {game.status === "unmasking" && "▣ THE UNMASKING — one name, together"}
           {game.status === "endgame" && "The end approaches."}
           {game.status === "reveal" && "The truth."}
           {game.status === "ended" && "The evening is over."}
@@ -358,6 +359,7 @@ function NowPanel({
   const [busy, setBusy] = useState(false);
   const [nearMiss, setNearMiss] = useState(false);
   const aliveNames = g.roster.filter((p) => p.status === "alive" && p.id !== me.id).map((p) => p.name);
+  const sym = game.story_public?.currency?.symbol ?? "Ƀ"; // pub night pays in ◎, not Ƀ
 
   return (
     <div className="flex flex-col gap-4">
@@ -384,6 +386,7 @@ function NowPanel({
           <BribeCard
             key={c.id}
             c={c}
+            symbol={sym}
             busy={busy}
             onAccept={async () => {
               setBusy(true);
@@ -470,7 +473,7 @@ function NowPanel({
       {rogueLive && (
         <>
           <div className="relative">
-            <MetersStrip meters={game.meters} />
+            <MetersStrip meters={game.meters} currencySymbol={sym} />
             <span className="absolute top-1 right-1">
               <InfoDot
                 edge="right"
@@ -478,7 +481,7 @@ function NowPanel({
               />
             </span>
           </div>
-          <PurseChip balance={me.balance} transactions={g.transactions} />
+          <PurseChip balance={me.balance} transactions={g.transactions} symbol={sym} />
           <GlyphBadge gameId={game.id} playerId={me.id} />
         </>
       )}
@@ -528,11 +531,15 @@ function NoteComposer({ g }: { g: ReturnType<typeof useGame> }) {
   const [note, setNote] = useState("");
   const postage = Number(g.game!.config?.notePostage ?? 15);
   const stamps = g.me!.stamps ?? 0;
+  // pub FIELD TRIAL: the machine sells stamps at the counter — postage only
+  // (review R3 #4: the server honoured stamplessNotes; the UI didn't)
+  const stampless = g.game!.config?.stamplessNotes === true;
+  const sym = g.game!.story_public?.currency?.symbol ?? "Ƀ";
   const others = g.roster.filter((p) => p.status === "alive" && p.id !== g.me!.id);
 
   // D38a: no stamp, no post — go talk in person. The composer only exists for
   // players the machine has granted posting rights.
-  if (stamps < 1)
+  if (!stampless && stamps < 1)
     return (
       <p className="text-center text-xs italic" style={{ color: "var(--ink-dim)" }}>
         The post office doesn't know you. Posting rights are earned — or you could always just… walk over.
@@ -542,7 +549,8 @@ function NoteComposer({ g }: { g: ReturnType<typeof useGame> }) {
   if (!open)
     return (
       <button className="btn btn-ghost w-full" onClick={() => setOpen(true)}>
-        ✉ Pass a note · {stamps} stamp{stamps === 1 ? "" : "s"} · {postage}Ƀ postage
+        ✉ Pass a note ·{" "}
+        {stampless ? `${postage}${sym} postage` : `${stamps} stamp${stamps === 1 ? "" : "s"} · ${postage}${sym} postage`}
       </button>
     );
 
@@ -595,7 +603,7 @@ function NoteComposer({ g }: { g: ReturnType<typeof useGame> }) {
           }
         }}
       >
-        Send · {postage}Ƀ
+        Send · {postage}{sym}
       </button>
       {note && (
         <p className="mt-2 text-sm" style={{ color: note.startsWith("Posted") ? "var(--gold)" : "var(--danger)" }}>
@@ -619,7 +627,9 @@ function AskPanel({
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
-  const names = (game.story_public as { ais?: { rogue?: { name?: string }; good?: { name?: string } } })?.ais;
+  const names = game.story_public?.ais;
+  // single-voice night (pub FIELD TRIAL): no good AI is published — one door, no picker
+  const twoVoices = Boolean(names?.good?.name);
   const cost = Number(game.config?.audienceCost ?? 250);
   const thread = audienceMessages.slice().reverse();
 
@@ -632,14 +642,20 @@ function AskPanel({
             hint={`One question, answered in its own voice, for ${cost} from your purse. Capped per night. It may lie. It may not reveal who serves whom — it enjoys being asked.`}
           />
         </p>
-        <div className="mt-3 flex gap-2">
-          <button className={`btn flex-1 text-xs ${ai === "rogue" ? "" : "btn-ghost"}`} onClick={() => setAi("rogue")}>
-            {names?.rogue?.name ?? "the villain"}
-          </button>
-          <button className={`btn flex-1 text-xs ${ai === "good" ? "" : "btn-ghost"}`} onClick={() => setAi("good")}>
-            {names?.good?.name ?? "the other one"}
-          </button>
-        </div>
+        {twoVoices ? (
+          <div className="mt-3 flex gap-2">
+            <button className={`btn flex-1 text-xs ${ai === "rogue" ? "" : "btn-ghost"}`} onClick={() => setAi("rogue")}>
+              {names?.rogue?.name ?? "the villain"}
+            </button>
+            <button className={`btn flex-1 text-xs ${ai === "good" ? "" : "btn-ghost"}`} onClick={() => setAi("good")}>
+              {names?.good?.name ?? "the other one"}
+            </button>
+          </div>
+        ) : (
+          <p className="mt-3 text-center text-xs italic" style={{ color: "var(--ink-dim)" }}>
+            {names?.rogue?.name ?? "the machine"} is listening.
+          </p>
+        )}
         <textarea
           className="input mt-3 h-20"
           aria-label="your question for the machine"

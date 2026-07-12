@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-12 (rev 6 — THE FIELD TRIAL built: wagers, side bets, phone duels, night passwords, the pub story)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-12 (rev 7 — review round 3: the cross-cutting pass; join flow unbricked, murder/rogue machinery mode-gated, pub post office opened)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -110,13 +110,25 @@ Purse, The Wrong'un, The Phoenix, The Ghost).
 | Content | Stories as zod-validated JSON (`RogueStory` schema) | One generator serves the hand-refined reference story AND the sealed party story; validators reject unplayable generations mechanically |
 | Testing | `npm run simulate` + `npm run simulate:rogue` | Full scripted games (no LLM) asserting phases, the kill/bribe locks, burnings, mail interception, unmasking |
 
-Repo: `github.com/PaulLonge/parlour` (private). ~20 API routes, 6 pages, 2 game
+Repo: `github.com/PaulLonge/parlour` (private). 22 API routes, 7 pages, 2 game
 modes, 2 SQL migrations.
 
 ## Current status (honest)
 
-- **Built and compile-verified:** everything above, plus a three-agent adversarial UI
-  review (50 findings) with the criticals and highs fixed.
+- **Built and compile-verified:** everything above, plus three adversarial review
+  rounds (UI + money/security + a cross-cutting architecture pass) with all
+  criticals and highs fixed. Round 3's biggest catches, now fixed: a fresh phone
+  could never reach the join screen (the game shell was only readable to players
+  already *in* the game — solved with a `games_public` view); a lowercase room
+  URL joined fine but then failed every action; the pub night's note-posting was
+  blocked in the UI even though the server allowed it; and a forced
+  assembly/graceful-end from break-glass could strand a rogue game in murder-mode
+  machinery (both are now mode-aware — a rogue "end gracefully" runs the full
+  unmasking ceremony). Behaviour notes: on single-voice nights (the pub) the Ask
+  tab shows one door, not two; declines/settlements of wagers now push to the
+  other phone in realtime; sandbox `timeScale` now compresses kill-offer and
+  wiretap timers too; the rogue's plunder target now emits its own public
+  crossing event, symmetric with the good AI's compute target.
 - **Not yet executed:** the app has never touched a live database — awaiting a
   Supabase project + Anthropic API key (~15 min of setup, `README.md` has the
   checklist). First run: migrations → both simulate scripts → deploy → sandbox

@@ -1,5 +1,17 @@
 # PARLOUR — Host Run-book
 
+> **⚠ MURDER-MODE LEGACY (July 2026).** This run-book was written for the classic
+> murder night and is **out of date for the 30th**, which runs ROGUE (the Long
+> Con) plus a pub FIELD TRIAL night. Known drift, pending a rewrite: the host is
+> blind only to **WHO** (allegiances/front man) — you *do* read the story (D24);
+> the September playtest exercises the **rogue economy loop**, not the golden
+> murder story (D19); codes are **typed paper slips**, not prop QRs (D21/D32);
+> and the toolkit now includes the possess-in-place sandbox (`/sandbox/CODE`),
+> the conductor's readout, per-night join passwords, wagers/side bets, and the
+> break-glass `fire_hijack` lever — none of which appear below. The invitation
+> template below is for a murder night, **not** the long-con invitation (D19).
+> Until the rewrite, `docs/OVERVIEW.md` + `DECISIONS.md` are authoritative.
+
 The practical guide: what to do when, what to print, what to say, what to do when it
 breaks. Written for Paul's 30th but generic to any PARLOUR evening. The host is a blind
 player — this run-book contains **zero spoilers** and never will; it's safe to read.

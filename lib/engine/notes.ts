@@ -192,11 +192,13 @@ export async function setWiretap(
     if (tapper.id === target.id) return { ok: false, result: "cannot_tap_self" };
     tapperId = tapper.id;
   }
+  // timeScale applies to wiretap lifetimes too (review R3 #9)
+  const ts = Math.max(1, Number((s.game.config as { timeScale?: number } | null)?.timeScale ?? 1));
   const { error } = await admin.from("wiretaps").insert({
     game_id: gameId,
     tapper_id: tapperId,
     target_id: target.id,
-    expires_at: new Date(Date.now() + minutes * 60000).toISOString(),
+    expires_at: new Date(Date.now() + (minutes / ts) * 60000).toISOString(),
   });
   if (error) return { ok: false, result: error.message };
   await emit(admin, gameId, "wiretap_set", {

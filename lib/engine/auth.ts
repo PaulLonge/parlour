@@ -14,7 +14,8 @@ export async function getCaller(code: string): Promise<
   if (!user) return { ok: false, status: 401, error: "no session — join first" };
 
   const admin = supabaseAdmin();
-  const { data: game } = await admin.from("games").select("*").eq("code", code).single();
+  // codes are stored uppercase; a lowercase URL must not 404 every action (review R3 #3)
+  const { data: game } = await admin.from("games").select("*").eq("code", code.toUpperCase()).single();
   if (!game) return { ok: false, status: 404, error: "game not found" };
   const { data: player } = await admin
     .from("players")

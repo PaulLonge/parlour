@@ -1,8 +1,15 @@
 # PARLOUR — The Mode Library
 
-Design specs for mechanical modes beyond v1. Nothing here is built; each spec is
-written so a future session (Opus or otherwise) can build it without archaeology.
-Prereq reading: `SPEC.md` §the-three-seams.
+Design specs for mechanical modes beyond v1. Each spec is written so a future
+session (Opus or otherwise) can build it without archaeology. Prereq reading:
+`SPEC.md` §the-three-seams.
+
+> **Status update (July 2026): ROGUE is BUILT** — it shipped ahead of the order
+> below (D18/D19: it's the mode for the 30th) and is the default at `/new`. See
+> `lib/engine/rogue.ts`, `supabase/migrations/0002_rogue.sql`,
+> `scripts/simulate-rogue.ts`, and `docs/OVERVIEW.md` for what it became; the
+> ROGUE section below is preserved as the original design spec, and heist /
+> infection remain specced-unbuilt.
 
 ## The three-seam model
 
@@ -115,7 +122,7 @@ tuned in playtest). Story schema: `killMethods` → reused as `spreadMethods` ve
 
 ---
 
-## Mode: ROGUE — "The Alignment Problem" *(status: specced, unbuilt · effort: medium-high)*
+## Mode: ROGUE — "The Alignment Problem" *(status: **BUILT** — see the note at the top; spec preserved as-written below, superseded where the code differs: meters became plunder/compute/confidence denominated in the story's own currency, and parleys/accusations/the unmasking are live)*
 *Paul's idea, July 2026: "the AI could secretly be the villain… it's tricked me into
 vibe-coding an app that's drained everyone's bank account, pays people to become its
 minions, everyone has a bank on their phone, missions, a front man — and maybe a good
@@ -262,11 +269,17 @@ scope assemblies/votes per faction until a merged endgame. Applies to every mode
 Build alongside whichever mode is second.
 
 ## Recommended order
+
+*(Superseded July 2026: Rogue jumped the queue and shipped first — it's the
+mode for the 30th, and it built the meters + economy subsystem the heist spec
+wanted to inherit, so heist now inherits from rogue, not the reverse. Kept for
+the reasoning.)*
+
 1. v1 survives a real evening (unbuilt modes are worthless until then)
 2. **Infection** (smallest delta, biggest feel change, proven genre)
 3. **Heist** (best public-drama engine, best for mixed/soft groups — needs the progress
    track + blackout, so second)
 4. Team split as config, whenever casting is next touched
 5. Director-picks-the-mode-secretly (v1.5 moment)
-6. **Rogue** (wants heist's meters + the economy subsystem; the showpiece)
+6. **Rogue** (wants heist's meters + the economy subsystem; the showpiece) — **built first in practice**
 7. Cult / Cold War / Ghost Watch by demand

@@ -220,4 +220,20 @@ end;
 $$;
 revoke execute on function public.debit_if_covered(uuid, int) from anon, authenticated;
 
+-- Review R3 #1: the join screen must render BEFORE membership exists, but the
+-- games member policy makes the shell unreadable to a fresh device — a guest
+-- scanning the QR would see "no such evening" forever. Mirror players_public:
+-- an owner-executed view exposing ONLY the already-granted safe shell columns.
+-- The room code is the capability — same trust model as the QR on the door.
+create view public.games_public
+  with (security_invoker = off) as
+  select id, code, title, status, round_no, round_phase, paused, config,
+         story_public, created_at, mode, hijacked_at, meters
+  from public.games;
+grant select on public.games_public to anon, authenticated;
+
 alter publication supabase_realtime add table public.transactions;
+-- review R3: without this, a declined/settled wager never pings the other
+-- party's client — the "awaiting their nerve" card sticks until an unrelated
+-- event happens to fire. RLS (wagers_select_mine) scopes the notifications.
+alter publication supabase_realtime add table public.wagers;

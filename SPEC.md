@@ -1,5 +1,19 @@
 # PARLOUR — System Spec (ontology model)
 
+> **Scope note (July 2026).** §§1–5 describe **classic murder mode**, the engine's
+> first game and still accurate for it. The **ROGUE mode** built on top (the Long
+> Con — D18–D45) adds: game statuses `live` and `unmasking` with round-phases
+> `parley`/`accusation` (transitions owned by dedicated tools, not the LEGAL map);
+> an economy layer (`transactions`, cached `players.balance`, escrowed `wagers` +
+> `side_bets`); paper `codes`, `notes` + `wiretaps`, `forgeries`, `petitions`; and
+> ~19 further director tools (28 total in `lib/schemas/tools.ts` — hijack, bribes,
+> missions, adjudication, front-man appointment, parleys, accusations, the
+> unmasking, meters, mail-handling, stamps, wagers). The authoritative
+> mechanics-level description of the rogue night is `docs/OVERVIEW.md`; the
+> ontology below still holds where it isn't superseded (events as truth, referee
+> as sole mutator, visibility via RLS + column grants — `frontman_player_id` and
+> `join_password` are revoked exactly like `sealed_story`).
+
 How the engine works, in plain English, structured the way Palantir Foundry structures
 an ontology: **object types** (with properties and links), **action types** (who may do
 what, under which preconditions, with which effects), and the **processes** that animate

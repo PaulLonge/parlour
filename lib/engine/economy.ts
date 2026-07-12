@@ -66,6 +66,9 @@ export async function adjustMeters(
   const crossedComputeTarget =
     s.game.meters.compute < (s.config.computeTarget ?? Infinity) &&
     meters.compute >= (s.config.computeTarget ?? Infinity);
+  const crossedPlunderTarget =
+    s.game.meters.plunder < (s.config.plunderTarget ?? Infinity) &&
+    meters.plunder >= (s.config.plunderTarget ?? Infinity);
   s.game.meters = meters;
   await emit(admin, s.game.id, "meters_changed", {
     payload: { meters, line: publicLine ?? null },
@@ -76,6 +79,13 @@ export async function adjustMeters(
   if (crossedComputeTarget && s.game.mode === "rogue" && s.game.status === "live")
     await emit(admin, s.game.id, "compute_complete", {
       payload: { note: "the lantern is full — the good AI has enough. Run its victory beat." },
+      isPublic: true,
+    });
+  // review R3 #8: the rogue's win pressure is enforced symmetrically — one
+  // AI's endgame cannot be code while the other's is vibes.
+  if (crossedPlunderTarget && s.game.mode === "rogue" && s.game.status === "live")
+    await emit(admin, s.game.id, "plunder_complete", {
+      payload: { note: "the hold is full — the rogue has what it came for. Run its endgame pressure beat." },
       isPublic: true,
     });
 }

@@ -76,6 +76,37 @@ const MOCK_CANDIDATES = [
   { id: "4", name: "Jess" },
 ];
 
+// Decoy mock content is invented FOR the preview — the real cover story stays
+// server-side; the manor story must never bleed into the pirate mock (review R3).
+const MOCK_COVER_TITLE = "Dead Man's Cove";
+const MOCK_COVER_TAGLINE = "a pirate night of low deeds and lower tides";
+const MOCK_PIRATE = {
+  personaName: "Mad Sal of the Shallows",
+  archetype: "the quartermaster",
+  publicBlurb: "Keeps the crew's ledger and everyone's secrets — priced individually.",
+  costumeHint: "a sash, an unconvincing parrot, the ledger under one arm",
+  background: "Thirty years at sea, none of them honest.",
+  connections: [{ personaName: "Captain Ruff", what: "owes you a share" }],
+  secret: "You cannot actually swim.",
+  mannerism: "Taps the ledger twice before answering anything.",
+};
+const MOCK_PIRATE_MESSAGES = [
+  {
+    id: "p1",
+    kind: "info",
+    title: "Welcome aboard",
+    body: "Find your host, say 'permission to come aboard', and claim your first grog token.",
+    created_at: "",
+  },
+  {
+    id: "p2",
+    kind: "flavor",
+    title: "The tide is coming in",
+    body: "The captain counts the crew at eight bells. Nobody has seen the captain.",
+    created_at: "",
+  },
+];
+
 export default function Preview() {
   const [theme, setTheme] = useState<(typeof THEMES)[number]>(THEMES[0]);
   const [voted, setVoted] = useState<string | null>(null);
@@ -113,15 +144,19 @@ export default function Preview() {
               <header>
                 <div className="flex items-baseline justify-between gap-3">
                   <h1 className="font-display text-2xl leading-tight" style={{ color: "var(--gold)" }}>
-                    {golden.meta.title}
+                    {theme.rogue ? MOCK_COVER_TITLE : golden.meta.title}
                   </h1>
                   <span className="text-right text-sm italic whitespace-nowrap" style={{ color: "var(--ink-dim)" }}>
-                    {celia.personaName}
+                    {theme.cls === "theme-hijacked" ? "Co-Host" : theme.rogue ? MOCK_PIRATE.personaName : celia.personaName}
                   </span>
                 </div>
                 <hr className="divider my-2" />
                 <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
-                  Round 2 — 🗳️ The vote is open
+                  {theme.cls === "theme-hijacked"
+                    ? "New management. Watch your purse."
+                    : theme.rogue
+                      ? "The game will begin shortly… sharpening cutlasses…"
+                      : "Round 2 — ▣ The vote is open"}
                 </p>
               </header>
 
@@ -171,9 +206,10 @@ export default function Preview() {
                         sharpening cutlasses…
                       </p>
                     </div>
-                    <CharacterSheet ch={celia} />
-                    <MessageEnvelope m={MOCK_MESSAGES[0] as never} />
-                    <MessageEnvelope m={MOCK_MESSAGES[2] as never} />
+                    <CharacterSheet ch={MOCK_PIRATE as never} />
+                    {MOCK_PIRATE_MESSAGES.map((m) => (
+                      <MessageEnvelope key={m.id} m={m as never} />
+                    ))}
                   </>
                 ) : (
                   <>
@@ -202,15 +238,15 @@ export default function Preview() {
               <header className="relative text-center">
                 <p className="deco-rule kicker justify-center text-[0.55rem]">the house is listening</p>
                 <h1 className="candle font-display mt-2 text-4xl" style={{ color: "var(--gold)" }}>
-                  {golden.meta.title}
+                  {theme.rogue ? MOCK_COVER_TITLE : golden.meta.title}
                 </h1>
                 <p className="mt-1 text-sm italic" style={{ color: "var(--ink-dim)" }}>
-                  {golden.meta.tagline}
+                  {theme.rogue ? MOCK_COVER_TAGLINE : golden.meta.tagline}
                 </p>
               </header>
               <div className="relative flex flex-1 items-center justify-center px-6 text-center">
                 <p className="drift font-display text-2xl leading-snug">
-                  “{golden.killMethods[0].discoveryText}”
+                  “{theme.rogue ? "The tide keeps what it takes." : golden.killMethods[0].discoveryText}”
                 </p>
               </div>
               <footer className="relative flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs" style={{ color: "var(--ink-dim)" }}>

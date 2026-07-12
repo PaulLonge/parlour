@@ -1,7 +1,7 @@
 # PARLOUR — The Gap Register
 
-> **Last updated: 2026-07-11** · what's missing, unproven, or undecided — honestly.
-> Fixed items move to the bottom with their commit. Paul: add/strike freely.
+> **Last updated: 2026-07-12** · what's missing, unproven, or undecided — honestly.
+> Fixed items move to the bottom. Paul: add/strike freely.
 
 ## CRITICAL — would break the first sandbox run (being fixed now)
 
@@ -39,11 +39,25 @@
 
 - The rogue GENERATOR (November's factory: prompt + reference exemplar + validators
   — the story exists, the machine that writes the next one doesn't).
+- **Simulate coverage for the D45 economy** (review R3 work order): wagers
+  end-to-end (escrow/rollback, both-report, dispute, settle, side-bet sweeps),
+  the `submitResponse` verification ladder, `adjudicate`→meter crossing,
+  petitions/forgeries/mint_code/parley, `debit_if_covered` refusal. The FIELD
+  TRIAL's core money loop has never touched a database.
+- Dead schema/config pruning-or-wiring (review R3 #10): `beats` table,
+  `murders.discovered`, `messages.read_at`/`data`, `players.status='ghost'`,
+  and the unread config knobs (`roundMinutes`, `voteMinutes`,
+  `playersPerTraitor`, `arrivalThresholdPct`, `minPlayersToStart`,
+  `killChallengeExpiryMinutes`, `bribeTiers`/`computeTiers`) — wire them into
+  the director prompt or delete them before they calcify.
 - PDCA setup dialogue + visual venue panel (D26) · slip print-sheet page ·
   pre-party invite/character-reveal drip · TTS house voice · costume portraits ·
   paper-pack export · optional PWA/push · awards-ceremony interactivity ·
   hijacked-theme emoji muting · audience remaining-count · scheme status surface ·
-  modal focus-trap hardening · stamps decrement is read-modify-write (low stakes).
+  modal focus-trap hardening · host-runbook rewrite for ROGUE + the pub night
+  (banner added meanwhile) · `/api/director/tick` is unauthenticated when no
+  `x-tick-secret` is configured (known design: the TV metronome — but it's a
+  real-money endpoint; revisit before deploy).
 
 ## FIXED (this pass)
 
@@ -65,6 +79,29 @@
   `compute_complete` event the director must answer.
 - **D44 two nights**: pub-lite preset (fast rounds, codes/post OFF, cheaper
   audiences) as a /new checkbox; referee + UI + director all respect tonight's table.
+- **D45 FIELD TRIAL pass** (registered late): wagers with escrow + both-report +
+  disputes, side bets against the house, pass-and-play phone duels, per-night
+  join passwords, the pub story + curated game library, quiz bank (D46). Its
+  money paths carry the same atomic-claim discipline as bribes; its untested
+  surface is logged under KNOWN BACKLOG → simulate coverage.
+- **Review round 3 (2026-07-12) — cross-cutting pass, all fixed same-day**:
+  `games_public` view (a fresh device could never reach the join screen — the
+  games RLS policy required membership the guest didn't have yet); `useGame`
+  players fetch scoped by `game_id` (second game on a device bricked the first);
+  `getCaller` uppercases the room code (lowercase URLs joined fine then 404'd
+  every action); NoteComposer honours `stamplessNotes` (the pub post office was
+  UI-bricked); referee switch gained a `default: throw` exhaustiveness backstop
+  (unmatched tools logged silent OK verdicts); murder machinery mode-gated
+  against rogue games (`advance_phase` to `round.*`, kill challenges, breakglass
+  `skip_to_assembly`→parley, `end_gracefully`→the unmasking ceremony);
+  `plunder_complete` crossing event (the rogue's win pressure is now code, like
+  BOSUN's); wagers added to realtime (declines/settles now reach the other
+  party); `timeScale` applied to kill-offer + wiretap expiries; single-voice
+  nights hide the second Ask door; currency symbol flows from the story (pub =
+  ◎); stamps optimistic-concurrency item struck (fixed earlier). Docs de-drifted:
+  README (both migrations, both simulates, real repo map), SPEC scope note,
+  modes.md ROGUE=built, host-runbook legacy banner, interaction-model
+  glyph/choice rows.
 
 ## UNPROVEN — waiting on the keys
 
