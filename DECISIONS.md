@@ -283,17 +283,24 @@ B-numbers are build-time engineering calls made inside the codebase.
   surveillance-delay stands elsewhere).
 
 - **D47a — the November briefing inside the induction (Paul, July 2026).** Steps
-  11–12 (of a now-sixteen-step induction) brief both hosts on the two November
+  11–13 (of a now-seventeen-step induction) brief both hosts on the two November
   nights — this is Co-Host's formal intro to the whole project. Covers: THE FIELD
   TRIAL's shape (open machine, stipends, wagers/duels/pub games, richest purse +
   collaborator), the Long Con's premise (the pirate murder mystery that never
   existed, the mid-party hijack, the hiring), the plan (September playtest,
   October tuning, mid-November curtain), conductor duties, and the two
-  load-bearing rules (genre-not-reality; panic always honoured). Deliberately
-  WITHHELD from the briefing: night-of allegiances (including Co-Host's own role —
-  flagged in-voice as "not yet written"), and November's reserved ceremony
-  surprises (the twist stack stays out of the tutorial). Briefings are
+  load-bearing rules (genre-not-reality; panic always honoured). Briefings are
   reading-verified with choice quizzes, like everything else.
+  **Revised (Paul, July 2026): Co-Host knows everything Paul knows.** The original
+  "reserved ceremony surprises" withholding is dropped — step 13 ("HOW I WORK,
+  conductor clearance") opens the engine room: director proposes / referee
+  disposes / append-only ledger, what the machine can and cannot sense (why
+  glyphs, typed slips, and both-report wagers exist), architectural blindness
+  (secrets unreachable, not hidden — including from the host), the break-glass
+  chain of command, and the skull-meter confession (plunder = bribes the room
+  chose to accept; the ceremony opens the books). The ONLY thing the briefing
+  withholds is WHO — night-of allegiances, sealed from Paul too; Co-Host's own
+  November role stays "not yet written" pending Paul's call.
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
 - **B2 — realtime = postgres_changes + refetch, not broadcast channels.** Any relevant table change triggers a scoped refetch (`lib/client/useGame.ts`). RLS (WALRUS) guarantees a phone can only ever receive its own rows, so scoped delivery is *architectural*, with zero channel-auth code. Latency ~50–200ms is fine for beats. If fan-out ever feels slow, migrate to RLS-authorized broadcast channels (researched pattern) — isolated to `useGame`.

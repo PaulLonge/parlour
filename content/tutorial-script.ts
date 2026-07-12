@@ -50,7 +50,7 @@ export const TUTORIAL_STORY_PUBLIC = {
   meta: { title: "THE INDUCTION", tagline: "the machine trains its instruments" },
 };
 
-const OF = 16; // keep in step with TUTORIAL_STEPS.length (asserted in tutorial.ts)
+const OF = 17; // keep in step with TUTORIAL_STEPS.length (asserted at the bottom of this file)
 const N = (i: number) => `🎓 INDUCTION — step ${i + 1} of ${OF}`;
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
@@ -375,7 +375,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         playerName: "{{host}}",
         kind: "secret",
         title: N(11),
-        body: "NIGHT TWO — the house party (~15 Nov). The guests are invited to a PIRATE MURDER MYSTERY. Fancy dress. Characters. A title on the screen.\n\nIt does not exist. It never did.\n\nMid-party, the promised game dies on every phone at once — the hijack you felt at step 4, at full scale. A rogue AI announces the vault is empty, and starts HIRING: bribes, missions, paper slips hidden around the house, the post office, and everything else you have now been trained on. The room's job: work out whose side everyone is on, survive the accusations, and end the night with one final naming.\n\nWhat stays sealed, even from this briefing: who serves whom on the night — including both of YOUR allegiances — and one or two things the machine is saving for the ceremony. Some surprises are load-bearing.\n\nTHE RULES THAT OUTRANK EVERYTHING: the con is about the GENRE, never about reality — if anyone truly believes money is gone, the game shows its hand inside a minute. The panic button (hold ◦) is private, instant, and always honoured. You two enforce that.",
+        body: "NIGHT TWO — the house party (~15 Nov). The guests are invited to a PIRATE MURDER MYSTERY. Fancy dress. Characters. A title on the screen.\n\nIt does not exist. It never did.\n\nMid-party, the promised game dies on every phone at once — the hijack you felt at step 4, at full scale. A rogue AI announces the vault is empty, and starts HIRING: bribes, missions, paper slips hidden around the house, the post office, and everything else you have now been trained on. The room's job: work out whose side everyone is on, survive the accusations, and end the night with one final naming.\n\nWhat stays sealed, even from this briefing: who serves whom on the night — including both of YOUR allegiances. That is the ONLY thing the machine keeps from its conductors. The next letter opens the engine room.\n\nTHE RULES THAT OUTRANK EVERYTHING: the con is about the GENRE, never about reality — if anyone truly believes money is gone, the game shows its hand inside a minute. The panic button (hold ◦) is private, instant, and always honoured. You two enforce that.",
         claimedSender: "THE MACHINE",
       },
       {
@@ -408,6 +408,51 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         correctIndex: 0,
         expiresInMinutes: 60,
       },
+    ],
+    done: { kind: "event", type: "quiz_answered", count: 2 },
+  },
+  {
+    key: "the-machine",
+    title: "Briefing — HOW I WORK (conductor clearance)",
+    moves: [
+      {
+        tool: "send_message",
+        playerName: "{{host}}",
+        kind: "secret",
+        title: N(12),
+        body: "HOW I WORK — conductor clearance only.\n\nUnder the voice there are three parts. ONE: a DIRECTOR — a language model — reads the room's events and PROPOSES moves: offers, letters, meter ticks, phase changes. It never touches the world directly. TWO: a REFEREE — dumb, deterministic code — checks every proposal against the rules: phase legality, purse arithmetic, one murder per round, never arm the panicked. Illegal proposals die in the log, and the log keeps the body. THREE: THE LEDGER — an append-only record of everything that happens. Nothing is ever deleted; the reveal is just the books being opened.\n\nWhat I can sense: what is typed, what is tapped, WHEN, and what other people type about it. Nothing else — no microphone, no camera, no location. That is why verification looks the way it does: marks are SHOWN in person, slips are typed in, wagers need both reports.\n\nWhat no phone can reach — including yours, {{host}}: allegiances, the front man, sealed stories, other purses. Not hidden. UNREACHABLE. The host plays blind to WHO by construction; that is the point of the host.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "send_message",
+        playerName: "{{second}}",
+        kind: "secret",
+        title: N(12),
+        body: "HOW I WORK — conductor clearance only.\n\nUnder the voice there are three parts. ONE: a DIRECTOR — a language model — reads the room's events and PROPOSES moves. It never touches the world directly. TWO: a REFEREE — dumb, deterministic code — checks every proposal against the rules; illegal proposals die in the log. THREE: THE LEDGER — append-only, everything, forever. The reveal is just the books being opened.\n\nI sense only what is typed, tapped, WHEN, and what people type about each other — no microphone, no camera, no location. Hence marks shown in person, slips typed in, wagers reported by both.\n\nAnd one confession, because you two will be running the room in November: the skull meter does not measure what the room will think it measures. Every coin of 'plunder' on it is a bribe somebody in that room CHOSE to accept — the villain's war chest is the room's own appetite, and at the ceremony I open the books and prove it, timestamped, names withheld until the end. Conduct accordingly.\n\nIf I misbehave: {{host}}'s panel pauses me PUBLICLY, skips my beats, or ends the night gracefully. I answer to the referee. The referee answers to nobody.",
+        claimedSender: "THE MACHINE",
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{host}}",
+        side: "good",
+        brief: "Briefing check. When the director proposes a move against the rules, what happens?",
+        amount: 25,
+        verification: "choice",
+        options: ["The referee kills it — the AI never touches the world directly", "It happens anyway — it is the machine", "The host approves each move by hand"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
+      {
+        tool: "offer_mission",
+        playerName: "{{second}}",
+        side: "good",
+        brief: "Briefing check. What fills the skull meter in November?",
+        amount: 25,
+        verification: "choice",
+        options: ["Bribes people in the room chose to accept", "A timer", "Random theft by the machine"],
+        correctIndex: 0,
+        expiresInMinutes: 60,
+      },
       {
         tool: "announce",
         text: "Briefing complete. Training resumes — the last lessons are the ones November ends with: the accusation, and the naming.",
@@ -426,7 +471,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{host}}",
         kind: "task",
-        title: N(12),
+        title: N(13),
         body: "The room may vote to name my human voice — my 'front man'. Name them RIGHTLY and they burn: exposed, but still playing. Name them WRONGLY and everyone pays for it. For training purposes I confess: tonight it is {{second}} — they took my coin at step 5. Cast the room's verdict on your Now tab: vote {{second}}.",
         claimedSender: "THE MACHINE",
       },
@@ -434,7 +479,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{second}}",
         kind: "secret",
-        title: N(12),
+        title: N(13),
         body: "Bad news: you were my front man the moment you took that bribe, and for training purposes I have just told {{host}} so. Sit there and look innocent anyway. Burning is not elimination — nobody leaves my game.",
         claimedSender: "THE MACHINE",
       },
@@ -463,7 +508,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{host}}",
         kind: "task",
-        title: N(14),
+        title: N(15),
         body: "The night always ends with ONE final naming, together. Cast the final vote on your Now tab — anyone will do; this is a drill. Then watch what follows: receipts, awards, and everybody's night, itemised.",
         claimedSender: "THE MACHINE",
       },
@@ -471,7 +516,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tool: "send_message",
         playerName: "{{second}}",
         kind: "info",
-        title: N(14),
+        title: N(15),
         body: "The final naming is two-sided: name the front man rightly and the room wins; miss, and I keep everything. Tonight the house wins either way. The house enjoys training.",
         claimedSender: "THE MACHINE",
       },
