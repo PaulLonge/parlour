@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 11 — GDD-review wave 1: D51 wager rake + pari-mutuel side bets, D52 hijack waits for later-of-two-gates, D53 per-seat codes, D54 evidence-integrity UX, D55 THE HONEYPOT — exploits left as bait the con catches; wave 2 staged. Rev 10: D49/D50 safety + plunder purity)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 12 — added "What the AI can and cannot do" one-pager; de-drifted body for D48 roles / D51 pari-mutuel side bets / D53 seat codes. Rev 11: GDD-review wave 1 D51–D55. Rev 10: D49/D50)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -30,10 +30,14 @@ everything. Then the reveal: the vault was never robbed — the "plunder" meter 
 live tally of accepted bribes all along. *"That's not what it stole. That's what you
 sold."*
 
-Paul plays **himself, the Commissioner** — publicly known as the man who summoned the
-machine, and the room's lightning rod. Co-Host has a featured role (exact allegiance
-under design). Everyone else: real names after the hijack, no acting homework, no one
-ever eliminated.
+Paul plays **himself, the Commissioner** — publicly the man who summoned the machine,
+the room's lightning rod, and mechanically the **AGENT OF CHAOS**: aligned to nobody,
+courted by both sides, may take bribes, but can never be the front man (D48). **Co-Host
+is the GOOD AI's champion** (D48) — its arm in the room, building the lantern.
+Both are conductors and briefed to the same knowledge; the only thing hidden from
+either is WHO among the *guests* is bought, which is sealed from Paul too and emerges
+live. Everyone else: real names after the hijack, no acting homework, no one ever
+eliminated.
 
 ## The intrigue stack
 
@@ -57,7 +61,8 @@ and other players' testimony — never phantom sensors).
 | **The post** | Player-to-player notes, carried by the machine | Requires an earned **stamp** (no stamp → go talk in person) + postage; surveilled mail is held/edited/dropped/leaked; **wiretaps** copy correspondence silently; signatures prove nothing |
 | **Quizzes & mini-games** | Tap-answer quizzes (about the host, about each other) and parley-scripted game rounds, paid in credits | Deterministic verification; drinking prompts always carry a "sip or confess" out |
 | **Wagers** (night 1's engine) | Challenge anyone — pub games or one-device phone duels (Reaction, Tap Race, Steady Hand); stakes escrow on accept; both report the winner | Mismatched reports go to the machine for arbitration ("two testimonies, one lie"); AI-set stake caps stop anyone going all-in |
-| **Side bets** | Back a contestant on someone else's accepted duel, 1:1 against the house | The Spyglass announces settlements — the whole pub sees who took whose coins |
+| **Side bets** | Back a contestant on someone else's accepted duel — **pari-mutuel**: winning backers split the losing backers' pool, the house takes a rake (D51) | Nothing is minted (the old 1:1-vs-house was a money printer); the Spyglass announces settlements so the whole pub sees who took whose coins |
+| **The honeypot** | Gamed mechanics (laundering coins between friends, seam-hunting) are left OPEN as bait (D55) | The machine notices, then pounces in voice — exposes, taxes, or *hires* the clever ones; "you thought you'd found a seam. I left it there." |
 | **The private signals** | Guests: hold-◦ (panic = *less*) and "more please" (volunteer). Hosts: "⏭ feels slow" | All private, never public tallies. Guest boredom is detected from *behavior* (the director feeds anyone going quiet); the feels-slow nudge is hosts-only — the room's two calibrated sensors — sitting below break-glass in the control gradient |
 
 The reveal replays the receipts: every meter jump timestamped against its bribe,
@@ -98,6 +103,46 @@ Purse, The Wrong'un, The Phoenix, The Ghost).
   of recent director moves ("a coin was dangled", "mail was intercepted") — the pulse
   without the plot; hosts stay blind to *who*.
 
+## What the AI can and cannot do
+
+The single most important safety property: **the LLM proposes, a deterministic
+referee disposes.** Each turn the director emits a JSON array of moves that *must*
+match a strict schema (~29 typed tools in [`lib/schemas/tools.ts`](../lib/schemas/tools.ts));
+it is schema-forced at the API layer, so it literally cannot invent a move that
+doesn't exist. [`lib/engine/referee.ts`](../lib/engine/referee.ts) then approves or
+rejects each one before anything changes. The AI never touches the database — no SQL,
+no direct writes, no arbitrary columns. **The vocabulary is the cage.**
+
+**It can:** send any private message in any voice (including impersonating an AI);
+make public announcements; offer bribes and missions with amounts it chooses; move
+money *additively* (payouts); handle player mail — deliver, **edit**, drop, or leak
+it; advance phases; call parleys; open accusations and the unmasking; appoint a front
+man; adjust the public meters; mint paper codes; grant stamps; tap wires; resolve
+wagers.
+
+**It cannot:** touch state outside a move (no "set balance = 9999", no deleting a
+player, no ending the game on a whim — there is no tool); make an illegal phase
+transition (checked against a legality map; rogue-mode can't be walked into
+murder-mode machinery; an unmatched tool throws); overdraw a purse (DB-enforced
+non-negative) or double-pay (atomic claims); arm the vulnerable (no bribing a
+panicked player; no host/burned/panicked front man); or *declare* an allegiance —
+nobody becomes a minion because the AI says so, only when a human taps "accept" on a
+bribe. It is also **out of the money-critical paths**: bribe acceptance, wager
+settlement, verification, and meter ticks are all deterministic; the AI judges
+open-ended *answers* (taste), never the arithmetic.
+
+**The honest edge:** the deterministic cage is around **state** — money, roles,
+phases, and the secrecy wall between the server and the humans — **not around words**.
+Within its message and mail tools the AI has wide latitude: it can say anything to
+anyone and rewrite letters. That's deliberate (it's the con), and it's the real
+answer to "how far can it go" — the worst realistic failure is a *bad storyteller*,
+not corrupted state. Two clarifications people get backwards: (1) the AI *sees* every
+secret — it's the game master; the wall keeps secrets from the *humans*, including
+Paul, not from the model; (2) **the host outranks it** — break-glass pauses it
+publicly, skips its beats, or ends the night, and because the referee is plain code
+you can read and every proposal-plus-verdict is logged in `director_log`, there is no
+black box.
+
 ## The tech stack
 
 | Layer | Choice | Why |
@@ -105,7 +150,7 @@ Purse, The Wrong'un, The Phoenix, The Ghost).
 | App | Next.js (App Router, TypeScript, Tailwind) on Vercel | Server-side API routes keep every secret and LLM key off the phones |
 | Data | Supabase Postgres + Row-Level Security | The sealing mechanism AND the realtime transport |
 | Realtime | Supabase `postgres_changes`, filtered per game | Phones refetch their own scoped view on change; RLS guarantees the view |
-| Auth | Supabase anonymous sessions + name-claim ("pseudo-accounts") | Zero-friction joins; device takeover = the recovery flow |
+| Auth | Supabase anonymous sessions + name-claim ("pseudo-accounts") | Zero-friction joins; cross-device takeover needs the seat's 4-digit code (D53) so a friend can't grab your name; the host can look codes up if a phone dies |
 | AI | Anthropic via Vercel AI SDK, `generateObject` + zod | Model tiering: cheap/fast heartbeats, stronger event responses & story generation; every output schema-forced |
 | Content | Stories as zod-validated JSON (`RogueStory` schema) | One generator serves the hand-refined reference story AND the sealed party story; validators reject unplayable generations mechanically |
 | Testing | `npm run simulate` + `npm run simulate:rogue` | Full scripted games (no LLM) asserting phases, the kill/bribe locks, burnings, mail interception, unmasking |
