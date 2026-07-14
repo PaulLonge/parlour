@@ -19,7 +19,7 @@ The design ran ahead of the code; these three are the foundation everything else
       capped coins, blocked by a ward) + **Shield** (money/privacy ward — stops robs AND
       wiretaps) SHIPPED; **Swap**/**Copy** staged (tool accepts, UI shows "soon"). Involuntary
       at the victim's end, private. Bars made "almost fake" (cap 92%, AI ends the game).
-      Shipped `<pending>`.
+      Shipped `0d06845`.
 
 ## ⧗ Queued next (pressure tools, then the rest of GDD wave 2)
 
