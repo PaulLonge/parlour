@@ -170,11 +170,13 @@ export function BribeCard({
   c,
   busy,
   onAccept,
+  onDecline,
   symbol = "Ƀ",
 }: {
   c: Challenge;
   busy?: boolean;
   onAccept: () => void;
+  onDecline?: () => void;
   symbol?: string;
 }) {
   const amount = Number(c.data?.amount ?? 0);
@@ -195,9 +197,16 @@ export function BribeCard({
         This offer expires like everything else{expiresIn(c.expires_at) ? ` — ${expiresIn(c.expires_at)} left` : ""}.
         Nobody will ever know, either way.
       </p>
-      <button className="btn btn-danger mt-4 w-full" disabled={busy} onClick={onAccept}>
-        Take the coin
-      </button>
+      <div className="mt-4 flex gap-2">
+        <button className="btn btn-danger flex-1" disabled={busy} onClick={onAccept}>
+          Take the coin
+        </button>
+        {onDecline && (
+          <button className="btn btn-ghost flex-1" disabled={busy} onClick={onDecline} title="refuse — earns Resolve">
+            🕯 Refuse
+          </button>
+        )}
+      </div>
     </div>
   );
 }

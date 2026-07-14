@@ -21,10 +21,20 @@ export async function fireHijack(admin: SupabaseClient, gameId: string) {
   const c = cfg(s);
   const story = s.game.sealed_story as Record<string, any> | null;
   const sym = story?.currency?.symbol ?? "Ƀ";
+  // D66: SCALE THE TARGETS to who actually turned up (GDD #6 — fixed targets
+  // misfire at 8 vs 30). Recompute plunder/compute win lines from the arrived
+  // headcount, once, at the hijack; the displayed target then stays fixed.
+  const arrived = s.players.filter((p) => p.arrived_at || p.status === "alive").length || 1;
+  const scaledConfig = {
+    ...(s.game.config as Record<string, unknown>),
+    plunderTarget: Math.round(c.plunderPerHead * arrived),
+    computeTarget: Math.round(c.computePerHead * arrived),
+  };
   await admin
     .from("games")
-    .update({ status: "live", round_phase: "none", hijacked_at: new Date().toISOString() })
+    .update({ status: "live", round_phase: "none", hijacked_at: new Date().toISOString(), config: scaledConfig })
     .eq("id", gameId);
+  s.game.config = scaledConfig;
 
   // the vault lie: everyone's balance "reads zero" — the display trick that IS the twist
   for (const p of s.players.filter((x) => x.status !== "lobby" || x.arrived_at)) {
@@ -67,6 +77,79 @@ export async function fireHijack(admin: SupabaseClient, gameId: string) {
     isPublic: true,
   });
   return { ok: true, result: "hijacked" };
+}
+
+// --- D64: declining a bribe EARNS Resolve (refusal is active content) -------
+export async function declineOffer(
+  admin: SupabaseClient,
+  gameId: string,
+  playerId: string,
+  challengeId: string
+) {
+  const s = await loadState(admin, gameId);
+  const c = s.openChallenges.find((x) => x.id === challengeId && x.player_id === playerId);
+  if (!c) return { ok: false, result: "offer_not_open" };
+  if (c.type !== "bribe") return { ok: false, result: "not_a_bribe" };
+  const me = s.players.find((p) => p.id === playerId);
+  if (!me) return { ok: false, result: "unknown_player" };
+  // atomic: exactly one decline/accept wins
+  const { data: claimed } = await admin
+    .from("challenges")
+    .update({ status: "revoked", response: { declined: true } })
+    .eq("id", c.id)
+    .eq("status", "offered")
+    .select("id");
+  if (!claimed?.length) return { ok: false, result: "offer_gone" };
+  const gain = cfg(s).resolvePerRefusal;
+  await admin.from("players").update({ resolve: (me.resolve ?? 0) + gain }).eq("id", me.id).eq("resolve", me.resolve ?? 0);
+  await admin.from("messages").insert({
+    game_id: gameId,
+    player_id: me.id,
+    round_no: s.game.round_no,
+    kind: "info",
+    title: "🕯 You held the line",
+    body: `You turned the coin down. That's worth something — +${gain} Resolve. Spend it on the good side's tools when you're ready. Nobody's told you refused.`,
+    claimed_sender: "BOSUN",
+  });
+  await emit(admin, gameId, "bribe_declined", { actorId: me.id });
+  return { ok: true, result: "declined", resolve: (me.resolve ?? 0) + gain };
+}
+
+// D64: spend Resolve on the good side's tools
+export async function spendResolve(
+  admin: SupabaseClient,
+  gameId: string,
+  playerId: string,
+  action: "compute" | "sight" | "shield"
+) {
+  const s = await loadState(admin, gameId);
+  const me = s.players.find((p) => p.id === playerId);
+  if (!me || me.status !== "alive") return { ok: false, result: "not_alive" };
+  const c = cfg(s);
+  const cost = action === "sight" ? c.resolveForSight : action === "shield" ? c.resolveForShield : 1;
+  if ((me.resolve ?? 0) < cost) return { ok: false, result: "not_enough_resolve" };
+  // spend atomically
+  const { data: spent } = await admin
+    .from("players")
+    .update({ resolve: (me.resolve ?? 0) - cost })
+    .eq("id", me.id)
+    .eq("resolve", me.resolve ?? 0)
+    .select("id");
+  if (!spent?.length) return { ok: false, result: "try_again" };
+
+  if (action === "compute") {
+    await adjustMeters(admin, s, { compute: c.resolveComputeValue }, "honest resolve, made concrete. the lantern brightens.");
+    return { ok: true, result: "contributed" };
+  }
+  if (action === "sight") {
+    await admin.from("players").update({ sight: (me.sight ?? 0) + 1 }).eq("id", me.id);
+    return { ok: true, result: "bought_sight" };
+  }
+  // shield
+  const powers = { ...(me.powers ?? {}) };
+  powers.shield = Number(powers.shield ?? 0) + 1;
+  await admin.from("players").update({ powers }).eq("id", me.id);
+  return { ok: true, result: "bought_shield" };
 }
 
 // --- BRIBES & MISSIONS: accepting a bribe IS the arming (D19) --------------
@@ -457,8 +540,16 @@ export async function appointFrontman(admin: SupabaseClient, gameId: string, pla
   // rogue's voice, not who the other minions are (one-way knowledge) — so a host
   // fronting doesn't spoil the WHO-surprise. The Commissioner outed as the
   // machine's puppet, or BOSUN's champion seduced into fronting, are prize beats.
+  const hadOne = !!s.game.frontman_player_id && s.game.frontman_player_id !== p.id;
   await admin.from("games").update({ frontman_player_id: p.id }).eq("id", gameId);
   await emit(admin, gameId, "frontman_appointed", { payload: { player: p.name } }); // private event
+  // D67: announce THAT the hat moved (never to whom) — a rotation is public
+  // knowledge the room can reason about, the name is not.
+  if (hadOne)
+    await emit(admin, gameId, "frontman_rotated", {
+      payload: { note: "a new voice speaks for the machine — someone in this room. Not the one you burned." },
+      isPublic: true,
+    });
   return { ok: true, result: "appointed" };
 }
 

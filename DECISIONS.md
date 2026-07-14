@@ -551,6 +551,39 @@ B-numbers are build-time engineering calls made inside the codebase.
   TV needed. Player-facing BountyBoard on Now reads open bounties from the public
   event feed (posted minus claimed). Completes the pressure-tools trio.
 
+- **D64 — RESOLVE + explicit refusal (GDD #1, the top balance fix; 2026-07-14).**
+  Declining a bribe was "do nothing"; now a real 🕯 REFUSE button on the bribe
+  card banks a **Resolve** token (mint 0008 `players.resolve`), spendable on the
+  good side's tools: contribute compute (+`resolveComputeValue`), buy a Sight
+  charge (`resolveForSight`), or buy a shield charge (`resolveForShield`).
+  Refusal becomes active content and taking every bribe stops being dominant —
+  bribes = fast money + risk, honest refusal = the good side's currency. Routes
+  `/api/offer/decline` + `/api/resolve`; ResolvePanel on Now; director told bribes
+  aren't free-to-refuse anymore (make them genuinely tempting, not spam).
+- **D65 — bribe retune (GDD #3).** Tiers 50/120/250/750 → **75/150/300/600**
+  (narrower spread); prompt gates the higher tiers behind prior rogue work.
+- **D66 — scaled targets (GDD #6).** Fixed plunder/compute targets misfire at 8
+  vs 30 players. `fireHijack` now RECOMPUTES them from the arrived headcount
+  (`plunderPerHead`×heads, `computePerHead`×heads), once, at the hijack; the
+  displayed target then stays fixed. Both bars stay meaningful at any size.
+- **D67 — front-man lifecycle + public rotation (GDD #2).** Prompt gives the
+  office WEIGHT: run a tenure, have the front man do identifiable clue-leaving
+  acts, FREEZE it before the Reckoning (so the naming is deduction, not a
+  coin-flip). Concrete mechanic: on rotation the room gets a PUBLIC cue that the
+  hat moved (`frontman_rotated`) — never the name. Tribunals guidance: run
+  accusations as ~hourly scheduled windows, not ad hoc.
+- **D68 — wave-2 tuning (prompt/content).** DECOY SURVIVES THE HIJACK (GDD #8):
+  act-1 threads must pay off post-hijack (props hide codewords, connections become
+  targeting permissions, flavour mail gains a second meaning; every guest makes
+  one act-1 choice that shapes their first post-hijack beat) — answers the
+  dead-time worry without shortening the decoy (per D52). PUB COLLABORATOR as a
+  real system (GDD #5): chosen ~15-20 min in, told immediately, three covert acts
+  each leaving one real + one ambiguous clue, identity locked, clue trail seeded
+  across the night. **SWAP/COPY powers finished** (D61 completion): Swap forces a
+  capped coin transfer between two others (warded purses resist); Copy duplicates
+  a power you already hold. GDD REVIEW ADOPTION IS NOW COMPLETE — every green-lit
+  item shipped; only the Dead-Reckoning paper-fallback kit remains deferred (D-review).
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE

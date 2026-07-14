@@ -42,6 +42,7 @@ export type Me = {
   sight: number;
   powers: Record<string, number> | null;
   shielded_until: string | null;
+  resolve: number;
   seat_code: string | null;
   intake: Record<string, unknown> | null;
   character: {
@@ -176,7 +177,7 @@ export function useGame(code: string) {
       supa.from("players_public").select("*").eq("game_id", g.id).order("created_at"),
       supa
         .from("players")
-        .select("id, name, is_host, status, role, balance, burned, stamps, sight, powers, shielded_until, seat_code, intake, character, arrived_at")
+        .select("id, name, is_host, status, role, balance, burned, stamps, sight, powers, shielded_until, resolve, seat_code, intake, character, arrived_at")
         .eq("game_id", g.id) // without this, a second game on the device returns 2 rows and maybeSingle errors (review R3 #2)
         .maybeSingle(),
       supa
@@ -321,6 +322,10 @@ export function useGame(code: string) {
       // ROGUE actions
       acceptOffer: (challengeId: string) =>
         post("/api/offer/accept", { code, challengeId }).then((r) => (refetch(), r)),
+      declineOffer: (challengeId: string) =>
+        post("/api/offer/decline", { code, challengeId }).then((r) => (refetch(), r)),
+      spendResolve: (action: string) =>
+        post("/api/resolve", { code, action }).then((r) => (refetch(), r)),
       respond: (challengeId: string, text: string) =>
         post("/api/challenge/respond", { code, challengeId, text }).then((r) => (refetch(), r)),
       hideCode: (slipCode: string, locationHint: string) =>
@@ -334,8 +339,8 @@ export function useGame(code: string) {
       petition: (text: string) => post("/api/petition", { code, text }).then((r) => (refetch(), r)),
       seer: (question: string, targetName?: string, confirm = false) =>
         post("/api/seer", { code, question, targetName, confirm }).then((r) => (refetch(), r)),
-      usePower: (power: string, targetName?: string) =>
-        post("/api/power", { code, power, targetName }).then((r) => (refetch(), r)),
+      usePower: (power: string, targetName?: string, target2Name?: string) =>
+        post("/api/power", { code, power, targetName, target2Name }).then((r) => (refetch(), r)),
       claimBounty: (bountyId: string, answer: string) =>
         post("/api/bounty", { code, bountyId, answer }).then((r) => (refetch(), r)),
       volunteer: () => post("/api/volunteer", { code }),

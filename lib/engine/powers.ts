@@ -30,7 +30,8 @@ export async function usePower(
   gameId: string,
   playerId: string,
   power: Power,
-  targetName: string | undefined
+  targetName: string | undefined,
+  target2Name?: string | undefined
 ): Promise<{ ok: boolean; result: string }> {
   const s = await loadState(admin, gameId);
   if (s.game.paused) return { ok: false, result: "game_paused" };
@@ -89,5 +90,46 @@ export async function usePower(
     return { ok: true, result: take > 0 ? "lifted" : "empty_purse" };
   }
 
-  return { ok: false, result: "not_built_yet" }; // swap / copy — staged
+  // --- SWAP: force coins from the target to a THIRD player (meddling) --------
+  if (power === "swap") {
+    const other = s.players.find((x) => x.name.toLowerCase() === (target2Name ?? "").toLowerCase());
+    if (!other) return { ok: false, result: "swap_needs_a_second_name" };
+    if (other.id === me.id || other.id === target.id) return { ok: false, result: "three_different_people" };
+    if (target.shielded_until && new Date(target.shielded_until) > new Date()) {
+      await spendPower(admin, me, "swap");
+      return { ok: false, result: "warded_—_their_purse_is_sealed" };
+    }
+    const move = Math.min(cfg.robCap, Math.max(0, target.balance));
+    await spendPower(admin, me, "swap");
+    if (move > 0) {
+      await credit(admin, gameId, target.id, -move, "coins reassigned by an unseen hand", "system");
+      await credit(admin, gameId, other.id, move, "coins arrived from nowhere", "system");
+      await admin.from("messages").insert({
+        game_id: gameId,
+        player_id: target.id,
+        round_no: s.game.round_no,
+        kind: "secret",
+        title: "👛 Reassigned",
+        body: `${move} coins left your purse for someone else's, by a hand you didn't see. Raise a ward if you have one.`,
+      });
+    }
+    await emit(admin, gameId, "swapped", { payload: { amount: move }, actorId: me.id });
+    return { ok: true, result: move > 0 ? "reassigned" : "empty_purse" };
+  }
+
+  // --- COPY: duplicate one power you already hold (a wildcard gift) ----------
+  if (power === "copy") {
+    const dupable = (Object.entries(me.powers ?? {}) as [string, number][]).find(
+      ([k, n]) => k !== "copy" && n > 0
+    );
+    if (!dupable) return { ok: false, result: "nothing_to_copy" };
+    await spendPower(admin, me, "copy");
+    const powers = { ...(me.powers ?? {}) };
+    powers[dupable[0]] = Number(powers[dupable[0]] ?? 0) + 1;
+    await admin.from("players").update({ powers }).eq("id", me.id);
+    await emit(admin, gameId, "copied", { payload: { power: dupable[0] }, actorId: me.id });
+    return { ok: true, result: `copied_${dupable[0]}` };
+  }
+
+  return { ok: false, result: "unknown_power" };
 }

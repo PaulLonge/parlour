@@ -17,17 +17,27 @@ export const GameConfig = z.object({
   heartbeatSeconds: z.number().min(60).max(600).default(180),
   // sandbox (D30): >1 accelerates every timer/expiry — 10 = ten-times speed
   timeScale: z.number().min(1).max(60).default(1),
-  // ROGUE: bribe amounts by difficulty tier, compute share sizes, targets
-  bribeTiers: z.array(z.number()).default([50, 120, 250, 750]),
+  // ROGUE: bribe amounts by difficulty tier (D65: retuned per GDD #3 —
+  // narrower, higher tiers gated behind prior rogue work), compute share sizes
+  bribeTiers: z.array(z.number()).default([75, 150, 300, 600]),
   computeTiers: z.array(z.number()).default([5, 12, 25]),
   // D58: the meters are the WIN. Crossing a target does NOT auto-end the game —
   // it signals the director, who paces the actual finale (never too early).
+  // D66: these are RECOMPUTED at the hijack from the arrived headcount
+  // (plunderPerHead/computePerHead × heads) so targets scale 8↔30 players.
   plunderTarget: z.number().default(3000), // CALICO's win line (out-buying the room)
   computeTarget: z.number().default(100), // the room's win line (out-building — BOSUN's shutdown)
+  plunderPerHead: z.number().default(250), // D66: plunder target per arrived guest
+  computePerHead: z.number().default(9), // D66: compute target per arrived guest
   burnComputeReward: z.number().default(20), // a correct burning charges the room's weapon
   // D61 secret powers economy
   shieldMinutes: z.number().min(1).max(60).default(15), // how long a raised ward holds
   robCap: z.number().min(1).default(200), // most a single Rob can lift
+  // D64 Resolve: earned by refusing bribes, spent on good-side tools
+  resolvePerRefusal: z.number().min(1).default(1),
+  resolveComputeValue: z.number().default(15), // compute added per 1 Resolve contributed
+  resolveForSight: z.number().min(1).default(3), // Resolve to buy a Sight charge
+  resolveForShield: z.number().min(1).default(2), // Resolve to buy a shield charge
   startingBalance: z.number().default(1500),
   // D33: audiences with the AIs — the economy sink. One question per audience.
   audienceCost: z.number().default(250),

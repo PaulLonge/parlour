@@ -462,6 +462,14 @@ function NowPanel({
                 setBusy(false);
               }
             }}
+            onDecline={async () => {
+              setBusy(true);
+              try {
+                await g.actions.declineOffer(c.id);
+              } finally {
+                setBusy(false);
+              }
+            }}
           />
         ) : c.type === "redemption" ? (
           <RedemptionCard
@@ -527,6 +535,8 @@ function NowPanel({
         )
       )}
 
+      {rogueLive && game.status === "live" && me.status === "alive" && (me.resolve ?? 0) > 0 && <ResolvePanel g={g} />}
+
       {rogueLive && game.status === "live" && me.status === "alive" && (me.sight ?? 0) > 0 && (
         <SeerCard g={g} aliveNames={aliveNames} />
       )}
@@ -582,6 +592,44 @@ function NowPanel({
           Your character will find you when the story is sealed.
         </div>
       )}
+    </div>
+  );
+}
+
+// D64: RESOLVE — banked by refusing bribes, spent on the good side's tools.
+function ResolvePanel({ g }: { g: ReturnType<typeof useGame> }) {
+  const resolve = g.me!.resolve ?? 0;
+  const cfg = g.game!.config as { resolveForSight?: number; resolveForShield?: number } | null;
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  async function spend(action: string) {
+    setBusy(true);
+    setNote("");
+    try {
+      const r = await g.actions.spendResolve(action);
+      setNote(r.ok ? "✓ done" : (r.result?.replaceAll("_", " ") ?? "no"));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="panel p-4" style={{ borderColor: "var(--gold)" }}>
+      <p className="kicker" style={{ color: "var(--gold)" }}>
+        🕯 Resolve — {resolve}
+        <InfoDot hint="Earned by turning down the rogue's coin. Refusing isn't nothing — it buys the good side's tools." />
+      </p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button className="btn btn-ghost flex-1" disabled={busy} onClick={() => spend("compute")}>
+          🏮 Build (+compute)
+        </button>
+        <button className="btn btn-ghost flex-1" disabled={busy || resolve < (cfg?.resolveForSight ?? 3)} onClick={() => spend("sight")}>
+          👁 Sight ({cfg?.resolveForSight ?? 3})
+        </button>
+        <button className="btn btn-ghost flex-1" disabled={busy || resolve < (cfg?.resolveForShield ?? 2)} onClick={() => spend("shield")}>
+          🛡 Ward ({cfg?.resolveForShield ?? 2})
+        </button>
+      </div>
+      {note && <p className="mt-2 text-sm" style={{ color: note.startsWith("✓") ? "var(--gold)" : "var(--danger)" }}>{note}</p>}
     </div>
   );
 }
@@ -656,15 +704,17 @@ function PowersCard({ g, aliveNames }: { g: ReturnType<typeof useGame>; aliveNam
   const warded = shieldedUntil ? new Date(shieldedUntil) > new Date() : false;
   const held = (Object.entries(powers) as [string, number][]).filter(([, n]) => n > 0);
   const [target, setTarget] = useState("");
+  const [target2, setTarget2] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   if (!held.length && !warded) return null;
+  const hasSwap = held.some(([k]) => k === "swap");
 
   async function use(power: string, needsTarget: boolean) {
     setBusy(true);
     setNote("");
     try {
-      const r = await g.actions.usePower(power, needsTarget ? target : undefined);
+      const r = await g.actions.usePower(power, needsTarget ? target : undefined, power === "swap" ? target2 : undefined);
       setNote(r.ok ? (power === "shield" ? "🛡 Ward up." : "Done — quietly.") : (r.result?.replaceAll("_", " ") ?? "no"));
     } finally {
       setBusy(false);
@@ -682,9 +732,17 @@ function PowersCard({ g, aliveNames }: { g: ReturnType<typeof useGame>; aliveNam
           🛡 Warded — your purse and mail are sealed for now.
         </p>
       )}
-      {held.some(([k]) => k === "rob" || k === "swap" || k === "copy") && (
+      {held.some(([k]) => k === "rob" || k === "swap") && (
         <select className="input mt-2" aria-label="target" value={target} onChange={(e) => setTarget(e.target.value)}>
-          <option value="">On whom?</option>
+          <option value="">{hasSwap ? "Take from whom?" : "On whom?"}</option>
+          {aliveNames.map((n) => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+      )}
+      {hasSwap && (
+        <select className="input mt-2" aria-label="give to" value={target2} onChange={(e) => setTarget2(e.target.value)}>
+          <option value="">Give to whom?</option>
           {aliveNames.map((n) => (
             <option key={n} value={n}>{n}</option>
           ))}
@@ -692,20 +750,19 @@ function PowersCard({ g, aliveNames }: { g: ReturnType<typeof useGame>; aliveNam
       )}
       <div className="mt-2 flex flex-wrap gap-2">
         {held.map(([power, n]) => {
-          const needsTarget = power === "rob" || power === "swap" || power === "copy";
-          const usable = power === "shield" || (power === "rob" && !!target);
+          const needsTarget = power === "rob" || power === "swap";
+          const usable =
+            power === "shield" || power === "copy" || (power === "rob" && !!target) || (power === "swap" && !!target && !!target2);
           const label =
-            power === "rob" ? "👛 Rob" : power === "shield" ? "🛡 Raise ward" : `✦ ${power}`;
-          const staged = power === "swap" || power === "copy";
+            power === "rob" ? "👛 Rob" : power === "shield" ? "🛡 Raise ward" : power === "swap" ? "🔀 Swap" : "⿻ Copy";
           return (
             <button
               key={power}
               className="btn btn-ghost flex-1"
-              disabled={busy || staged || (needsTarget && !usable)}
-              title={staged ? "not built yet" : undefined}
+              disabled={busy || !usable}
               onClick={() => use(power, needsTarget)}
             >
-              {label} {n > 1 ? `×${n}` : ""}{staged ? " (soon)" : ""}
+              {label} {n > 1 ? `×${n}` : ""}
             </button>
           );
         })}

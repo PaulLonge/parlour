@@ -677,8 +677,8 @@ export async function applyDirectorMoves(
           const fallback: Record<string, string> = {
             rob: "A quiet gift: you can lift coins from one purse, once. Spend it on the Now screen. Wards stop it.",
             shield: "A ward, yours to raise when you choose — while it's up, no one lifts your coins or reads your mail.",
-            swap: "A power you can't use yet — the machine is still deciding what it does.",
-            copy: "A power you can't use yet — the machine is still deciding what it does.",
+            swap: "A meddler's gift: move a fistful of coins from one purse to another, once. Neither will know your hand.",
+            copy: "A wildcard: duplicate one power you already hold. Use it on the Now screen.",
           };
           await admin.from("messages").insert({
             game_id: gameId,

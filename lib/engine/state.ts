@@ -21,6 +21,7 @@ export type PlayerRow = {
   sight: number; // D56 — Seer charges, granted by the good AI for standout work
   powers: Record<string, number>; // D61 — secret one-use power inventory (rob/swap/copy/shield)
   shielded_until: string | null; // D61 — while future, purse can't be robbed / mail can't be tapped
+  resolve: number; // D64 — banked by declining bribes; spent on good-side tools
 };
 
 export type Meters = { plunder: number; compute: number; confidence: number };
