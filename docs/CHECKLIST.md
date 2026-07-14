@@ -36,13 +36,13 @@ The design ran ahead of the code; these three were the foundation everything els
 - [x] **Bounty** (D63) — public price on an action, a *race* (first correct answer wins),
       phone-verified, server-only answer; BountyBoard on Now. Shipped `2c805a7`.
 - [x] **Resolve + explicit refusal** (D64) — 🕯 REFUSE on the bribe card banks a token →
-      compute / Sight / ward. Fixes "take every bribe." (GDD #1) `<pending>`
+      compute / Sight / ward. Fixes "take every bribe." (GDD #1) `90fe1d0`
 - [x] **Front-man lifecycle** (D67) — public rotation cue (hat moved, not who) + prompt
-      (tenure, clue-leaving acts, freeze before Reckoning). (GDD #2) `<pending>`
+      (tenure, clue-leaving acts, freeze before Reckoning). (GDD #2) `90fe1d0`
 - [x] **Scaled targets** (D66) — recomputed from arrived headcount at the hijack (GDD #6) ·
       **Bribe retune** 75/150/300/600 (D65, GDD #3) · **Decoy survives the hijack** (D68, GDD #8) ·
       **Pub collaborator** as a real system (D68, GDD #5) · **Tribunal windows** (D67 prompt, GDD #7)
-      · **Swap/Copy powers** finished (D68). `<pending>`
+      · **Swap/Copy powers** finished (D68). `90fe1d0`
 
 **GDD review adoption COMPLETE** — every green-lit item shipped; only the Dead-Reckoning
 paper-fallback kit stays deferred.
