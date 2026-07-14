@@ -11,6 +11,7 @@ const Body = z.object({
   name: z.string().min(1).max(40),
   password: z.string().max(30).optional(), // D45: the night selector word
   takeover: z.boolean().default(false), // reclaim your name from a new device
+  seatCode: z.string().max(8).optional(), // D53: the seat's re-entry code (takeover only)
   intake: z
     .object({
       age: z.union([z.string(), z.number()]).optional(),
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-  const { code, name, password, takeover, intake } = parsed.data;
+  const { code, name, password, takeover, seatCode, intake } = parsed.data;
 
   const admin = supabaseAdmin();
   const { data: game } = await admin
@@ -55,15 +56,23 @@ export async function POST(req: Request) {
   // (review #7, security)
   const { data: allPlayers } = await admin
     .from("players")
-    .select("id, auth_uid, name")
+    .select("id, auth_uid, name, seat_code")
     .eq("game_id", game.id);
   const existing =
     (allPlayers ?? []).find((p) => p.name.toLowerCase() === name.trim().toLowerCase()) ?? null;
 
   if (existing) {
     // pseudo-accounts (D14): tapping your own name on a new device = takeover
-    if (existing.auth_uid && existing.auth_uid !== user!.id && !takeover)
-      return NextResponse.json({ needsTakeover: true }, { status: 409 });
+    const crossDevice = !!existing.auth_uid && existing.auth_uid !== user!.id;
+    if (crossDevice && !takeover) return NextResponse.json({ needsTakeover: true }, { status: 409 });
+    // D53: cross-device takeover needs the seat's code — a friend grabbing your
+    // name can't read your mail/alignment/purse. Legacy rows without a code
+    // (or same-device rejoin) pass straight through. Host can look codes up.
+    if (crossDevice && existing.seat_code && (seatCode?.trim() ?? "") !== existing.seat_code)
+      return NextResponse.json(
+        { needsSeatCode: true, error: "seat code, please — check your other phone, or ask the host" },
+        { status: 403 }
+      );
     const { error } = await admin
       .from("players")
       .update({ auth_uid: user!.id, intake })
@@ -95,6 +104,10 @@ export async function POST(req: Request) {
       ? ((game.config as { startingBalance?: number })?.startingBalance ?? 1500)
       : 0;
 
+  // D53: mint the seat's re-entry code — 4 digits, easy to say/remember, no
+  // lookalike ambiguity. Shown to the owner in More; needed to take the seat
+  // from another device.
+  const seat = String(Math.floor(1000 + Math.random() * 9000));
   const { data: player, error } = await admin
     .from("players")
     .insert({
@@ -105,6 +118,7 @@ export async function POST(req: Request) {
       character,
       status: game.status === "lobby" ? "lobby" : "alive",
       balance: startingBalance,
+      seat_code: seat,
     })
     .select("id")
     .single();
@@ -118,5 +132,5 @@ export async function POST(req: Request) {
   // D47: the induction's first step waits for the second phone — joins advance it
   if ((game.config as { tutorial?: boolean } | null)?.tutorial)
     after(() => tickDirector(game.id, "event:player_joined").catch(console.error));
-  return NextResponse.json({ playerId: player.id, rejoined: false });
+  return NextResponse.json({ playerId: player.id, rejoined: false, seatCode: seat });
 }

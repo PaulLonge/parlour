@@ -115,10 +115,25 @@ export function MessageEnvelope({ m }: { m: Msg }) {
       : transmission
         ? `⌁ transmission — ${m.claimed_sender}`
         : `${k.icon} ${k.label}`;
+  // GDD UX #4: any letter carrying a claimed sender is unverifiable — the
+  // machine carries and may edit all mail, and a signature proves nothing
+  // (D38/D28). Mark it plainly so an emotionally specific note isn't taken
+  // at face value. (When notary seals ship, sealed mail loses this tag.)
+  const unverified = !!m.claimed_sender && (isNote || transmission);
   return (
     <div className={`panel envelope p-4 ${transmission ? "transmission" : ""}`}>
       <p className="kicker flex items-baseline justify-between gap-2">
-        <span>{kicker}</span>
+        <span>
+          {kicker}
+          {unverified && (
+            <span
+              className="ml-2 rounded px-1 py-0.5 text-[9px] tracking-wider"
+              style={{ border: "1px solid var(--ink-dim)", color: "var(--ink-dim)", letterSpacing: "0.1em" }}
+            >
+              UNVERIFIED
+            </span>
+          )}
+        </span>
         {m.created_at && (
           <span className="normal-case" style={{ letterSpacing: "normal", color: "var(--ink-dim)" }}>
             {timeAgo(m.created_at)}

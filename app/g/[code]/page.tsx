@@ -88,15 +88,23 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
   const [password, setPassword] = useState("");
   const [needsPassword, setNeedsPassword] = useState(false);
   const [pendingName, setPendingName] = useState(""); // remembered across a 401 (review UX#4)
+  const [seatCode, setSeatCode] = useState("");
+  const [needsSeat, setNeedsSeat] = useState(false); // D53: takeover asks for the seat code
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function join(name: string) {
+  async function join(name: string, takeover = false) {
     setBusy(true);
     setError("");
     setPendingName(name);
     try {
-      let res = await g.actions.join(name, false, {}, password.trim() || undefined);
+      const res = await g.actions.join(
+        name,
+        takeover,
+        {},
+        password.trim() || undefined,
+        takeover ? seatCode.trim() || undefined : undefined
+      );
       if (res.status === 401 && res.needsPassword) {
         setNeedsPassword(true);
         // empty field + still 401 means a CACHED word was sent and rejected (review UX#6)
@@ -104,11 +112,18 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
         return;
       }
       if (res.status === 409 && res.needsTakeover) {
-        if (confirm(`"${name}" is already playing on another phone. Is that you? Take over on this device?`))
-          res = await g.actions.join(name, true, {}, password.trim() || undefined);
-        else return;
+        // D53: that name is live on another phone. Show the seat-code form —
+        // entering the seat's 4 digits IS the takeover. No code? Ask the host.
+        setNeedsSeat(true);
+        return;
+      }
+      if (res.status === 403 && res.needsSeatCode) {
+        setNeedsSeat(true);
+        setError(seatCode ? "That code doesn't match the seat. The host can look it up." : "");
+        return;
       }
       if (!res.ok && !res.playerId) setError(res.error?.toString() ?? "couldn't join");
+      else setNeedsSeat(false);
     } finally {
       setBusy(false);
     }
@@ -152,6 +167,35 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
           </button>
           <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
             Say it aloud at the table — it keeps this night's game separate from any other.
+          </p>
+        </form>
+      )}
+
+      {needsSeat && (
+        <form
+          className="panel panel-hero flex flex-col gap-2 p-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (pendingName && seatCode.trim()) join(pendingName, true);
+          }}
+        >
+          <p className="kicker">take over “{pendingName}”</p>
+          <input
+            className="input text-center text-lg tracking-[0.3em]"
+            aria-label="your seat code"
+            placeholder="4-digit code"
+            inputMode="numeric"
+            enterKeyHint="go"
+            maxLength={4}
+            value={seatCode}
+            onChange={(e) => setSeatCode(e.target.value.replace(/\D/g, ""))}
+            autoFocus
+          />
+          <button className="btn" disabled={busy || seatCode.trim().length < 4 || !pendingName}>
+            Take this seat
+          </button>
+          <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
+            That name is already playing on another phone. Your seat code is on that phone's More tab — or ask {g.roster.find((p) => p.is_host)?.name ?? "the host"} to look it up.
           </p>
         </form>
       )}
@@ -833,6 +877,13 @@ function MorePanel({ g, rogueLive }: { g: ReturnType<typeof useGame>; rogueLive:
       {rogueLive ? about : character}
       {rogueLive ? character : about}
 
+      {me.seat_code && (
+        <div className="panel px-4 py-2 text-center text-sm" style={{ color: "var(--ink-dim)" }}>
+          your seat code: <b style={{ color: "var(--gold)", letterSpacing: "0.2em" }}>{me.seat_code}</b>
+          <span className="mt-0.5 block text-xs italic">need it only to rejoin on another phone. {g.roster.find((p) => p.is_host)?.name ?? "the host"} can look it up.</span>
+        </div>
+      )}
+
       <Accordion title="My notes" kicker="📔 yours alone — never leaves this phone">
         <textarea
           className="input h-36"
@@ -1130,6 +1181,7 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [twist, setTwist] = useState("");
+  const [seats, setSeats] = useState<{ name: string; seat_code: string | null }[] | null>(null);
   const sealed = !!game.story_public?.meta;
 
   async function act(action: string) {
@@ -1137,6 +1189,7 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
     try {
       const res = await g.actions.breakglass(action);
       if (action === "reveal_twist" && res.twist) setTwist(res.twist);
+      if (action === "read_seats") setSeats(res.seats ?? []);
     } finally {
       setBusy(false);
     }
@@ -1193,6 +1246,9 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
             ⏭ Skip induction step
           </button>
         )}
+        <button className="btn btn-ghost" disabled={busy} onClick={() => (seats ? setSeats(null) : act("read_seats"))}>
+          🔑 Seat codes
+        </button>
         <Link href={`/tv/${game.code}`} className="btn btn-ghost">
           📺 House channel
         </Link>
@@ -1254,6 +1310,22 @@ function HostTools({ g }: { g: ReturnType<typeof useGame> }) {
             </button>
           </div>
           {twist && <p className="text-sm italic">{twist}</p>}
+        </div>
+      )}
+      {seats && (
+        <div className="panel mt-3 p-3 text-sm">
+          <p className="kicker">🔑 seat codes — for a guest whose phone died</p>
+          <ul className="mt-2 flex flex-col gap-1">
+            {seats.map((s) => (
+              <li key={s.name} className="flex justify-between gap-3">
+                <span style={{ color: "var(--ink-dim)" }}>{s.name}</span>
+                <span style={{ color: "var(--gold)", letterSpacing: "0.15em" }}>{s.seat_code ?? "—"}</span>
+              </li>
+            ))}
+          </ul>
+          <button className="mt-2 text-xs underline" style={{ color: "var(--ink-dim)" }} onClick={() => setSeats(null)}>
+            hide
+          </button>
         </div>
       )}
     </div>

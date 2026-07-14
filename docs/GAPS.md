@@ -37,6 +37,15 @@
 14. **Theme pick** for murder mode (moot for the party; matters only if the classic
     mode ever runs).
 
+## GDD REVIEW — WAVE 2 (green-lit, staged; see DECISIONS "GDD REVIEW — STAGED")
+
+Design locked, Traitors-informed, building deliberately: Resolve/explicit-refusal
+economy · front-man lifecycle (tenure, office-acts-leak-clues, freeze before
+finale) + SEER (scarce authenticated yes/no) + SHIELD · scheduled tribunal
+windows · scaled plunder/compute targets · bribe retune 75/150/300/600 gated ·
+decoy-survives-hijack · pub collaborator as a real system. Twist stays single
+(bribes-tally alone); Co-Host's championship public; Paul gets a Chaos score.
+
 ## KNOWN BACKLOG (designed, not built — in rough order)
 
 - The rogue GENERATOR (November's factory: prompt + reference exemplar + validators

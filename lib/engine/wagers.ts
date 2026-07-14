@@ -4,9 +4,13 @@ import { credit } from "./economy";
 import { GameConfig } from "@/lib/schemas/config";
 
 // ---------------------------------------------------------------------------
-// D45: wagers — challenge someone to win their coins. Stakes ESCROW on accept;
-// both parties report the winner; a match settles, a mismatch goes to the
-// machine. Side bets ride accepted wagers, 1:1 against the house.
+// D45/D51: wagers — challenge someone to win their coins. Stakes ESCROW on
+// accept; both parties report the winner; a match settles, a mismatch goes to
+// the machine. The winner takes the loser's stake MINUS the house rake (D51 —
+// the machine always takes a cut). Side bets ride accepted wagers and are
+// PARI-MUTUEL: the losing backers' stakes (less rake) are shared among the
+// winning backers, pro-rata. The house never mints side-bet winnings — the
+// old 1:1-against-the-house payout was a collusion money-printer (GDD #5).
 // ---------------------------------------------------------------------------
 
 export function wagerCap(balance: number, cfg: GameConfig): number {
@@ -46,6 +50,21 @@ export async function proposeWager(
     .eq("opponent_id", them.id)
     .limit(1);
   if (dupe?.length) return { ok: false, result: "already_thrown_down" };
+
+  // D51 anti-collusion (GDD #5): two friends can't launder coins by settling
+  // the same wager over and over. Past a limit, the pair is cut off — the
+  // machine invites them to a machine-verified phone duel instead (no
+  // self-reported winner to rig).
+  const { count: settledBetween } = await admin
+    .from("wagers")
+    .select("id", { count: "exact", head: true })
+    .eq("game_id", gameId)
+    .eq("status", "settled")
+    .or(
+      `and(challenger_id.eq.${me.id},opponent_id.eq.${them.id}),and(challenger_id.eq.${them.id},opponent_id.eq.${me.id})`
+    );
+  if ((settledBetween ?? 0) >= cfg.wagerPairLimit)
+    return { ok: false, result: "pair_limit_reached" };
 
   const { data: w, error } = await admin
     .from("wagers")
@@ -212,20 +231,37 @@ export async function settleWager(
 
   const winner = winnerId === w.challenger_id ? challenger : opponent;
   const loser = winnerId === w.challenger_id ? opponent : challenger;
-  await credit(admin, gameId, winnerId, w.amount * 2, `won — ${w.game_desc}`, "system");
+  const cfg = GameConfig.parse(s.game.config ?? {});
+  // D51: winner takes both stakes minus the house rake — coins move duellist
+  // to duellist, the machine skims its cut, nothing is minted.
+  const pot = w.amount * 2;
+  const rake = Math.floor(pot * cfg.houseRakePct);
+  await credit(admin, gameId, winnerId, pot - rake, `won — ${w.game_desc} (house took ${rake})`, "system");
 
-  // side bets: 1:1 against the house — each bet claimed atomically (review #1/#4)
+  // D51 side bets: PARI-MUTUEL. Losing backers' stakes (less rake) form the
+  // prize pool, shared among winning backers pro-rata. Each bet is claimed
+  // atomically (review #1/#4). Winners always get their own stake back.
   const { data: bets } = await admin.from("side_bets").select("*").eq("wager_id", wagerId).eq("status", "open");
-  for (const b of bets ?? []) {
-    const won = b.backing_id === winnerId;
+  const winBets = (bets ?? []).filter((b) => b.backing_id === winnerId);
+  const loseBets = (bets ?? []).filter((b) => b.backing_id !== winnerId);
+  const losingPool = loseBets.reduce((sum, b) => sum + b.amount, 0);
+  const sideRake = Math.floor(losingPool * cfg.houseRakePct);
+  const prizePool = losingPool - sideRake;
+  const winStakeTotal = winBets.reduce((sum, b) => sum + b.amount, 0);
+  for (const b of loseBets) {
+    await admin.from("side_bets").update({ status: "lost" }).eq("id", b.id).eq("status", "open");
+  }
+  for (const b of winBets) {
     const { data: bc } = await admin
       .from("side_bets")
-      .update({ status: won ? "won" : "lost" })
+      .update({ status: "won" })
       .eq("id", b.id)
       .eq("status", "open")
       .select("id");
-    if (bc?.length && won)
-      await credit(admin, gameId, b.bettor_id, b.amount * 2, `side bet won — backed ${winner?.name}`, "rogue");
+    if (!bc?.length) continue; // someone else claimed it
+    // own stake back + a pro-rata slice of the losers' pool
+    const winnings = winStakeTotal > 0 ? Math.floor((prizePool * b.amount) / winStakeTotal) : 0;
+    await credit(admin, gameId, b.bettor_id, b.amount + winnings, `side bet won — backed ${winner?.name} (+${winnings})`, "system");
   }
 
   await emit(admin, gameId, "wager_settled", {

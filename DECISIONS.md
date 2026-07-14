@@ -351,6 +351,75 @@ B-numbers are build-time engineering calls made inside the codebase.
   free bribe round), never plunder. The meter now provably equals the
   rogue-source credit ledger. Simulate assertion updated to enforce this.
 
+- **D51 — wager economy: house takes a cut, side bets go pari-mutuel (Paul +
+  GDD review #5, 2026-07-14).** Paul's model, better than the review's: wagers
+  move coins duellist-to-duellist (winner takes the loser's stake) MINUS a house
+  rake (`houseRakePct`, default 5%); side bets are now PARI-MUTUEL (losing
+  backers' stakes, less rake, shared pro-rata among winning backers) instead of
+  1:1-against-the-house — the old model let a colluding pair mint money from the
+  house indefinitely. Plus `wagerPairLimit` (default 3): a pair can only settle
+  so many wagers before the machine cuts them off (steers laundering pairs to
+  machine-verified phone duels). Nothing is minted anywhere; the machine only
+  ever skims. UI copy updated. (Simulate coverage for the whole wager economy
+  remains a backlog work order.)
+
+- **D52 — the hijack waits for the LATER of two gates (Paul + GDD review #8,
+  2026-07-14).** Paul: "30 minutes OR 70%, whichever happens LAST — ideally
+  everyone's in before we start; people arrive in groups." The director now
+  receives a computed HIJACK READINESS line (arrived % vs `arrivalThresholdPct`,
+  minutes since doors vs new `hijackAfterMinutes` = 30) and is instructed to
+  fire only when BOTH gates are met, preferring to WAIT rather than rush; the
+  host's manual `fire_hijack` lever overrides in either direction. (This is the
+  opposite of the review's "shorten the decoy" instinct — Paul values everyone
+  being present over trimming dead time, and the decoy-survives-hijack work
+  below addresses the dead-time concern instead.)
+
+- **D53 — per-seat re-entry code (Paul + GDD review #9, 2026-07-14).** Taking
+  over a name from a DIFFERENT device now needs the seat's 4-digit code (mint
+  0003), so a friend can't grab your phone-name and read your mail/alignment/
+  purse. Same-device rejoin and first claim are frictionless (D14 preserved).
+  The owner sees their code in More; if a phone dies, the host looks it up
+  (`read_seats` break-glass action — physically present, no magic links). Not
+  security theatre: a lightweight lock with a human override.
+
+- **D54 — evidence-integrity UX (GDD review #4, 2026-07-14).** Three contained
+  fixes: the glyph mark is now reveal-on-tap (5s auto-hide) instead of sitting
+  exposed for shoulder-surfing/screenshots; the paper code-entry box collapses
+  behind a button (most players hold no slip; a permanent field invited idle
+  brute-forcing); and any letter with a claimed sender now carries an
+  `UNVERIFIED` tag (the machine carries and may edit all mail — a signature
+  proves nothing; the tag drops when notary seals ship).
+
+- **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
+  the following; they are design-heavy and being built deliberately rather than
+  rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE
+  button banks a Resolve token spendable on good-side powers (authenticate a
+  note, peek a ledger category, add compute), making refusal active content and
+  breaking the take-every-bribe dominant strategy; the bribe card states the
+  alignment consequence up front. **(b) Front-man lifecycle + Traitors twists**
+  — tenure minimum, required office-acts that each leak a clue, public
+  announcement THAT the hat moved (not to whom), freeze the final front man ~30
+  min before the unmasking; plus a **SEER**-style scarce authenticated-evidence
+  power (earn the right to ask the machine one true yes/no about one player —
+  the Traitors "Seer", and the review's "notary" need, in one) and a **SHIELD**
+  (mission reward: immunity from the next burning/target). **(c) Scheduled
+  tribunal windows** (the review's answer to accusation cadence — two windows +
+  the finale, nomination needs 20–25% support, abstain allowed). **(d) Scaled
+  targets** (plunder/compute from the night's actual bribe/work budget, recomputed
+  once at hijack). **(e) Bribe retune** 75/150/300/600 with higher tiers gated
+  behind prior rogue work. **(f) Decoy survives the hijack** (pirate props carry
+  code words, character links become targeting permissions, one pre-hijack choice
+  seeds the first mission) — this, not a shorter decoy, answers the dead-time
+  worry per D52. **(g) Pub collaborator as a real system** (chosen after warm-up,
+  told immediately, three covert acts each leaving one real + one ambiguous clue,
+  identity locked). Twist-stacking answered: **keep the bribes-tally reveal ALONE**
+  (the review argued, and Paul's instinct agrees, that "one ship two flags" would
+  make honest work and betrayal equally hollow). Co-Host's championship is **public**
+  (the game needs one trust anchor). Paul gets a **Chaos score** with objectives
+  (broker deals, make players reverse positions), never ballot power. REJECTED:
+  the review's push to EXPAND safety signage (see D49); the Dead-Reckoning paper
+  fallback kit (deferred — a second engine to build/test, October at earliest).
+
 ## Build decisions (Claude, build session)
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.

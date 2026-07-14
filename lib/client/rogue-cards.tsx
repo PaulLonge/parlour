@@ -9,13 +9,21 @@ import type { Challenge, Txn } from "./useGame";
 import { expiresIn } from "./cards";
 import { GLYPHS, glyphFor, glyphWindow, GLYPH_WINDOW_MINUTES } from "@/lib/engine/glyphs";
 
-// Your rotating glyph (D32): shown big, tapped by whoever you show it to.
+// Your rotating glyph (D32): reveal-on-tap (GDD UX #4 — a mark used for
+// face-to-face proof shouldn't sit exposed on the default screen for anyone
+// to shoulder-surf or screenshot). Hold-to-show, auto-hides after 5s.
 export function GlyphBadge({ gameId, playerId }: { gameId: string; playerId: string }) {
   const [w, setW] = useState(() => glyphWindow());
+  const [shown, setShown] = useState(false);
   useEffect(() => {
     const t = setInterval(() => setW(glyphWindow()), 30_000);
     return () => clearInterval(t);
   }, []);
+  useEffect(() => {
+    if (!shown) return;
+    const t = setTimeout(() => setShown(false), 5000);
+    return () => clearTimeout(t);
+  }, [shown]);
   const g = glyphFor(gameId, playerId, w);
   return (
     <div className="panel flex items-center justify-between px-4 py-2">
@@ -25,9 +33,19 @@ export function GlyphBadge({ gameId, playerId }: { gameId: string; playerId: str
           changes every {GLYPH_WINDOW_MINUTES} minutes
         </p>
       </div>
-      <span className="text-4xl" title={g.word}>
-        {g.emoji}
-      </span>
+      {shown ? (
+        <span className="text-4xl" title={g.word} aria-label="your mark">
+          {g.emoji}
+        </span>
+      ) : (
+        <button
+          className="btn btn-ghost text-xs"
+          onClick={() => setShown(true)}
+          aria-label="reveal your mark for five seconds"
+        >
+          👁 reveal
+        </button>
+      )}
     </div>
   );
 }
@@ -386,6 +404,15 @@ export function CodeEntryBox({
   const [hint, setHint] = useState("");
   const [note, setNote] = useState("");
   const [inFlight, setInFlight] = useState(false); // double-tap guard (review M13)
+  // GDD UX #4: collapse behind a button — most players hold no slip most of the
+  // time, and a permanent input invites idle brute-force guessing.
+  const [open, setOpen] = useState(false);
+  if (!open)
+    return (
+      <button className="btn btn-ghost w-full" onClick={() => setOpen(true)}>
+        📜 Paper — found a slip, or told to hide one?
+      </button>
+    );
 
   async function go() {
     if (inFlight) return;
@@ -409,14 +436,24 @@ export function CodeEntryBox({
     <div className="panel p-4">
       <div className="flex items-center justify-between">
         <p className="kicker">the paper trail</p>
-        {/* 44px tap target via padding + negative margin (visual review #2) */}
-        <button
-          className="-m-2 p-2 text-xs underline"
-          style={{ color: "var(--ink-dim)", minHeight: 44, display: "inline-flex", alignItems: "center" }}
-          onClick={() => setMode(mode === "find" ? "hide" : "find")}
-        >
-          {mode === "find" ? "hiding one instead?" : "found one instead?"}
-        </button>
+        <div className="flex items-center gap-1">
+          {/* 44px tap target via padding + negative margin (visual review #2) */}
+          <button
+            className="-m-2 p-2 text-xs underline"
+            style={{ color: "var(--ink-dim)", minHeight: 44, display: "inline-flex", alignItems: "center" }}
+            onClick={() => setMode(mode === "find" ? "hide" : "find")}
+          >
+            {mode === "find" ? "hiding one instead?" : "found one instead?"}
+          </button>
+          <button
+            className="p-2 text-xs"
+            style={{ color: "var(--ink-dim)", minHeight: 44 }}
+            aria-label="close paper trail"
+            onClick={() => setOpen(false)}
+          >
+            ✕
+          </button>
+        </div>
       </div>
       <div className="mt-2 flex flex-col gap-2">
         <input

@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 10 — D49 safety-as-plumbing: signage removed, mechanisms kept silent; D50 plunder purity: wrongful verdicts no longer cook the books. Rev 9: D48 conductor roles. Rev 8: THE INDUCTION)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 11 — GDD-review wave 1: D51 wager rake + pari-mutuel side bets, D52 hijack waits for later-of-two-gates, D53 per-seat codes, D54 evidence-integrity UX; wave 2 staged in DECISIONS. Rev 10: D49/D50 safety + plunder purity)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.

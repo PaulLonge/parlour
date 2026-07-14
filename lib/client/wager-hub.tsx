@@ -278,7 +278,7 @@ function SideBetCard({
   const [amounts, setAmounts] = useState<Record<string, number>>({});
   return (
     <div className="panel p-4">
-      <p className="kicker">📖 the book is open — back a side, 1:1 vs the house</p>
+      <p className="kicker">📖 the book is open — back a side; winners split the losers' pool (house takes a cut)</p>
       <div className="mt-2 flex flex-col gap-3">
         {books.map((b) => (
           <div key={b.id} className="text-sm">

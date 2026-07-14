@@ -39,6 +39,7 @@ export type Me = {
   balance: number;
   burned: boolean;
   stamps: number;
+  seat_code: string | null;
   intake: Record<string, unknown> | null;
   character: {
     personaName?: string;
@@ -172,7 +173,7 @@ export function useGame(code: string) {
       supa.from("players_public").select("*").eq("game_id", g.id).order("created_at"),
       supa
         .from("players")
-        .select("id, name, is_host, status, role, balance, burned, stamps, intake, character, arrived_at")
+        .select("id, name, is_host, status, role, balance, burned, stamps, seat_code, intake, character, arrived_at")
         .eq("game_id", g.id) // without this, a second game on the device returns 2 rows and maybeSingle errors (review R3 #2)
         .maybeSingle(),
       supa
@@ -283,14 +284,20 @@ export function useGame(code: string) {
 
   const actions = useMemo(
     () => ({
-      join: (name: string, takeover = false, intake: Record<string, unknown> = {}, password?: string) => {
+      join: (
+        name: string,
+        takeover = false,
+        intake: Record<string, unknown> = {},
+        password?: string,
+        seatCode?: string
+      ) => {
         // the night's word: read the per-game cache when none supplied; WRITE
         // only after the server accepts it (review UX#6 — never cache a wrong word)
         let pw = password;
         try {
           if (!pw) pw = localStorage.getItem(`parlour-pw-${code.toUpperCase()}`) ?? undefined;
         } catch {}
-        return post("/api/join", { code, name, takeover, intake, password: pw }).then((r) => {
+        return post("/api/join", { code, name, takeover, intake, password: pw, seatCode }).then((r) => {
           if (password && (r.ok || r.playerId || r.rejoined)) {
             try {
               localStorage.setItem(`parlour-pw-${code.toUpperCase()}`, password);

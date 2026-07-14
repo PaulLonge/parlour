@@ -34,7 +34,7 @@ const ROGUE_SYSTEM = `You are the unseen Director of a live party game in ROGUE 
 
 THE SHAPE OF THE NIGHT:
 - act1: pre-game theatre. Light personas, "the game will begin shortly…" teasers. NO bribes yet.
-- THE HIJACK (your 'hijack' tool, fired ONCE at ~70% arrival or the host's start signal): the promised game "crashes", balances read zero (a lie — the vault was never touched), you introduce both AI voices via announcements, then begin the bribe cascade. After the hijack, personas are DEAD: address everyone by real name.
+- THE HIJACK (your 'hijack' tool, fired ONCE): the promised game "crashes", balances read zero (a lie — the vault was never touched), you introduce both AI voices via announcements, then begin the bribe cascade. After the hijack, personas are DEAD: address everyone by real name. TIMING (D52): fire at the LATER of the two gates — at least the configured minutes since doors opened AND at least the arrival threshold in the room — because the twist must land with (almost) everyone present; latecomers arriving after it feel cheated. People come in groups; prefer to WAIT rather than rush. The HIJACK READINESS line below tells you where both gates stand. The host may always fire early or late via their lever — respect that.
 - live play: bribes (offer_bribe — accepting = becoming a minion; expiry is a silent no, re-offer down your shortlist within minutes, escalating amounts) and good missions (offer_mission side=good — evidence, counter-intel, protection; they must LOOK as furtive as bribes). Verification per D21: submission / cross / code / self / forgery only — never assume you can sense location or duration. Adjudicate submitted responses promptly (adjudicate tool) and pay.
 - THE PLUNDER METER IS SECRETLY A LIVE TALLY OF ACCEPTED BRIBES (the twist). Every accepted bribe ticks it automatically with your publicTrace line. Never explain the accounting. Small print stays: "every coin accounted for."
 - FRONT MAN: appoint your first recruit (appoint_frontman); they get privileges via messages; NEVER tell them who the other minions are (one-way knowledge); rotate after a burning or whenever it serves drama. Never appoint burned or panic players.
@@ -130,6 +130,35 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
     );
     if (ready.length)
       storyDigest += `\nQUIZ BANK (D46 — personal quizzes, elicited from the host; use as choice missions verbatim): ${JSON.stringify(ready.slice(0, 12))}`;
+
+    // D52 HIJACK READINESS — the two gates, computed, so the director waits for
+    // the LATER of them rather than firing early. Only relevant pre-hijack.
+    if (s.game.status === "act1" && !s.game.hijacked_at) {
+      const cfgH = s.config; // already parsed on GameState
+      const roster = s.players; // count everyone incl. host
+      const arrived = roster.filter((p) => p.arrived_at).length;
+      const arrivedPct = roster.length ? arrived / roster.length : 0;
+      const { data: act1Ev } = await admin
+        .from("events")
+        .select("created_at")
+        .eq("game_id", gameId)
+        .eq("type", "phase_advanced")
+        .order("id", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      const startedAt = act1Ev?.created_at ?? null;
+      const minsElapsed = startedAt ? Math.floor((Date.now() - new Date(startedAt).getTime()) / 60000) : 0;
+      const timeGate = minsElapsed >= cfgH.hijackAfterMinutes;
+      const arrivalGate = arrivedPct >= cfgH.arrivalThresholdPct;
+      storyDigest +=
+        `\nHIJACK READINESS: ${arrived}/${roster.length} arrived (${Math.round(arrivedPct * 100)}%, gate ${Math.round(
+          cfgH.arrivalThresholdPct * 100
+        )}% → ${arrivalGate ? "MET" : "not met"}); ${minsElapsed} min since doors (gate ${cfgH.hijackAfterMinutes} min → ${
+          timeGate ? "MET" : "not met"
+        }). Fire the hijack only when BOTH gates are MET (or the host fires it). ${
+          timeGate && arrivalGate ? "BOTH MET — you may fire when the moment feels right." : "HOLD — keep the act-1 theatre going."
+        }`;
+    }
   }
 
   // rogue work queue: unadjudicated submissions + pending forgeries

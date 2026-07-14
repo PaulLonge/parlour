@@ -19,6 +19,7 @@ const Body = z.object({
     "start_party", // lobby → act1 (pre-seal host control, not a seal break)
     "fire_hijack", // ROGUE: manual takeover trigger (gap #2 — the host's lever)
     "tutorial_skip", // D47: force-advance a stuck induction step (noted in the record)
+    "read_seats", // D53: host looks up seat codes for a guest whose phone died
   ]),
 });
 
@@ -134,6 +135,16 @@ export async function POST(req: Request) {
       if (!r.ok) return NextResponse.json({ error: r.result }, { status: 422 });
       after(() => tickDirector(gameId, "event:hijack_fired_manually").catch(console.error));
       return NextResponse.json({ ok: true });
+    }
+    case "read_seats": {
+      // D53: host-only recovery — read seat codes to hand back to a guest whose
+      // phone died. Service-role read; never exposed to any non-host client.
+      const { data: seats } = await admin
+        .from("players")
+        .select("name, seat_code")
+        .eq("game_id", gameId)
+        .order("name");
+      return NextResponse.json({ seats: seats ?? [] });
     }
     case "tutorial_skip": {
       if (!(caller.game.config as { tutorial?: boolean } | null)?.tutorial)

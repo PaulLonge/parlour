@@ -8,8 +8,10 @@ export const GameConfig = z.object({
   voteMinutes: z.number().min(2).max(15).default(5),
   // ~1 traitor per N living players (Traitors uses ~5–6)
   playersPerTraitor: z.number().min(3).max(10).default(5.5),
-  // start the game proper at % of expected guests arrived, or when host forces it
+  // D52: the hijack fires at the LATER of these two gates — everyone should be
+  // in before the twist lands. People arrive in groups; wait, don't rush.
   arrivalThresholdPct: z.number().min(0).max(1).default(0.7),
+  hijackAfterMinutes: z.number().min(0).max(180).default(30),
   minPlayersToStart: z.number().min(4).default(5),
   killChallengeExpiryMinutes: z.number().min(5).max(60).default(20),
   heartbeatSeconds: z.number().min(60).max(600).default(180),
@@ -39,6 +41,14 @@ export const GameConfig = z.object({
   stamplessNotes: z.boolean().default(false), // pub: easier flow, no stamps needed
   wagerCapPct: z.number().min(0.05).max(1).default(0.3), // AI-adjustable stake ceiling
   wagerCapFloor: z.number().default(10), // …but you can always bet at least this
+  // D51: the house always takes a cut. Wagers move coins between the two
+  // duellists (winner takes the loser's stake) minus this rake; side bets are
+  // PARI-MUTUEL (losing backers fund winning backers), never minted by the
+  // house — the old 1:1-vs-house side bet was a collusion money-printer.
+  houseRakePct: z.number().min(0).max(0.25).default(0.05),
+  // D51: anti-collusion — a pair can only settle this many wagers between them
+  // before the machine forces machine-verifiable phone duels only
+  wagerPairLimit: z.number().min(1).default(3),
   // D47: THE INDUCTION — deterministic two-phone tutorial/QA; a scripted
   // step-runner replaces the LLM director entirely for these games
   tutorial: z.boolean().default(false),
