@@ -321,6 +321,27 @@ export async function applyDirectorMoves(
           await emit(admin, gameId, "bribe_offered", { payload: { to: p.name, amount: move.amount } });
           break;
         }
+        case "offer_redemption": {
+          requireRogue(s);
+          const p = byName(s, move.playerName);
+          if (!p) throw new Error(`unknown player "${move.playerName}"`);
+          if (p.status !== "alive") throw new Error(`${p.name} is ${p.status}`);
+          if (p.role !== "minion") throw new Error(`${p.name} has nothing to be redeemed from`);
+          if (!s.game.hijacked_at) throw new Error("no redemptions before the hijack");
+          const cfg = GameConfig.parse(s.game.config ?? {});
+          const expires = new Date(Date.now() + (move.expiresInMinutes / cfg.timeScale) * 60000).toISOString();
+          const { error } = await admin.from("challenges").insert({
+            game_id: gameId,
+            player_id: p.id,
+            type: "redemption",
+            brief: move.mission,
+            data: { amount: move.amount, memo: move.memo, publicTrace: move.publicTrace, side: "good" },
+            expires_at: expires,
+          });
+          if (error) throw new Error(error.message);
+          await emit(admin, gameId, "redemption_offered", { payload: { to: p.name, amount: move.amount } });
+          break;
+        }
         case "offer_mission": {
           requireRogue(s);
           const p = byName(s, move.playerName);

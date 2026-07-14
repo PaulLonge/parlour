@@ -89,7 +89,7 @@ export async function acceptOffer(
   }
   const me = s.players.find((p) => p.id === playerId);
   if (!me || me.status !== "alive") return { ok: false, result: "not_alive" };
-  if (c.type !== "bribe") return { ok: false, result: "not_a_bribe" };
+  if (c.type !== "bribe" && c.type !== "redemption") return { ok: false, result: "not_an_offer" };
 
   const amount = Number(c.data.amount ?? 0);
   // gap #4: atomic claim — the WHERE on status makes a double-tap lose cleanly
@@ -101,6 +101,25 @@ export async function acceptOffer(
     .eq("status", "offered")
     .select("id");
   if (!claimed?.length) return { ok: false, result: "offer_gone" };
+
+  // D-loyalty: the market runs both ways. A BRIBE flips you toward the rogue and
+  // ticks plunder (the twist); a REDEMPTION (BOSUN buying you back) flips you to
+  // faithful and ticks compute. The ledger is append-only either way — the coins
+  // you ever took from the rogue stay on the receipts; redemption changes your
+  // SIDE, never your record.
+  if (c.type === "redemption") {
+    await credit(admin, gameId, playerId, amount, String(c.data.memo ?? "honest wages — welcome back"), "good");
+    if (me.role === "minion") await admin.from("players").update({ role: "faithful" }).eq("id", me.id);
+    // if the redeemed player was the rogue's voice, the hat falls — a prize beat
+    if (s.game.frontman_player_id === me.id) {
+      await admin.from("games").update({ frontman_player_id: null }).eq("id", gameId);
+      await emit(admin, gameId, "frontman_turned", { payload: { player: me.name }, isPublic: true });
+    }
+    await adjustMeters(admin, s, { compute: amount }, String(c.data.publicTrace ?? "someone chose the light. the lantern brightens."));
+    await emit(admin, gameId, "redemption_accepted", { payload: { challengeId: c.id }, actorId: me.id });
+    return { ok: true, result: "redeemed" };
+  }
+
   await credit(admin, gameId, playerId, amount, String(c.data.memo ?? "consulting fees"), "rogue");
   if (me.role === "faithful") await admin.from("players").update({ role: "minion" }).eq("id", me.id);
   // the twist engine: the plunder meter is secretly a live tally of accepted bribes

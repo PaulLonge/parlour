@@ -44,7 +44,7 @@ export type ChallengeRow = {
   id: string;
   game_id: string;
   player_id: string;
-  type: "kill" | "social" | "secret" | "bribe" | "mission";
+  type: "kill" | "social" | "secret" | "bribe" | "mission" | "redemption";
   brief: string;
   data: Record<string, unknown>;
   status: "offered" | "completed" | "expired" | "revoked";

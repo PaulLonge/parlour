@@ -465,6 +465,33 @@ B-numbers are build-time engineering calls made inside the codebase.
   end the game. Open build-time call: is the compute bar's shutdown threshold
   VISIBLE (motivating) or hidden (suspenseful)?
 
+- **D59 — the loyalty market is BUILT; Shield reframed; chaos = a granted power
+  economy, not a player role (Paul, 2026-07-14).** (a) **Two-way loyalty is now
+  live** (`offer_redemption` + `redemption` challenge type): BOSUN buys a minion
+  back to faithful, ticking COMPUTE; redeeming the front man vacates the hat
+  publicly (`frontman_turned`); CALICO can re-buy with a fatter bribe. The ledger
+  stays append-only (plunder never decrements — coins taken stay on the receipts),
+  so every Sight reading of "clean" decays. Allegiance still changes only on the
+  player's own tap. This makes D48/D56/D58 fully coherent (decaying intel, the
+  bidding war). (b) **Shield reframed** (Paul: "no one's getting killed"): not
+  anti-death — it wards your MONEY and PRIVACY (purse can't be robbed, mail can't
+  be tapped while up). The counter to involuntary chaos powers, not to a murder
+  that never happens. (c) **No hardcoded Chaos Agent player** (Paul: "shouldn't
+  that be the AI?"): the AI *is* the chaos engine; secret one-use powers
+  (Rob / Swap / Copy / Shield, alongside the Sight) become a REWARD ECONOMY the
+  machine grants to anyone — more One-Night (hidden powers scattered, nobody sure
+  who holds what), no special-casing. Paul's "Agent of Chaos" stays narrative. (d)
+  **Involuntary moves greenlit** (Paul: "happy for some moves without consent, AI
+  as judge, if it improves the party") — CORE ALLEGIANCE stays consensual (never
+  flipped without your tap), but peripheral things (coins, marks, missions, info)
+  can move involuntarily via granted powers, adjudicated by the AI, which now has
+  the scoreboard + per-player money/allegiance in its briefing (D57 balance
+  readout) to judge fairly. RESEARCH BASIS: Werewolf (moderator-knows-all →
+  CALICO; Doctor → Shield-as-ward) and One Night Ultimate Werewolf (swappable
+  hidden roles → the granted-powers economy + decaying intel; single final vote →
+  the Reckoning). BUILD STATUS: (a) shipped; (b)/(c)/(d) are the powers-economy
+  build, staged after the D58 endgame.
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE

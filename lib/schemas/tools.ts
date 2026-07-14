@@ -94,6 +94,16 @@ export const OfferBribe = z.object({
   expiresInMinutes: z.number().min(1).max(60).default(3),
 });
 
+export const OfferRedemption = z.object({
+  tool: z.literal("offer_redemption"),
+  playerName: z.string().describe("a MINION BOSUN is buying back — the loyalty market runs both ways (D-loyalty)"),
+  amount: z.number().min(1).describe("honest wages paid on accept; ticks COMPUTE, not plunder"),
+  memo: z.string().describe("transaction memo, BOSUN-voiced: 'back pay, honestly earned'"),
+  mission: z.string().describe("the small act of good faith that comes with coming back"),
+  publicTrace: z.string().describe("the arguable public compute-line: 'the lantern brightened — someone came home'"),
+  expiresInMinutes: z.number().min(1).max(60).default(5),
+});
+
 export const OfferMission = z.object({
   tool: z.literal("offer_mission"),
   playerName: z.string(),
@@ -260,6 +270,7 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   CloseVote,
   Hijack,
   OfferBribe,
+  OfferRedemption,
   OfferMission,
   Adjudicate,
   AppointFrontman,

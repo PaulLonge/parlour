@@ -15,6 +15,7 @@ import {
   MetersStrip,
   PurseChip,
   BribeCard,
+  RedemptionCard,
   MissionCard,
   CodeEntryBox,
   GlyphBadge,
@@ -449,6 +450,21 @@ function NowPanel({
       {g.challenges.map((c) =>
         c.type === "bribe" ? (
           <BribeCard
+            key={c.id}
+            c={c}
+            symbol={sym}
+            busy={busy}
+            onAccept={async () => {
+              setBusy(true);
+              try {
+                await g.actions.acceptOffer(c.id);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        ) : c.type === "redemption" ? (
+          <RedemptionCard
             key={c.id}
             c={c}
             symbol={sym}

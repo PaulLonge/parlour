@@ -168,6 +168,43 @@ export function BribeCard({
   );
 }
 
+// The bright offer, D-loyalty: BOSUN buying a minion back. Same shape as a
+// bribe, opposite meaning — gold, not danger; the lantern, not the coin.
+export function RedemptionCard({
+  c,
+  busy,
+  onAccept,
+  symbol = "Ƀ",
+}: {
+  c: Challenge;
+  busy?: boolean;
+  onAccept: () => void;
+  symbol?: string;
+}) {
+  const amount = Number(c.data?.amount ?? 0);
+  return (
+    <div className="panel envelope p-5" style={{ borderColor: "var(--gold)" }}>
+      <p className="kicker" style={{ color: "var(--gold)" }}>a way back — offered quietly</p>
+      <p className="mt-2 font-display text-2xl" style={{ color: "var(--gold)" }}>
+        {symbol}{amount}
+        <span
+          className="ml-2 text-sm font-normal italic"
+          style={{ color: "var(--ink-dim)", letterSpacing: "normal", fontFamily: "var(--font-body)" }}
+        >
+          honest wages — and your name back
+        </span>
+      </p>
+      <p className="mt-2 leading-relaxed whitespace-pre-wrap">{c.brief}</p>
+      <p className="mt-2 text-xs italic" style={{ color: "var(--ink-dim)" }}>
+        Coming home is a choice too{expiresIn(c.expires_at) ? ` — ${expiresIn(c.expires_at)} left` : ""}. What you took stays on the books; what you are next is up to you.
+      </p>
+      <button className="btn mt-4 w-full" disabled={busy} onClick={onAccept}>
+        Come back to the light
+      </button>
+    </div>
+  );
+}
+
 // A mission with verification-aware completion UI (D21).
 export function MissionCard({
   c,

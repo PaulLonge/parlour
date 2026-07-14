@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 14 — D58 "the aim of the game" section (take down the AI; meters become the win); D57 hosts can front + balance readout for smart recruitment. Rev 13: D56 the Seer)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 15 — D59 two-way loyalty market SHIPPED (BOSUN redeems, CALICO re-buys, ledger cumulative); Shield reframed to money/privacy ward; chaos = granted-power economy not a player role; Werewolf/One-Night researched. Rev 14: D58 the aim)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -82,6 +82,7 @@ and other players' testimony — never phantom sensors).
 | Mechanic | What it is | The hook |
 |---|---|---|
 | **Bribes** | Private offers: coins restored to your purse + a small task | *Taking the money makes you a minion* — arming by acceptance; ignoring one expires silently and re-offers elsewhere |
+| **Redemption** (D59) | BOSUN buys a minion back to the good side — the loyalty market runs both ways | Ticks compute not plunder; redeeming the front man vacates the hat publicly; CALICO can re-buy. The ledger never forgets, so allegiance is fluid but the receipts aren't — every "clean" reading decays |
 | **The meters** | Twin public gauges on every phone + TV: Ƀ taken vs compute built | The plunder meter is secretly a live tally of accepted bribes — the twist runs in public all night, labelled "every coin accounted for" |
 | **Missions** | Paid tasks from either AI: evidence-gathering, counter-intel, mischief | Good-side work is engineered to look exactly as furtive as bribery |
 | **Paper codes** | Printed slips (typed, not scanned) hidden around the house | Hide/find chains verify both ends; the AI can dictate NEW slips for humans to write mid-game |
