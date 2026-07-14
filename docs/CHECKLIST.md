@@ -51,7 +51,7 @@ paper-fallback kit stays deferred.
 
 - [x] **Scenario registry** (`content/scenarios.ts`) — a game = a data entry (mode + story
       pack + preset + skin). `/new` renders it; create resolves mode/preset; generate seals
-      the named pack. Adding a game = entry + JSON, **no engine change**. `90fe1d0`… `<pending>`
+      the named pack. Adding a game = entry + JSON, **no engine change**. `e6d2017`
 - [x] **Third scenario shipped: THE VAULT** (`content/vault-story.json`) — a casino-heist
       reskin (MIDAS vs LEDGER, ◆ Chips), schema-validated, proving the rogue engine is
       theme-agnostic. To add more: write a persona-less `RogueStory` JSON + a registry entry.
