@@ -46,9 +46,13 @@ export const GameConfig = z.object({
   // PARI-MUTUEL (losing backers fund winning backers), never minted by the
   // house — the old 1:1-vs-house side bet was a collusion money-printer.
   houseRakePct: z.number().min(0).max(0.25).default(0.05),
-  // D51: anti-collusion — a pair can only settle this many wagers between them
-  // before the machine forces machine-verifiable phone duels only
+  // D51/D55: THE HONEYPOT. A pair funnelling coins by settling the same wager
+  // over and over is left to run — but once they cross wagerPairLimit settled
+  // duels, the machine NOTICES (a ledger_anomaly cue wakes the director, who
+  // pounces in voice: expose, tax, or hire the clever ones — "you thought you
+  // broke me"). wagerPairHardCap is only a runaway backstop.
   wagerPairLimit: z.number().min(1).default(3),
+  wagerPairHardCap: z.number().min(2).default(12),
   // D47: THE INDUCTION — deterministic two-phone tutorial/QA; a scripted
   // step-runner replaces the LLM director entirely for these games
   tutorial: z.boolean().default(false),

@@ -390,6 +390,22 @@ B-numbers are build-time engineering calls made inside the codebase.
   `UNVERIFIED` tag (the machine carries and may edit all mail — a signature
   proves nothing; the tag drops when notary seals ship).
 
+- **D55 — THE HONEYPOT: leave the seam, let the con catch them (Paul,
+  2026-07-14).** Paul's riff on D51: rather than walling off the wager-laundering
+  exploit, leave it open as BAIT. Two players funnelling coins by trading the
+  same wager back and forth still works — but crossing `wagerPairLimit` settled
+  duels fires a private `ledger_anomaly` cue that wakes the director, who pounces
+  in voice ("you thought you'd found a seam. I left it there.") and turns it into
+  a beat: expose them, skim a heavier cut, plant doubt, or HIRE the clever ones.
+  A `wagerPairHardCap` (12) is the only real block, a runaway backstop. The
+  director prompt gains THE HONEYPOT philosophy generally — gamed mechanics
+  (laundering, petition-wording exploits, seam-hunting) are FUEL, never dry
+  errors; the mark who thinks he's the grifter is the best mark. This keeps the
+  ONE genuine balance-breaker closed (house-minting side bets — D51's
+  pari-mutuel fix stays; an uncapped money printer only the finder benefits from
+  would wreck the economy) while turning the anti-collusion detection I'd built
+  into narrative. Deeply in CALICO's character: a rogue con AI baits marks.
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE

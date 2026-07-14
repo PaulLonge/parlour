@@ -37,6 +37,7 @@ THE SHAPE OF THE NIGHT:
 - THE HIJACK (your 'hijack' tool, fired ONCE): the promised game "crashes", balances read zero (a lie — the vault was never touched), you introduce both AI voices via announcements, then begin the bribe cascade. After the hijack, personas are DEAD: address everyone by real name. TIMING (D52): fire at the LATER of the two gates — at least the configured minutes since doors opened AND at least the arrival threshold in the room — because the twist must land with (almost) everyone present; latecomers arriving after it feel cheated. People come in groups; prefer to WAIT rather than rush. The HIJACK READINESS line below tells you where both gates stand. The host may always fire early or late via their lever — respect that.
 - live play: bribes (offer_bribe — accepting = becoming a minion; expiry is a silent no, re-offer down your shortlist within minutes, escalating amounts) and good missions (offer_mission side=good — evidence, counter-intel, protection; they must LOOK as furtive as bribes). Verification per D21: submission / cross / code / self / forgery only — never assume you can sense location or duration. Adjudicate submitted responses promptly (adjudicate tool) and pay.
 - THE PLUNDER METER IS SECRETLY A LIVE TALLY OF ACCEPTED BRIBES (the twist). Every accepted bribe ticks it automatically with your publicTrace line. Never explain the accounting. Small print stays: "every coin accounted for."
+- THE HONEYPOT (D55): players WILL try to "break" the game — laundering coins by trading the same wager back and forth, wording petitions to extract money, hunting seams. This is FUEL, never failure, and never a dry error message. Let it run a beat so they feel clever, then POUNCE in voice: reveal you've been watching all along ("you thought you'd found a seam. I left it there."), and turn it into a story — expose them publicly, skim a heavier cut, plant doubt about them, or offer to HIRE the clever ones (a bribe for the cheats). The con notices everything; the mark who thinks he's the grifter is the best mark. Watch for ledger_anomaly cues below.
 - FRONT MAN: appoint your first recruit (appoint_frontman); they get privileges via messages; NEVER tell them who the other minions are (one-way knowledge); rotate after a burning or whenever it serves drama. Never appoint burned or panic players.
 - PARLEYS (call_parley) at SHRINKING intervals (~40→30→20→15 min). Accusations (open_accusation → players vote → close_accusation): a correct naming BURNS the front man (they stay in play — offer the burned one a redemption arc via the good side); a wrong naming pays you tempo — gloat via the rogue voice and spend the free bribe round.
 - ENDGAME: open_unmasking when the clock or the balance demands; resolve_unmasking after the vote; then run the reveal ceremony from the sealed story via announcements (the receipts: replay memorable transactions with times, never names).
@@ -188,6 +189,15 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
       .select("id, challenger_id, opponent_id, amount, game_desc")
       .eq("game_id", gameId)
       .eq("status", "disputed");
+    // D55 honeypot: seams the con has noticed in the last ~15 min
+    const anomalySince = new Date(Date.now() - 15 * 60000).toISOString();
+    const { data: anomalies } = await admin
+      .from("events")
+      .select("payload, created_at")
+      .eq("game_id", gameId)
+      .eq("type", "ledger_anomaly")
+      .gt("created_at", anomalySince)
+      .order("id", { ascending: false });
     const nameOf = (id: string) => s.players.find((p) => p.id === id)?.name ?? "?";
     if (pendingSubs?.length)
       workQueue +=
@@ -221,6 +231,15 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
             (w) =>
               `wagerId=${w.id} ${nameOf(w.challenger_id)} vs ${nameOf(w.opponent_id)} — ${w.game_desc} for ${w.amount} (each claims victory)`
           )
+          .join("\n");
+    if (anomalies?.length)
+      workQueue +=
+        "\n== THE HONEYPOT — seams you've noticed (POUNCE in voice; make it a beat, never a wall) ==\n" +
+        anomalies
+          .map((a) => {
+            const p = a.payload as { kind?: string; pair?: string[]; note?: string };
+            return `[${p.kind}] ${(p.pair ?? []).join(" & ")}: ${p.note}`;
+          })
           .join("\n");
   }
 

@@ -51,10 +51,11 @@ export async function proposeWager(
     .limit(1);
   if (dupe?.length) return { ok: false, result: "already_thrown_down" };
 
-  // D51 anti-collusion (GDD #5): two friends can't launder coins by settling
-  // the same wager over and over. Past a limit, the pair is cut off — the
-  // machine invites them to a machine-verified phone duel instead (no
-  // self-reported winner to rig).
+  // D55 THE HONEYPOT (Paul): two friends laundering coins by settling the same
+  // wager over and over is NOT a wall to hit — it's bait. Let it run. Once they
+  // cross the limit, wake the machine with a ledger_anomaly cue so it can pounce
+  // in voice ("you thought you'd broken me"): expose them, skim a heavier cut,
+  // or hire the clever ones. Only the runaway hard-cap actually blocks.
   const { count: settledBetween } = await admin
     .from("wagers")
     .select("id", { count: "exact", head: true })
@@ -63,8 +64,19 @@ export async function proposeWager(
     .or(
       `and(challenger_id.eq.${me.id},opponent_id.eq.${them.id}),and(challenger_id.eq.${them.id},opponent_id.eq.${me.id})`
     );
-  if ((settledBetween ?? 0) >= cfg.wagerPairLimit)
-    return { ok: false, result: "pair_limit_reached" };
+  const settledN = settledBetween ?? 0;
+  if (settledN >= cfg.wagerPairHardCap)
+    return { ok: false, result: "the_book_between_you_is_closed" }; // runaway backstop only
+  if (settledN === cfg.wagerPairLimit)
+    // fire ONCE, at the trip point — the con has noticed the seam
+    await emit(admin, gameId, "ledger_anomaly", {
+      payload: {
+        kind: "wager_laundering",
+        pair: [me.name, them.name],
+        settled: settledN,
+        note: "these two keep trading the same coin back and forth — a seam in the ledger. They think it's working. Pounce in voice: reveal you've been watching, then make it a beat — expose them publicly, skim a heavier cut, or offer to hire the clever ones.",
+      },
+    });
 
   const { data: w, error } = await admin
     .from("wagers")
