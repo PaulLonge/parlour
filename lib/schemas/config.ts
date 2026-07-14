@@ -25,6 +25,9 @@ export const GameConfig = z.object({
   plunderTarget: z.number().default(3000), // CALICO's win line (out-buying the room)
   computeTarget: z.number().default(100), // the room's win line (out-building — BOSUN's shutdown)
   burnComputeReward: z.number().default(20), // a correct burning charges the room's weapon
+  // D61 secret powers economy
+  shieldMinutes: z.number().min(1).max(60).default(15), // how long a raised ward holds
+  robCap: z.number().min(1).default(200), // most a single Rob can lift
   startingBalance: z.number().default(1500),
   // D33: audiences with the AIs — the economy sink. One question per audience.
   audienceCost: z.number().default(250),

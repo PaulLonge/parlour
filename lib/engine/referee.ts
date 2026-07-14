@@ -584,6 +584,30 @@ export async function applyDirectorMoves(
           });
           break;
         }
+        case "grant_power": {
+          requireRogue(s);
+          const p = byName(s, move.playerName);
+          if (!p) throw new Error(`unknown player "${move.playerName}"`);
+          const powers = { ...(p.powers ?? {}) };
+          powers[move.power] = Number(powers[move.power] ?? 0) + move.count;
+          await admin.from("players").update({ powers }).eq("id", p.id);
+          const fallback: Record<string, string> = {
+            rob: "A quiet gift: you can lift coins from one purse, once. Spend it on the Now screen. Wards stop it.",
+            shield: "A ward, yours to raise when you choose — while it's up, no one lifts your coins or reads your mail.",
+            swap: "A power you can't use yet — the machine is still deciding what it does.",
+            copy: "A power you can't use yet — the machine is still deciding what it does.",
+          };
+          await admin.from("messages").insert({
+            game_id: gameId,
+            player_id: p.id,
+            round_no: s.game.round_no,
+            kind: "secret",
+            title: `✦ A power is yours — ${move.power.toUpperCase()}`,
+            body: move.flourish ?? fallback[move.power],
+          });
+          await emit(admin, gameId, "power_granted", { payload: { to: p.name, power: move.power } });
+          break;
+        }
         case "grant_sight": {
           requireRogue(s);
           const p = byName(s, move.playerName);

@@ -531,6 +531,8 @@ function NowPanel({
         <SeerCard g={g} aliveNames={aliveNames} />
       )}
 
+      {rogueLive && game.status === "live" && me.status === "alive" && <PowersCard g={g} aliveNames={aliveNames} />}
+
       {rogueLive && game.status === "live" && me.status === "alive" && <WagerHub g={g} />}
 
       {rogueLive &&
@@ -578,6 +580,73 @@ function NowPanel({
           Your character will find you when the story is sealed.
         </div>
       )}
+    </div>
+  );
+}
+
+// D61: secret one-use powers (rob / shield; swap/copy staged). Shown only when
+// you hold one — hidden powers scattered around the room.
+function PowersCard({ g, aliveNames }: { g: ReturnType<typeof useGame>; aliveNames: string[] }) {
+  const powers = g.me!.powers ?? {};
+  const shieldedUntil = g.me!.shielded_until;
+  const warded = shieldedUntil ? new Date(shieldedUntil) > new Date() : false;
+  const held = (Object.entries(powers) as [string, number][]).filter(([, n]) => n > 0);
+  const [target, setTarget] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  if (!held.length && !warded) return null;
+
+  async function use(power: string, needsTarget: boolean) {
+    setBusy(true);
+    setNote("");
+    try {
+      const r = await g.actions.usePower(power, needsTarget ? target : undefined);
+      setNote(r.ok ? (power === "shield" ? "🛡 Ward up." : "Done — quietly.") : (r.result?.replaceAll("_", " ") ?? "no"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="panel p-4">
+      <p className="kicker">
+        ✦ your hand — secret powers
+        <InfoDot hint="Gifts from the machine. One use each, private. Nobody's told you hold them — or that you used one." />
+      </p>
+      {warded && (
+        <p className="mt-1 text-sm" style={{ color: "var(--gold)" }}>
+          🛡 Warded — your purse and mail are sealed for now.
+        </p>
+      )}
+      {held.some(([k]) => k === "rob" || k === "swap" || k === "copy") && (
+        <select className="input mt-2" aria-label="target" value={target} onChange={(e) => setTarget(e.target.value)}>
+          <option value="">On whom?</option>
+          {aliveNames.map((n) => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+      )}
+      <div className="mt-2 flex flex-wrap gap-2">
+        {held.map(([power, n]) => {
+          const needsTarget = power === "rob" || power === "swap" || power === "copy";
+          const usable = power === "shield" || (power === "rob" && !!target);
+          const label =
+            power === "rob" ? "👛 Rob" : power === "shield" ? "🛡 Raise ward" : `✦ ${power}`;
+          const staged = power === "swap" || power === "copy";
+          return (
+            <button
+              key={power}
+              className="btn btn-ghost flex-1"
+              disabled={busy || staged || (needsTarget && !usable)}
+              title={staged ? "not built yet" : undefined}
+              onClick={() => use(power, needsTarget)}
+            >
+              {label} {n > 1 ? `×${n}` : ""}{staged ? " (soon)" : ""}
+            </button>
+          );
+        })}
+      </div>
+      {note && <p className="mt-2 text-sm" style={{ color: note.startsWith("🛡") || note.startsWith("Done") ? "var(--gold)" : "var(--danger)" }}>{note}</p>}
     </div>
   );
 }

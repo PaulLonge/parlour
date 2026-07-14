@@ -19,6 +19,8 @@ export type PlayerRow = {
   eager: boolean; // D34 lean-in flag — wants a bigger role
   stamps: number; // D38a — posting rights, granted by the director
   sight: number; // D56 — Seer charges, granted by the good AI for standout work
+  powers: Record<string, number>; // D61 — secret one-use power inventory (rob/swap/copy/shield)
+  shielded_until: string | null; // D61 — while future, purse can't be robbed / mail can't be tapped
 };
 
 export type Meters = { plunder: number; compute: number; confidence: number };

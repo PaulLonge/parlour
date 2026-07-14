@@ -510,6 +510,25 @@ B-numbers are build-time engineering calls made inside the codebase.
   `targetEndAt` are the backstops. Simulate asserts burns feed compute. This is
   the second spine piece; powers economy is next.
 
+- **D61 — the secret powers economy + "almost fake" bars (Paul, 2026-07-14).**
+  (a) One Night's scattered hidden powers, built as a REWARD ECONOMY (D59c): the
+  AI grants scarce one-use powers to anyone via `grant_power` (mint 0005: a
+  `powers` jsonb inventory + `shielded_until`). **SHIELD** (the D59 reframe — no
+  one dies, so it wards MONEY + PRIVACY): using a charge raises a ward for
+  `shieldMinutes` that blocks robs AND wiretaps. **ROB**: lift up to `robCap`
+  coins from a target's purse — UNLESS they're warded (the shield/rob interaction
+  Paul asked for; a blocked rob still spends the charge — the risk). Involuntary
+  at the receiving end: the victim gets a message + a balance change, never the
+  attacker's name. Deterministic + instant; optimistic-concurrency on the jsonb.
+  Powers ride `players_select_own` (nobody sees another's hand). SWAP / COPY are
+  staged (the tool accepts them, the UI shows "soon"). PowersCard renders on Now
+  only when you hold one. (b) **"Almost fake" meter bars** (Paul): the displayed
+  compute/plunder bars cap at 92% so neither ever visibly COMPLETES during play —
+  the ending only comes when the AI decides (D60). The real server-side meters
+  still decide the outcome; only the visual is gated. Honest creep, then a
+  tantalising plateau. This is the third spine piece — the spine (loyalty market,
+  endgame, powers economy) is now up.
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE

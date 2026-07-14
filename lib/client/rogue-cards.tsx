@@ -80,10 +80,17 @@ export function MetersStrip({
   plunderTarget?: number;
   computeTarget?: number;
 }) {
-  // D58: the meters are the WIN, so the bars CREEP visibly — the room feels the
-  // tug-of-war. Full lantern = the room can end the rogue; full skull = it's won.
-  const pPct = plunderTarget ? Math.min(100, Math.round((meters.plunder / plunderTarget) * 100)) : 0;
-  const cPct = computeTarget ? Math.min(100, Math.round((meters.compute / computeTarget) * 100)) : 0;
+  // D58/D60: the meters are the WIN, so the bars CREEP visibly — the room feels
+  // the tug-of-war. But they're "almost fake" (Paul): the DISPLAY caps just shy
+  // of full, so neither bar ever visibly completes during play — the ending only
+  // comes when the AI decides the night is ready (the real server-side meters
+  // still decide the outcome at the Reckoning). Honest creep, then a tantalising
+  // plateau near the top that only resolves at the AI-timed finale.
+  const DISPLAY_CAP = 92;
+  const cap = (real: number, target: number) =>
+    target ? Math.min(DISPLAY_CAP, Math.round((real / target) * 100)) : 0;
+  const pPct = cap(meters.plunder, plunderTarget);
+  const cPct = cap(meters.compute, computeTarget);
   return (
     <div className="panel px-4 py-2 text-sm">
       <div className="flex items-center justify-between gap-4">

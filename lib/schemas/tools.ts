@@ -164,6 +164,16 @@ export const GrantStamps = z.object({
     .describe("optional message accompanying the grant, e.g. 'the post office, feeling generous, issues you a stamp'"),
 });
 
+export const GrantPower = z.object({
+  tool: z.literal("grant_power"),
+  playerName: z.string(),
+  power: z.enum(["rob", "swap", "copy", "shield"]).describe(
+    "D61 secret one-use powers, scattered as rewards (One Night): rob=lift capped coins (blocked by a ward); shield=raise a money+privacy ward; swap/copy staged"
+  ),
+  count: z.number().min(1).max(3).default(1),
+  flourish: z.string().optional().describe("in-voice line accompanying the gift; whose voice is your choice (a rob feels rogue, a shield feels good)"),
+});
+
 export const GrantSight = z.object({
   tool: z.literal("grant_sight"),
   playerName: z.string().describe("the good side rewards standout honest work with THE SIGHT (D56) — a scarce Seer charge; grant sparingly, it's prized"),
@@ -288,6 +298,7 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   HandleNote,
   GrantStamps,
   GrantSight,
+  GrantPower,
   ResolveWager,
   SetWagerCap,
 ]);

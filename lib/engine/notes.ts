@@ -185,6 +185,9 @@ export async function setWiretap(
   const s = await loadState(admin, gameId);
   const target = s.players.find((p) => p.name.toLowerCase() === targetName.toLowerCase());
   if (!target) return { ok: false, result: "unknown_target" };
+  // D61: a raised ward blocks surveillance too (money AND privacy)
+  if (target.shielded_until && new Date(target.shielded_until) > new Date())
+    return { ok: false, result: "warded_—_their_mail_is_sealed" };
   let tapperId: string | null = null;
   if (tapperName) {
     const tapper = s.players.find((p) => p.name.toLowerCase() === tapperName.toLowerCase());

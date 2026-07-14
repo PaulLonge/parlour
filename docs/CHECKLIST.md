@@ -13,12 +13,13 @@ The design ran ahead of the code; these three are the foundation everything else
 - [x] **2. THE ENDGAME — take down the AI** (D58/D60). Meters creep visibly (bars); correct
       burns feed compute; `resolveUnmasking` has two room-win paths (out-build shutdown OR
       the naming); the AI HOLDS THE CLOCK (crossing a target signals, never auto-ends — it
-      paces the finale). TV headline reflects the win path. Shipped `<pending>`.
+      paces the finale). TV headline reflects the win path. Shipped `eba39c5`.
       - ✓ resolved: compute bar **visible** (creeping), AI controls when it actually ends.
-- [ ] **3. Powers economy** (D59c) — generalise the Sight into grantable secret one-use
-      powers: **Rob** (steal coins/mark), **Swap** (force two players to trade), **Copy**
-      (mirror a power), **Shield** (money+privacy ward). Involuntary effects, AI-judged,
-      using the balance readout it now has. One-Night-style: hidden powers scattered.
+- [x] **3. Powers economy** (D59c/D61) — grantable secret one-use powers: **Rob** (lift
+      capped coins, blocked by a ward) + **Shield** (money/privacy ward — stops robs AND
+      wiretaps) SHIPPED; **Swap**/**Copy** staged (tool accepts, UI shows "soon"). Involuntary
+      at the victim's end, private. Bars made "almost fake" (cap 92%, AI ends the game).
+      Shipped `<pending>`.
 
 ## ⧗ Queued next (pressure tools, then the rest of GDD wave 2)
 
