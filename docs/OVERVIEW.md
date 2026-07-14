@@ -5,10 +5,11 @@
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
 
-*The front door for reviewers. Deeper layers: [`SPEC.md`](../SPEC.md) (formal ontology,
-murder-mode focused), [`DECISIONS.md`](../DECISIONS.md) (every design call, numbered),
-[`docs/modes.md`](modes.md) (mode specs), [`docs/interaction-model.md`](interaction-model.md)
-(what the app can verify).*
+*The front door for reviewers. Deeper layers: [`docs/CHECKLIST.md`](CHECKLIST.md)
+(**the resume point — what's built / building / next**), [`SPEC.md`](../SPEC.md) (formal
+ontology, murder-mode focused), [`DECISIONS.md`](../DECISIONS.md) (every design call,
+numbered), [`docs/modes.md`](modes.md) (mode specs),
+[`docs/interaction-model.md`](interaction-model.md) (what the app can verify).*
 
 ---
 
