@@ -511,6 +511,10 @@ function NowPanel({
         )
       )}
 
+      {rogueLive && game.status === "live" && me.status === "alive" && (me.sight ?? 0) > 0 && (
+        <SeerCard g={g} aliveNames={aliveNames} />
+      )}
+
       {rogueLive && game.status === "live" && me.status === "alive" && <WagerHub g={g} />}
 
       {rogueLive &&
@@ -553,6 +557,68 @@ function NowPanel({
           Your character will find you when the story is sealed.
         </div>
       )}
+    </div>
+  );
+}
+
+// D56: THE SIGHT — spend a scarce Seer charge on one bounded true question.
+function SeerCard({ g, aliveNames }: { g: ReturnType<typeof useGame>; aliveNames: string[] }) {
+  const sight = g.me!.sight ?? 0;
+  const [q, setQ] = useState<"is_bought" | "has_taken_coin" | "count_bought" | "name_frontman">("is_bought");
+  const [target, setTarget] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [warn, setWarn] = useState("");
+  const [note, setNote] = useState("");
+  const needsTarget = q !== "count_bought";
+
+  async function ask(confirm = false) {
+    setBusy(true);
+    setWarn("");
+    setNote("");
+    try {
+      const r = await g.actions.seer(q, needsTarget ? target : undefined, confirm);
+      if (r.result === "forbidden") setWarn(r.warn ?? "the machine won't confirm that");
+      else if (r.ok) setNote("The Sight has spoken — read it in your Inbox.");
+      else setNote(r.result?.replaceAll("_", " ") ?? "the sight is clouded");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="panel p-4" style={{ borderColor: "var(--gold)" }}>
+      <p className="kicker" style={{ color: "var(--gold)" }}>
+        👁 THE SIGHT — {sight} charge{sight === 1 ? "" : "s"}
+        <InfoDot hint="Honest work earned this. One true answer, about one person, delivered privately. The machine won't name its own front man — ask, and it gives a clue instead, for the same price." />
+      </p>
+      <select className="input mt-2" aria-label="what to ask" value={q} onChange={(e) => { setQ(e.target.value as typeof q); setWarn(""); }}>
+        <option value="is_bought">Is someone bought — right now?</option>
+        <option value="has_taken_coin">Has someone ever taken the rogue's coin?</option>
+        <option value="count_bought">How many serve the rogue right now?</option>
+        <option value="name_frontman">Who is the front man? (it won't say — clue only)</option>
+      </select>
+      {needsTarget && (
+        <select className="input mt-2" aria-label="about whom" value={target} onChange={(e) => setTarget(e.target.value)}>
+          <option value="">About whom?</option>
+          {aliveNames.map((n) => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+      )}
+      {warn ? (
+        <div className="mt-2">
+          <p className="text-sm" style={{ color: "var(--ink-dim)" }}>{warn}</p>
+          <div className="mt-2 flex gap-2">
+            <button className="btn flex-1" disabled={busy} onClick={() => ask(true)}>Take the clue (spends a charge)</button>
+            <button className="btn btn-ghost flex-1" disabled={busy} onClick={() => setWarn("")}>Keep my sight</button>
+          </div>
+        </div>
+      ) : (
+        <button className="btn mt-2 w-full" disabled={busy || (needsTarget && !target)} onClick={() => ask(false)}>
+          Look
+        </button>
+      )}
+      {note && <p className="mt-2 text-sm" style={{ color: "var(--gold)" }}>{note}</p>}
     </div>
   );
 }

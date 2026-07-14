@@ -39,6 +39,7 @@ export type Me = {
   balance: number;
   burned: boolean;
   stamps: number;
+  sight: number;
   seat_code: string | null;
   intake: Record<string, unknown> | null;
   character: {
@@ -173,7 +174,7 @@ export function useGame(code: string) {
       supa.from("players_public").select("*").eq("game_id", g.id).order("created_at"),
       supa
         .from("players")
-        .select("id, name, is_host, status, role, balance, burned, stamps, seat_code, intake, character, arrived_at")
+        .select("id, name, is_host, status, role, balance, burned, stamps, sight, seat_code, intake, character, arrived_at")
         .eq("game_id", g.id) // without this, a second game on the device returns 2 rows and maybeSingle errors (review R3 #2)
         .maybeSingle(),
       supa
@@ -329,6 +330,8 @@ export function useGame(code: string) {
       audience: (ai: "rogue" | "good", question: string) =>
         post("/api/audience", { code, ai, question }).then((r) => (refetch(), r)),
       petition: (text: string) => post("/api/petition", { code, text }).then((r) => (refetch(), r)),
+      seer: (question: string, targetName?: string, confirm = false) =>
+        post("/api/seer", { code, question, targetName, confirm }).then((r) => (refetch(), r)),
       volunteer: () => post("/api/volunteer", { code }),
       sendNote: (to: string, text: string) =>
         post("/api/note", { code, to, text }).then((r) => (refetch(), r)),

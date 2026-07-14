@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 12 — added "What the AI can and cannot do" one-pager; de-drifted body for D48 roles / D51 pari-mutuel side bets / D53 seat codes. Rev 11: GDD-review wave 1 D51–D55. Rev 10: D49/D50)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 13 — D56 THE SIGHT / the Seer: scarce earned charge, one bounded true answer, never names the front man. Rev 12: AI powers one-pager. Rev 11: GDD wave 1 D51–D55)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -63,6 +63,7 @@ and other players' testimony — never phantom sensors).
 | **Wagers** (night 1's engine) | Challenge anyone — pub games or one-device phone duels (Reaction, Tap Race, Steady Hand); stakes escrow on accept; both report the winner | Mismatched reports go to the machine for arbitration ("two testimonies, one lie"); AI-set stake caps stop anyone going all-in |
 | **Side bets** | Back a contestant on someone else's accepted duel — **pari-mutuel**: winning backers split the losing backers' pool, the house takes a rake (D51) | Nothing is minted (the old 1:1-vs-house was a money printer); the Spyglass announces settlements so the whole pub sees who took whose coins |
 | **The honeypot** | Gamed mechanics (laundering coins between friends, seam-hunting) are left OPEN as bait (D55) | The machine notices, then pounces in voice — exposes, taxes, or *hires* the clever ones; "you thought you'd found a seam. I left it there." |
+| **The Sight** (the Seer) | A scarce charge earned for honest work; ask the machine ONE true thing about ONE person (D56) | Deterministic, unfakeable, private — but it will **never name the front man**: ask, and it deflects to a true partial clue for the same price |
 | **The private signals** | Guests: hold-◦ (panic = *less*) and "more please" (volunteer). Hosts: "⏭ feels slow" | All private, never public tallies. Guest boredom is detected from *behavior* (the director feeds anyone going quiet); the feels-slow nudge is hosts-only — the room's two calibrated sensors — sitting below break-glass in the control gradient |
 
 The reveal replays the receipts: every meter jump timestamped against its bribe,

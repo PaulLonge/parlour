@@ -406,6 +406,29 @@ B-numbers are build-time engineering calls made inside the codebase.
   would wreck the economy) while turning the anti-collusion detection I'd built
   into narrative. Deeply in CALICO's character: a rogue con AI baits marks.
 
+- **D56 — THE SIGHT / the Seer (Paul + GDD review #4, Traitors, 2026-07-14).**
+  A scarce, earned charge (`players.sight`, mint 0004) lets a player ask the
+  machine ONE bounded true thing — the Traitors Seer and the review's
+  "authenticated evidence" need in one mechanic. Answers are DETERMINISTIC
+  (computed from real state server-side, delivered as a private message, no LLM,
+  unfakeable, instant). TRUTH DOMAIN (Paul's call — straight answers, because
+  intel decays): "is X bought right now?" (yes/no on current role), "has X ever
+  taken the rogue's coin?" (ledger yes/no — diverges from the first once
+  loyalties can flip), "how many serve the rogue right now?" (a count, no names).
+  FORBIDDEN: the front man is never named. Asking for it doesn't hit a wall — the
+  machine WARNS (no charge spent), then, only on confirm, spends the charge for a
+  TRUE PARTIAL CLUE drawn from real state (coins taken, unburned, arrival) — Paul's
+  "I can't tell you, but here's a clue" idea. Never another's purse, the full
+  roster, or the future. The good AI grants sight via `grant_sight` (rare, prized,
+  BOSUN-voiced, for standout honest work — never a bribe). This is why straight
+  allegiance answers are balanced: a "clean" reading decays the moment the rogue
+  keeps hiring. **Depends on / raised: LOYALTY IS CURRENTLY ONE-WAY** (accepting
+  a bribe = permanent minion). Paul's framing ("the AI can buy them out") wants
+  TWO-WAY (BOSUN redeems, CALICO re-buys) — a real loyalty market that makes every
+  Sight reading decay. Flagged for his explicit yes before role semantics change;
+  the Sight already works under both (reads the live snapshot). The
+  `has_taken_coin` question is built forward-compatible with two-way.
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE

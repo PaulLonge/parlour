@@ -18,6 +18,7 @@ export type PlayerRow = {
   burned: boolean; // exposed ex-front-man (ROGUE) — stays in play, never fronts again
   eager: boolean; // D34 lean-in flag — wants a bigger role
   stamps: number; // D38a — posting rights, granted by the director
+  sight: number; // D56 — Seer charges, granted by the good AI for standout work
 };
 
 export type Meters = { plunder: number; compute: number; confidence: number };

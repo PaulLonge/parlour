@@ -563,6 +563,28 @@ export async function applyDirectorMoves(
           });
           break;
         }
+        case "grant_sight": {
+          requireRogue(s);
+          const p = byName(s, move.playerName);
+          if (!p) throw new Error(`unknown player "${move.playerName}"`);
+          await admin
+            .from("players")
+            .update({ sight: (p.sight ?? 0) + move.count })
+            .eq("id", p.id);
+          await admin.from("messages").insert({
+            game_id: gameId,
+            player_id: p.id,
+            round_no: s.game.round_no,
+            kind: "secret",
+            title: "👁 THE SIGHT is yours",
+            body:
+              move.flourish ??
+              "Honest work earns honest sight. Spend it on the Now screen — one true thing, about one person. I will not name my rival's voice, but I will not lie to you either.",
+            claimedSender: "BOSUN",
+          });
+          await emit(admin, gameId, "sight_granted", { payload: { to: p.name, count: move.count } });
+          break;
+        }
         case "tap_wire": {
           requireRogue(s);
           const target = byName(s, move.targetName);

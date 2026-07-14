@@ -154,6 +154,13 @@ export const GrantStamps = z.object({
     .describe("optional message accompanying the grant, e.g. 'the post office, feeling generous, issues you a stamp'"),
 });
 
+export const GrantSight = z.object({
+  tool: z.literal("grant_sight"),
+  playerName: z.string().describe("the good side rewards standout honest work with THE SIGHT (D56) — a scarce Seer charge; grant sparingly, it's prized"),
+  count: z.number().min(1).max(2).default(1),
+  flourish: z.string().optional().describe("in-voice line from the GOOD AI accompanying the gift"),
+});
+
 export const TapWire = z.object({
   tool: z.literal("tap_wire"),
   targetName: z.string(),
@@ -269,6 +276,7 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   TapWire,
   HandleNote,
   GrantStamps,
+  GrantSight,
   ResolveWager,
   SetWagerCap,
 ]);
