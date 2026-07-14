@@ -28,8 +28,10 @@
 
 11. **November's twist**: keep the bribes-tally winner, or stack it with "one ship,
     two flags" (#0) and/or "the real one" (#4)? The tri-fold is maximal vertigo.
-12. **Co-Host's role** (BOSUN's champion / full-knowledge chaos / secret villainess)
-    and **your own allegiance** (plain / chaos agent / secretly rogue).
+12. ~~**Co-Host's role** and **your own allegiance**~~ — **DECIDED (D48,
+    2026-07-14): Paul = agent of chaos, Co-Host = the good AI's champion.**
+    Hosts can never be the front man (referee-enforced). Remaining sub-task:
+    November story authoring writes both seats' mission arcs.
 13. **Physical prizes** for the awards ceremony — foam finger for the Wrong'un is
     canon; the rest is shopping.
 14. **Theme pick** for murder mode (moot for the party; matters only if the classic

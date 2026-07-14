@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-12 (rev 8 — THE INDUCTION: a guided two-phone tutorial/QA mode, D47; plus rev 7's cross-cutting review fixes)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 9 — D48: conductor roles fixed — Paul = agent of chaos, Co-Host = good AI's champion; hosts can never be front man. Rev 8: THE INDUCTION, D47)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.

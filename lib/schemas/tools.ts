@@ -201,7 +201,7 @@ export const Adjudicate = z.object({
 
 export const AppointFrontman = z.object({
   tool: z.literal("appoint_frontman"),
-  playerName: z.string().describe("must be a minion, never burned, never panic"),
+  playerName: z.string().describe("must be a minion; never burned, never panic, never a host (D48)"),
 });
 
 export const CallParley = z.object({

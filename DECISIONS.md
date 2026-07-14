@@ -312,9 +312,22 @@ B-numbers are build-time engineering calls made inside the codebase.
   the paper-meets-phone loop (dictate → write → hand/hide → type → ledger)
   stated as the implementation trick. Both letters are titled to be KEPT (the
   shopping list doubles as the packing checklist); reading-verified by quiz.
-  NOTE: Co-Host's November role — Paul believes this was agreed; the log shows
-  it OPEN (three candidates, D-register/GAPS). Awaiting his restatement before
-  it becomes canon anywhere.
+  NOTE: Co-Host's November role — briefly logged as open here; Paul restated the
+  call two days later. RESOLVED → D48.
+
+- **D48 — the conductors' November roles (Paul, 2026-07-14).** **Paul = the
+  AGENT OF CHAOS** (aligned to nobody, stirs both sides, plays himself — the
+  Commissioner; his surprise remains WHO among the guests, which stays emergent).
+  **Co-Host = the GOOD AI's champion** (serves BOSUN's side: compute missions,
+  counter-intelligence, building the lantern). Mechanical consequences: the
+  referee now refuses to appoint any HOST as front man (`hosts_never_front`,
+  lib/engine/rogue.ts — a host front man would know WHO, killing their own
+  surprise; also enforced in the tool description the LLM sees). The induction
+  briefing now states both seats plainly (Co-Host is briefed to Paul's level,
+  D47a); guests' allegiances remain unwritten until bought on the night — that
+  is now the ONLY WHO-secret, and it is sealed from everyone including the
+  machine until it happens. November story authoring must write mission arcs
+  for both fixed seats (chaos-agent hooks for Paul; champion arc for Co-Host).
 
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
 - **B2 — realtime = postgres_changes + refetch, not broadcast channels.** Any relevant table change triggers a scoped refetch (`lib/client/useGame.ts`). RLS (WALRUS) guarantees a phone can only ever receive its own rows, so scoped delivery is *architectural*, with zero channel-auth code. Latency ~50–200ms is fine for beats. If fan-out ever feels slow, migrate to RLS-authorized broadcast channels (researched pattern) — isolated to `useGame`.
