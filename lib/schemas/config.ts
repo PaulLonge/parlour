@@ -20,8 +20,11 @@ export const GameConfig = z.object({
   // ROGUE: bribe amounts by difficulty tier, compute share sizes, targets
   bribeTiers: z.array(z.number()).default([50, 120, 250, 750]),
   computeTiers: z.array(z.number()).default([5, 12, 25]),
-  plunderTarget: z.number().default(3000), // meter full = rogue endgame pressure
-  computeTarget: z.number().default(100),
+  // D58: the meters are the WIN. Crossing a target does NOT auto-end the game —
+  // it signals the director, who paces the actual finale (never too early).
+  plunderTarget: z.number().default(3000), // CALICO's win line (out-buying the room)
+  computeTarget: z.number().default(100), // the room's win line (out-building — BOSUN's shutdown)
+  burnComputeReward: z.number().default(20), // a correct burning charges the room's weapon
   startingBalance: z.number().default(1500),
   // D33: audiences with the AIs — the economy sink. One question per audience.
   audienceCost: z.number().default(250),

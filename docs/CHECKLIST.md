@@ -10,13 +10,11 @@ The design ran ahead of the code; these three are the foundation everything else
 
 - [x] **1. Two-way loyalty market** (D59) — `offer_redemption`, front-man-turned, ledger
       cumulative. Shipped `c31ebcb`.
-- [ ] **2. THE ENDGAME — take down the AI** (D58, confirmed, NOT built). Make the meters
-      the win: compute target → BOSUN shutdown (room wins by out-building); plunder target
-      → CALICO wins (out-buying); correct burns dump compute + pay the accuser + wound
-      CALICO; the plain unmasking becomes THE RECKONING (final naming to sever CALICO's
-      last hand). Today the crossing events fire but don't end the game.
-      - ↳ build-time call for Paul: compute shutdown threshold **visible** (motivating) or
-        **hidden** (suspenseful)?
+- [x] **2. THE ENDGAME — take down the AI** (D58/D60). Meters creep visibly (bars); correct
+      burns feed compute; `resolveUnmasking` has two room-win paths (out-build shutdown OR
+      the naming); the AI HOLDS THE CLOCK (crossing a target signals, never auto-ends — it
+      paces the finale). TV headline reflects the win path. Shipped `<pending>`.
+      - ✓ resolved: compute bar **visible** (creeping), AI controls when it actually ends.
 - [ ] **3. Powers economy** (D59c) — generalise the Sight into grantable secret one-use
       powers: **Rob** (steal coins/mark), **Swap** (force two players to trade), **Copy**
       (mirror a power), **Shield** (money+privacy ward). Involuntary effects, AI-judged,

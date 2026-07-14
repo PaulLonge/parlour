@@ -162,16 +162,25 @@ function CeremonyBoard({
     named?: string;
     frontman?: string;
     humansWin?: boolean;
+    winPath?: "shutdown" | "named" | "none";
     minions?: string[];
   };
   const rows = ((receipts?.payload as { receipts?: { at: string; amount: number; memo: string }[] })?.receipts ?? []).slice(-10);
   const pod = (awards?.payload as { awards?: { title: string; winner: string; line: string }[] })?.awards ?? [];
+  const headline = u.humansWin
+    ? u.winPath === "shutdown"
+      ? "THE ROOM PULLED THE PLUG"
+      : "THE ROOM SEVERED ITS LAST HAND"
+    : "THE MACHINE KEEPS EVERYTHING";
   return (
     <div className="envelope w-full max-w-5xl">
       <h2 className="deco-rule font-display justify-center text-4xl" style={{ color: "var(--gold)" }}>
-        {u.humansWin ? "THE MACHINE LOSES ITS HEAD" : "THE MACHINE KEEPS EVERYTHING"}
+        {headline}
       </h2>
       <p className="mt-2 text-center text-xl" style={{ color: "var(--ink-dim)" }}>
+        {u.winPath === "shutdown"
+          ? "The lantern filled — BOSUN had enough to shut CALICO down. "
+          : ""}
         The room named <b style={{ color: "var(--ink)" }}>{u.named}</b> · the hat sat on{" "}
         <b style={{ color: u.humansWin ? "var(--gold)" : "var(--danger)" }}>{u.frontman}</b> · the payroll:{" "}
         {(u.minions ?? []).join(", ") || "nobody"}

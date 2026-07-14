@@ -213,6 +213,8 @@ try {
   console.log("— the burning: right accusation, front man stays in play");
   v = await applyDirectorMoves(admin, gid, [{ tool: "open_accusation" }]);
   check("second accusation opens", v[0].ok, v[0].detail);
+  s = await loadState(admin, gid);
+  const computeBeforeBurn = s.game.meters.compute;
   for (const voter of ["Paul", "Alex", "Sam", "Jess", "Tom"]) {
     await castVote(admin, gid, byName(voter).id, byName("Co-Host").id);
   }
@@ -222,6 +224,8 @@ try {
   const co-host = s.players.find((p) => p.name === "Co-Host")!;
   check("Co-Host burned but alive and in play", co-host.burned && co-host.status === "alive");
   check("front man seat vacated", s.game.frontman_player_id === null);
+  // D58: a correct burn charges the room's weapon (compute climbs toward shutdown)
+  check("burning fed COMPUTE (the room's win bar)", s.game.meters.compute > computeBeforeBurn, `${computeBeforeBurn}→${s.game.meters.compute}`);
   v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Co-Host" }]);
   check("burned players never front again", !v[0].ok, v[0].detail);
 

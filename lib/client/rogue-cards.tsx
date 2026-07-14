@@ -72,10 +72,18 @@ export function GlyphGrid({ busy, onTap }: { busy?: boolean; onTap: (key: string
 export function MetersStrip({
   meters,
   currencySymbol = "Ƀ",
+  plunderTarget = 0,
+  computeTarget = 0,
 }: {
   meters: { plunder: number; compute: number; confidence: number };
   currencySymbol?: string;
+  plunderTarget?: number;
+  computeTarget?: number;
 }) {
+  // D58: the meters are the WIN, so the bars CREEP visibly — the room feels the
+  // tug-of-war. Full lantern = the room can end the rogue; full skull = it's won.
+  const pPct = plunderTarget ? Math.min(100, Math.round((meters.plunder / plunderTarget) * 100)) : 0;
+  const cPct = computeTarget ? Math.min(100, Math.round((meters.compute / computeTarget) * 100)) : 0;
   return (
     <div className="panel px-4 py-2 text-sm">
       <div className="flex items-center justify-between gap-4">
@@ -88,9 +96,28 @@ export function MetersStrip({
           <span style={{ color: "var(--ink-dim)" }}> built</span>
         </span>
       </div>
-      <p className="mt-0.5 text-center text-[10px] italic" style={{ color: "var(--ink-dim)" }}>
+      {(plunderTarget > 0 || computeTarget > 0) && (
+        <div className="mt-1.5 flex flex-col gap-1">
+          <Bar pct={pPct} color="var(--danger)" label="the rogue's grip" />
+          <Bar pct={cPct} color="var(--gold)" label="the room's weapon" />
+        </div>
+      )}
+      <p className="mt-1 text-center text-[10px] italic" style={{ color: "var(--ink-dim)" }}>
         every coin accounted for
       </p>
+    </div>
+  );
+}
+
+function Bar({ pct, color, label }: { pct: number; color: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-24 shrink-0 text-[9px] tracking-wide uppercase" style={{ color: "var(--ink-dim)" }}>
+        {label}
+      </span>
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+        <div className="h-full rounded-full transition-[width] duration-1000" style={{ width: `${pct}%`, background: color }} />
+      </div>
     </div>
   );
 }

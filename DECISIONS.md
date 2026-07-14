@@ -492,6 +492,24 @@ B-numbers are build-time engineering calls made inside the codebase.
   the Reckoning). BUILD STATUS: (a) shipped; (b)/(c)/(d) are the powers-economy
   build, staged after the D58 endgame.
 
+- **D60 — THE ENDGAME BUILT: meters are the win, the AI holds the clock (Paul,
+  2026-07-14).** D58's aim made real. (a) The meters CREEP visibly (progress bars
+  in MetersStrip toward `plunderTarget`/`computeTarget`) so the room feels the
+  tug-of-war. (b) A correct BURNING now charges the room's weapon — compute +=
+  `burnComputeReward` (default 20) plus the confidence hit — so exposing CALICO's
+  hands visibly builds toward the shutdown. (c) `resolveUnmasking` has TWO
+  room-win paths: OUT-BUILD (compute >= target → BOSUN's shutdown wins even on a
+  wrong name) or the HARD WAY (name the current front man); CALICO wins only if
+  neither. Payload carries `winPath` (shutdown/named/none); the TV headline
+  reflects it ("THE ROOM PULLED THE PLUG" vs "…SEVERED ITS LAST HAND" vs "THE
+  MACHINE KEEPS EVERYTHING"). (d) **The AI holds the clock (Paul's key rule):**
+  crossing a target does NOT auto-end the game — it signals the director that the
+  ending is AVAILABLE, and the prompt tells it to PACE the finale (slow the
+  approach with temptation/throttled payouts if it's too early; accelerate if it
+  drags; aim the climax at the energy peak / target end time). Host break-glass +
+  `targetEndAt` are the backstops. Simulate asserts burns feed compute. This is
+  the second spine piece; powers economy is next.
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE

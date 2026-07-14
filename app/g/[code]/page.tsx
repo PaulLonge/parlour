@@ -555,7 +555,12 @@ function NowPanel({
       {rogueLive && (
         <>
           <div className="relative">
-            <MetersStrip meters={game.meters} currencySymbol={sym} />
+            <MetersStrip
+              meters={game.meters}
+              currencySymbol={sym}
+              plunderTarget={Number(game.config?.plunderTarget ?? 0)}
+              computeTarget={Number(game.config?.computeTarget ?? 0)}
+            />
             <span className="absolute top-1 right-1">
               <InfoDot
                 edge="right"

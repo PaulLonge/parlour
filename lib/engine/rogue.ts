@@ -338,12 +338,15 @@ export async function closeAccusation(admin: SupabaseClient, gameId: string) {
   const wasFrontman = s.game.frontman_player_id === accusedId;
 
   if (wasFrontman) {
-    // THE BURNING: exposed, never fronts again, stays fully in play
+    // THE BURNING: exposed, never fronts again, stays fully in play. D58: a
+    // correct burn is a STRIKE on CALICO that charges the room's weapon —
+    // compute climbs (visible progress toward the shutdown), confidence drops.
     await admin.from("players").update({ burned: true }).eq("id", accusedId);
     await admin.from("games").update({ frontman_player_id: null }).eq("id", gameId);
-    await adjustMeters(admin, s, { confidence: -20 });
+    const burnCompute = cfg(s).burnComputeReward ?? 20;
+    await adjustMeters(admin, s, { compute: burnCompute, confidence: -20 }, "a hand severed. the lantern flares.");
     await emit(admin, gameId, "burning", {
-      payload: { player: accused.name, votes: sorted[0][1] },
+      payload: { player: accused.name, votes: sorted[0][1], compute: burnCompute },
       isPublic: true,
     });
     return { ok: true, result: "burned", player: accused.name };
@@ -379,7 +382,14 @@ export async function resolveUnmasking(admin: SupabaseClient, gameId: string) {
   const namedId = sorted[0]?.[0] ?? null;
   const named = s.players.find((p) => p.id === namedId);
   const frontman = s.players.find((p) => p.id === s.game.frontman_player_id);
-  const humansWin = !!namedId && namedId === s.game.frontman_player_id;
+  // D58: TWO room-win paths. OUT-BUILD — compute crossed its target, BOSUN pulls
+  // the plug (a full lantern wins even if the final name is wrong; you already
+  // built the shutdown). Or the HARD WAY — name CALICO's last front man to sever
+  // its last hand. CALICO wins only if the room did NEITHER.
+  const computeReached = s.game.meters.compute >= (s.config.computeTarget ?? Infinity);
+  const correctName = !!namedId && namedId === s.game.frontman_player_id;
+  const humansWin = computeReached || correctName;
+  const winPath = computeReached ? "shutdown" : correctName ? "named" : "none";
 
   await admin.from("games").update({ status: "reveal", round_phase: "none" }).eq("id", gameId);
   await emit(admin, gameId, "unmasking_resolved", {
@@ -387,6 +397,8 @@ export async function resolveUnmasking(admin: SupabaseClient, gameId: string) {
       named: named?.name ?? "(no verdict)",
       frontman: frontman?.name ?? "(none)",
       humansWin,
+      winPath, // 'shutdown' = out-built, 'named' = clutch naming, 'none' = CALICO keeps everything
+      computeReached,
       minions: s.players.filter((p) => p.role === "minion").map((p) => p.name),
       burned: s.players.filter((p) => p.burned).map((p) => p.name),
     },

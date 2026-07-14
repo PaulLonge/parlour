@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 15 — D59 two-way loyalty market SHIPPED (BOSUN redeems, CALICO re-buys, ledger cumulative); Shield reframed to money/privacy ward; chaos = granted-power economy not a player role; Werewolf/One-Night researched. Rev 14: D58 the aim)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 16 — D60 ENDGAME BUILT: meters creep visibly & are the win, burns feed compute, two room-win paths, the AI holds the clock. Rev 15: D59 two-way loyalty. Rev 14: D58 the aim)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -70,9 +70,11 @@ and is it worth what they're paying you?"** You beat the rogue AI by refusing it
 coin and out-working your own temptation — which is why the reveal ("that's not what
 it stole, that's what you *sold*") lands twice as hard.
 
-*Status: the aim/win model is CONFIRMED (D58); the meter-race endgame mechanics —
-targets as terminal win states, burns feeding compute, the Reckoning — are the next
-build. Today the meters emit crossing events but don't yet end the game.*
+*Status: BUILT (D60). The meters creep visibly, correct burns feed compute, and the
+Reckoning resolves on two room-win paths (out-build shutdown OR the naming). The AI
+holds the clock — crossing a target signals that the ending is available but never
+auto-ends the game; the director paces the finale so it lands at the room's peak, not
+the moment a bar fills.*
 
 ## The intrigue stack
 
