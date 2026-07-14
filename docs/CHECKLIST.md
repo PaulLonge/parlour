@@ -4,9 +4,15 @@
 > next, what's waiting on Paul. Canonical *why* lives in [`DECISIONS.md`](../DECISIONS.md);
 > this is the *state*. Update it in the same commit as the work. Last touched: 2026-07-14.
 
-## ▶ Building now (the spine — in order)
+## ✔ THE INTRIGUE ENGINE IS BUILT
 
-The design ran ahead of the code; these three are the foundation everything else needs.
+The spine + every green-lit GDD-review item are shipped (see below). What remains is the
+GATE (nothing has run against a real DB) and lower-priority backlog. The next real signal
+comes from keys → migrations → simulates → the induction on two phones.
+
+## ▶ The spine (all shipped)
+
+The design ran ahead of the code; these three were the foundation everything else needed.
 
 - [x] **1. Two-way loyalty market** (D59) — `offer_redemption`, front-man-turned, ledger
       cumulative. Shipped `c31ebcb`.
@@ -77,8 +83,7 @@ paper-fallback kit stays deferred.
 
 ## 🗄 Backlog (designed, not built — lower priority)
 
-Rogue story GENERATOR (November's factory) · **wager-economy simulate coverage** (rake +
-pari-mutuel changed the math, untested) · dead schema/config pruning (`beats`,
+Rogue story GENERATOR (November's factory) · dead schema/config pruning (`beats`,
 `murders.discovered`, `ghost` status, unread knobs) · PDCA venue setup dialogue · slip
 print-sheet page · invite drip · TTS · portraits · paper-pack export · proper director
 advisory lock · host-runbook rewrite for ROGUE + pub · reveal "arc" stats for flipped players.

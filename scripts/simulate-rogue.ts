@@ -28,6 +28,7 @@ const { acceptOffer, hideCode, findCode, closeAccusation, resolveUnmasking } = a
   "../lib/engine/rogue"
 );
 const { sendNote, handleNote } = await import("../lib/engine/notes");
+const { proposeWager, respondWager, reportWager, placeSideBet } = await import("../lib/engine/wagers");
 const { loadState } = await import("../lib/engine/state");
 
 const admin = createClient(url, key, { auth: { persistSession: false } });
@@ -75,6 +76,8 @@ try {
     players.push(p);
   }
   const byName = (n: string) => players.find((p) => p.name === n)!;
+  // fresh balances come from a loaded state, not the stale initial roster
+  const byName2 = (st: Awaited<ReturnType<typeof loadState>>, n: string) => st.players.find((p) => p.name === n)!;
 
   console.log("— act1 → THE HIJACK");
   await admin.from("games").update({ status: "act1" }).eq("id", gid);
@@ -121,6 +124,31 @@ try {
   check("a bought host CAN front now (D57)", v[0].ok, v[0].detail);
   v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Co-Host" }]);
   check("the hat can move to Co-Host", v[0].ok, v[0].detail);
+
+  console.log("— D51 wager economy: house rake + pari-mutuel side bets");
+  const { credit } = await import("../lib/engine/economy");
+  for (const n of ["Alex", "Jess", "Sam", "Tom"]) await credit(admin, gid, byName(n).id, 1000, "test float", "system");
+  let wr = await proposeWager(admin, gid, byName("Alex").id, "Jess", 200, "arm wrestle");
+  check("wager proposed", wr.ok, JSON.stringify(wr));
+  const wid = wr.wagerId as string;
+  wr = await respondWager(admin, gid, byName("Jess").id, wid, true);
+  check("wager accepted → both stakes escrowed", wr.ok, wr.result);
+  s = await loadState(admin, gid);
+  check("escrow debited both", byName2(s, "Alex").balance === 800 && byName2(s, "Jess").balance === 800, `${byName2(s, "Alex").balance}/${byName2(s, "Jess").balance}`);
+  let sb = await placeSideBet(admin, gid, byName("Sam").id, wid, "Alex", 100); // backs the winner
+  check("side bet on winner", sb.ok, sb.result);
+  sb = await placeSideBet(admin, gid, byName("Tom").id, wid, "Jess", 100); // backs the loser
+  check("side bet on loser", sb.ok, sb.result);
+  await reportWager(admin, gid, byName("Alex").id, wid, "Alex");
+  const rep = await reportWager(admin, gid, byName("Jess").id, wid, "Alex");
+  check("agreed reports settle", rep.ok && rep.result === "settled", rep.result);
+  s = await loadState(admin, gid);
+  // pot 400, house rake 5% = 20 → winner takes 380 (nothing minted)
+  check("winner takes pot MINUS house rake", byName2(s, "Alex").balance === 1180, String(byName2(s, "Alex").balance));
+  check("loser is down their stake", byName2(s, "Jess").balance === 800, String(byName2(s, "Jess").balance));
+  // pari-mutuel: losing pool 100, rake 5% = 5, prize 95 → sole winning backer Sam gets stake 100 + 95
+  check("winning backer: stake + pro-rata of losers' pool (NOT house-minted)", byName2(s, "Sam").balance === 1095, String(byName2(s, "Sam").balance));
+  check("losing backer forfeits", byName2(s, "Tom").balance === 900, String(byName2(s, "Tom").balance));
 
   console.log("— the paper trail");
   await admin.from("codes").insert({ game_id: gid, code: "BLACKTIDE", color: "red" });
