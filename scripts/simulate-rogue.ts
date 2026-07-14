@@ -198,7 +198,16 @@ try {
   let acc = await closeAccusation(admin, gid);
   check("wrongful accusation result", acc.ok && acc.result === "wrongful", acc.result);
   s = await loadState(admin, gid);
-  check("rogue gained tempo (plunder bump)", s.game.meters.plunder > plunderBefore);
+  // GDD review #7: wrongful verdicts must NOT cook the books — the plunder
+  // meter contains only money the room chose to take (the ceremony replays it)
+  check("plunder UNCHANGED by wrongful verdict (receipts stay honest)", s.game.meters.plunder === plunderBefore, String(s.game.meters.plunder));
+  const { data: tempoEv } = await admin
+    .from("events")
+    .select("id")
+    .eq("game_id", gid)
+    .eq("type", "rogue_tempo")
+    .limit(1);
+  check("rogue gains tempo via director cue instead", (tempoEv ?? []).length === 1);
   check("Tom NOT burned or eliminated", s.players.find((p) => p.name === "Tom")?.burned === false);
 
   console.log("— the burning: right accusation, front man stays in play");

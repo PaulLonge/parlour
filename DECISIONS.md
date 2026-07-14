@@ -329,6 +329,30 @@ B-numbers are build-time engineering calls made inside the codebase.
   machine until it happens. November story authoring must write mission arcs
   for both fixed seats (chaos-agent hooks for Paul; champion arc for Co-Host).
 
+- **D49 — safety is plumbing, not signage (Paul, 2026-07-14).** Paul's call, made
+  twice now: his friends are adults; visible safety warnings condescend. REMOVED:
+  the panic-button advert on the idle Now card; the "RULES THAT OUTRANK
+  EVERYTHING" framing in the induction letters (replaced with one dry line of
+  conductor craft each). RETAINED, silently: the panic mechanism itself (it is
+  a pacing dial — a quiet-night lever — as much as anything), the
+  never-bribe-the-panicked referee rule, break-glass public pause, and the
+  genre-not-reality principle as WRITING guidance for the hijack copy (the
+  fiction stays game-legible by construction, not by banner). The external
+  GDD review's recommendations to EXPAND safety signage (persistent
+  fictional-game banner, comfort-controls panel, perform-not-drink forfeit
+  defaults) are REJECTED per Paul.
+
+- **D50 — plunder purity (from the external GDD review, 2026-07-14).** The
+  review found a genuine internal contradiction: wrongful accusations added
+  +120 plunder, but the ceremony reveals plunder as money the room chose to
+  take and replays receipts — a judicial penalty has no receipt, so the books
+  would not have matched the meter. FIXED: wrongful verdicts now grant tempo
+  as hidden confidence +10 plus a private `rogue_tempo` director cue (spend a
+  free bribe round), never plunder. The meter now provably equals the
+  rogue-source credit ledger. Simulate assertion updated to enforce this.
+
+## Build decisions (Claude, build session)
+
 - **B1 — plain transition map, not XState.** Research suggested XState; in a stateless serverless referee, a `LEGAL: Record<Phase, Phase[]>` map (`lib/engine/referee.ts`) is simpler to rehydrate from the DB, easier for Paul to read, and trivially testable. xstate was uninstalled.
 - **B2 — realtime = postgres_changes + refetch, not broadcast channels.** Any relevant table change triggers a scoped refetch (`lib/client/useGame.ts`). RLS (WALRUS) guarantees a phone can only ever receive its own rows, so scoped delivery is *architectural*, with zero channel-auth code. Latency ~50–200ms is fine for beats. If fan-out ever feels slow, migrate to RLS-authorized broadcast channels (researched pattern) — isolated to `useGame`.
 - **B3 — clients are read-only.** Every write goes through an API route → referee. RLS grants only scoped SELECTs. The Anthropic key and all story content live server-side (I9).

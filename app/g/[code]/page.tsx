@@ -485,9 +485,6 @@ function NowPanel({
       {g.challenges.length === 0 && !voteOpen && (
         <div className="panel p-4 text-center text-sm italic" style={{ color: "var(--ink-dim)" }}>
           Nothing is asked of you. Right now. Enjoy the party — it will find you.
-          <span className="mt-1 block text-xs not-italic" style={{ color: "var(--ink-dim)" }}>
-            (Want a quieter night? Hold the ◦ button. Private, instant, always okay.)
-          </span>
         </div>
       )}
 

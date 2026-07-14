@@ -329,8 +329,15 @@ export async function closeAccusation(admin: SupabaseClient, gameId: string) {
     });
     return { ok: true, result: "burned", player: accused.name };
   }
-  // WRONG: the rogue gains tempo — free bribe round is the director's to spend
-  await adjustMeters(admin, s, { plunder: 120, confidence: 10 }, "justice is expensive. you were just billed for it.");
+  // WRONG: the rogue gains tempo. NOT plunder (GDD review #7): the plunder
+  // meter must contain ONLY money the room chose to take — the ceremony
+  // replays the receipts, and a judicial penalty has no receipt behind it.
+  // Tempo = hidden confidence + a private director cue to spend a free
+  // bribe round; the public line keeps the sting without cooking the books.
+  await adjustMeters(admin, s, { confidence: 10 }, "justice is expensive. the room just paid in trust.");
+  await emit(admin, gameId, "rogue_tempo", {
+    payload: { note: "wrongful verdict — the rogue has tempo: spend a free bribe round now, while they doubt each other" },
+  });
   await emit(admin, gameId, "wrongful_accusation", {
     payload: { player: accused.name, votes: sorted[0][1] },
     isPublic: true,

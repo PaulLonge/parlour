@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 9 — D48: conductor roles fixed — Paul = agent of chaos, Co-Host = good AI's champion; hosts can never be front man. Rev 8: THE INDUCTION, D47)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 10 — D49 safety-as-plumbing: signage removed, mechanisms kept silent; D50 plunder purity: wrongful verdicts no longer cook the books. Rev 9: D48 conductor roles. Rev 8: THE INDUCTION)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
