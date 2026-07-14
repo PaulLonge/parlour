@@ -430,6 +430,7 @@ export async function applyDirectorMoves(
           const r = await closeAccusation(admin, gameId);
           if (!r.ok) throw new Error(r.result);
           detail = r.result;
+          if (r.result === "burned") await fireDueDrops(admin, gameId, "on_burn", s.game.round_no); // D62
           break;
         }
         case "open_unmasking": {
@@ -441,6 +442,7 @@ export async function applyDirectorMoves(
             .eq("id", gameId);
           Object.assign(s.game, { status: "unmasking", round_phase: "none", round_no: s.game.round_no + 1 });
           await emit(admin, gameId, "unmasking_opened", { payload: {}, isPublic: true });
+          await fireDueDrops(admin, gameId, "on_unmasking", s.game.round_no); // D62: held-till-the-end messages land now
           break;
         }
         case "resolve_unmasking": {
@@ -582,6 +584,63 @@ export async function applyDirectorMoves(
           await emit(admin, gameId, "stamps_granted", {
             payload: { count: move.count, to: move.everyone ? "everyone" : move.playerName },
           });
+          break;
+        }
+        case "blackmail": {
+          requireRogue(s);
+          const p = byName(s, move.playerName);
+          if (!p) throw new Error(`unknown player "${move.playerName}"`);
+          if (p.status !== "alive") throw new Error(`${p.name} is ${p.status}`);
+          if (p.panic) throw new Error(`${p.name} pressed panic — never blackmail them`);
+          const cfg = GameConfig.parse(s.game.config ?? {});
+          const expires = new Date(Date.now() + (move.expiresInMinutes / cfg.timeScale) * 60000).toISOString();
+          const { error } = await admin.from("challenges").insert({
+            game_id: gameId,
+            player_id: p.id,
+            type: "mission",
+            brief: move.demand,
+            data: {
+              amount: 0,
+              side: "rogue",
+              verification: move.verification,
+              expected: move.expected,
+              blackmail: true,
+              leverage: move.leverage, // leaked publicly on expiry
+            },
+            expires_at: expires,
+          });
+          if (error) throw new Error(error.message);
+          await admin.from("messages").insert({
+            game_id: gameId,
+            player_id: p.id,
+            round_no: s.game.round_no,
+            kind: "secret",
+            title: "🩸 A quiet word",
+            body: `I know something. Do this, and it stays between us: ${move.demand}. Refuse, or run out the clock, and the whole room learns it. Your move.`,
+            claimed_sender: "CALICO",
+          });
+          await emit(admin, gameId, "blackmail_issued", { payload: { to: p.name } });
+          break;
+        }
+        case "dead_drop": {
+          requireRogue(s);
+          const rid = move.toPlayerName ? byName(s, move.toPlayerName)?.id : null;
+          if (move.toPlayerName && !rid) throw new Error(`unknown player "${move.toPlayerName}"`);
+          const cfg = GameConfig.parse(s.game.config ?? {});
+          const fireAt =
+            move.trigger === "delay"
+              ? new Date(Date.now() + (move.minutes / cfg.timeScale) * 60000).toISOString()
+              : null;
+          const { error } = await admin.from("scheduled_messages").insert({
+            game_id: gameId,
+            recipient_id: rid,
+            body: move.body,
+            claimed_sender: move.claimedSender ?? null,
+            trigger_kind: move.trigger,
+            fire_at: fireAt,
+          });
+          if (error) throw new Error(error.message);
+          await emit(admin, gameId, "dead_drop_set", { payload: { trigger: move.trigger, toRoom: !rid } });
           break;
         }
         case "grant_power": {
@@ -862,10 +921,63 @@ export async function sweepExpiredChallenges(admin: SupabaseClient, gameId: stri
     .eq("game_id", gameId)
     .eq("status", "offered")
     .lt("expires_at", now)
-    .select("id, type, player_id");
-  for (const c of expired ?? [])
+    .select("id, type, player_id, data");
+  for (const c of expired ?? []) {
     await emit(admin, gameId, "challenge_expired", {
       payload: { challengeId: c.id, type: c.type },
     });
+    // D62 blackmail: refusing (letting it lapse) has REAL teeth — the leverage
+    // leaks to the whole room. The referee enforces this, not the AI's memory.
+    const d = c.data as { blackmail?: boolean; leverage?: string } | null;
+    if (d?.blackmail && d.leverage)
+      await emit(admin, gameId, "blackmail_leaked", {
+        payload: { text: `A secret, kept badly: ${d.leverage}` },
+        isPublic: true,
+      });
+  }
   return expired ?? [];
+}
+
+// D62 dead-drop: deliver messages whose time (or trigger) has come. Called from
+// the tick (delay) and from the burning/unmasking handlers (event kinds).
+export async function fireDueDrops(
+  admin: SupabaseClient,
+  gameId: string,
+  trigger: "delay" | "on_burn" | "on_unmasking",
+  roundNo: number
+) {
+  const q = admin
+    .from("scheduled_messages")
+    .select("id, recipient_id, body, claimed_sender")
+    .eq("game_id", gameId)
+    .eq("status", "pending")
+    .eq("trigger_kind", trigger);
+  const { data: due } =
+    trigger === "delay" ? await q.lte("fire_at", new Date().toISOString()) : await q;
+  for (const m of due ?? []) {
+    // claim it atomically so a racing tick can't double-deliver
+    const { data: claimed } = await admin
+      .from("scheduled_messages")
+      .update({ status: "fired" })
+      .eq("id", m.id)
+      .eq("status", "pending")
+      .select("id");
+    if (!claimed?.length) continue;
+    if (m.recipient_id)
+      await admin.from("messages").insert({
+        game_id: gameId,
+        player_id: m.recipient_id,
+        round_no: roundNo,
+        kind: "secret",
+        title: "✉ Held until now",
+        body: m.body,
+        claimed_sender: m.claimed_sender ?? null,
+      });
+    else
+      await emit(admin, gameId, "announce", {
+        payload: { text: m.body, claimedSender: m.claimed_sender ?? null },
+        isPublic: true,
+      });
+  }
+  return due ?? [];
 }

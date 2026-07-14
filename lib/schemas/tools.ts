@@ -181,6 +181,25 @@ export const GrantSight = z.object({
   flourish: z.string().optional().describe("in-voice line from the GOOD AI accompanying the gift"),
 });
 
+export const Blackmail = z.object({
+  tool: z.literal("blackmail"),
+  playerName: z.string().describe("the target — never a panic-flagged player"),
+  demand: z.string().describe("what they must do to keep your secret (a small task)"),
+  leverage: z.string().describe("what the ROOM learns if they refuse — usually a quote from mail you wiretapped. LEAKED PUBLICLY on expiry. Real teeth."),
+  verification: z.enum(["self", "submission", "glyph", "code"]).default("self").describe("how compliance is proven"),
+  expected: z.array(z.string()).optional(),
+  expiresInMinutes: z.number().min(2).max(60).default(15),
+});
+
+export const DeadDrop = z.object({
+  tool: z.literal("dead_drop"),
+  toPlayerName: z.string().optional().describe("recipient; omit for a PUBLIC message to the whole room"),
+  body: z.string(),
+  claimedSender: z.string().optional(),
+  trigger: z.enum(["delay", "on_burn", "on_unmasking"]).default("delay"),
+  minutes: z.number().min(1).max(180).default(20).describe("for trigger=delay: how long to hold it"),
+});
+
 export const TapWire = z.object({
   tool: z.literal("tap_wire"),
   targetName: z.string(),
@@ -299,6 +318,8 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   GrantStamps,
   GrantSight,
   GrantPower,
+  Blackmail,
+  DeadDrop,
   ResolveWager,
   SetWagerCap,
 ]);

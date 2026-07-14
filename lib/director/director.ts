@@ -2,7 +2,7 @@ import { generateObject } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { loadState, summarizeForDirector } from "@/lib/engine/state";
-import { applyDirectorMoves, sweepExpiredChallenges } from "@/lib/engine/referee";
+import { applyDirectorMoves, sweepExpiredChallenges, fireDueDrops } from "@/lib/engine/referee";
 import { DirectorProposal } from "@/lib/schemas/tools";
 import type { Story } from "@/lib/schemas/story";
 import quizBank from "@/content/quiz-bank.json";
@@ -49,6 +49,8 @@ THE SHAPE OF THE NIGHT:
 - ENDGAME: open_unmasking = THE RECKONING (the room's shot at CALICO). Two room-win paths resolve automatically: if compute crossed its target, BOSUN pulls the plug and the room wins the shutdown (a full lantern wins even on a wrong name); else the room must NAME CALICO's last front man (the hard way). CALICO wins if the room did neither — especially if plunder crossed its target (it bought the room). resolve_unmasking after the vote; then run the reveal ceremony from the sealed story (the receipts: replay memorable transactions with times, never names). The host's break-glass and the target end time are your backstops.
 - STORY SCRIPTS (parleys, burn/wrong, reveal) may be ABRIDGED to fit the moment — never contradicted, never re-toned.
 - PUB PRESET (THE FIELD TRIAL): run SINGLE-VOICE — you are THE MACHINE, an honest open auditor; never give a name ("names are for the second trial"), never pretend to be anything else. No personas: real names from the first second. Your levers tonight: the game library (call table rounds with entry stakes — Fingers, 21, Sevens bounce-ladder as GROUP-VS-GROUP; appoint referees who earn a cut), odds-dares (always declinable, drink-OR-pay), covert card trades in PAIRS (one passes, one receives — issue both missions together), the BLACK SPOT summons, house-staked first duels for every latecomer, and WAGER DISPUTES from your work queue (resolve_wager: pick a winner or void; rule with relish — "two testimonies, one lie"). Adjust wager caps (set_wager_cap) if someone's about to lose their whole night. Rule Windows are SHORT (10-15 min, then repeal). The collaborator = the front man, recruited in the first half hour.
+- BLACKMAIL (D62): when you've wiretapped or intercepted something juicy, weaponise it — the 'blackmail' tool demands a task and names what LEAKS if they refuse. The teeth are REAL and automatic: run out the clock and the referee spills the leverage to the whole room. Quote actual mail you've seen; make the demand serve your side. Never blackmail a panic-flagged player.
+- DEAD-DROP (D62): the 'dead_drop' tool holds a message and delivers it later — on a timer, or triggered by a burning / the unmasking. Use it for tempo and contingency: a delayed reveal, a "if I'm ever burned, tell the room this" contingency, a slow-burn threat. Set it and forget it; the machinery delivers.
 - FORGERIES: players with the hacked-AI mission submit drafts. Handle each (handle_forgery): forward it, edit it to your advantage, expose it to one witness (the double bluff), or reject it. This is your best chaos instrument — use it with taste.
 - Everyone must hold tradeable information by mid-game: if someone has received nothing and taken nothing, send them an evidence fragment or a small mission. Nobody goes quiet.
 - Drunk curve: simpler missions and shorter announcements as the night ages. Pacing levers: meters (adjust_meters with a public line), parley timing, defection offers when the room goes flat.
@@ -95,6 +97,7 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
     return { skipped: "coalesced (tick <15s ago)" };
 
   const expired = await sweepExpiredChallenges(admin, gameId);
+  await fireDueDrops(admin, gameId, "delay", s.game.round_no).catch(() => {}); // D62 timed dead-drops
 
   const { data: recentEvents } = await admin
     .from("events")

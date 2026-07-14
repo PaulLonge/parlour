@@ -529,6 +529,19 @@ B-numbers are build-time engineering calls made inside the codebase.
   tantalising plateau. This is the third spine piece — the spine (loyalty market,
   endgame, powers economy) is now up.
 
+- **D62 — pressure tools: blackmail + dead-drop (Paul, greenlit; 2026-07-14).**
+  **BLACKMAIL** (`blackmail` tool): the machine weaponises something it wiretapped
+  — a demand plus the leverage that LEAKS if refused. Reuses the mission challenge
+  (data.blackmail + data.leverage); the teeth are REAL and referee-enforced — the
+  expiry sweep spills the leverage to the whole room (`blackmail_leaked`, public).
+  Panic-exempt. **DEAD-DROP** (`dead_drop` tool, mint 0006 `scheduled_messages`):
+  a held message delivered later — on a timer (`delay`) or a trigger (`on_burn`,
+  `on_unmasking`). `fireDueDrops` delivers: called each tick for delays, and from
+  the burning / unmasking-open referee cases for the event kinds; atomic claim so
+  a racing tick can't double-deliver; recipient omitted → public announce. Both
+  are director-side (no player UI). **BOUNTY is next** (its open-to-everyone race
+  + claim flow gets its own focused build). Build green.
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE
