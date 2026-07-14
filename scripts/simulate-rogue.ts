@@ -108,7 +108,7 @@ try {
   console.log("— front man appointment rules");
   v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Tom" }]);
   check("cannot appoint a non-minion", !v[0].ok, v[0].detail);
-  // D48: even a bought host can never front — conductors keep their WHO-surprise
+  // D57: a bought host CAN front (reverses D48) — one-way knowledge protects the surprise
   v = await applyDirectorMoves(admin, gid, [
     { tool: "offer_bribe", playerName: "Paul", amount: 100, memo: "h", mission: "m", publicTrace: "t", expiresInMinutes: 5 },
   ]);
@@ -118,9 +118,9 @@ try {
   r = await acceptOffer(admin, gid, byName("Paul").id, paulBribe.id);
   check("host takes the coin (chaos agents may)", r.ok, r.result);
   v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Paul" }]);
-  check("hosts NEVER front (D48)", !v[0].ok && v[0].detail === "hosts_never_front", v[0].detail);
+  check("a bought host CAN front now (D57)", v[0].ok, v[0].detail);
   v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Co-Host" }]);
-  check("Co-Host appointed front man", v[0].ok, v[0].detail);
+  check("the hat can move to Co-Host", v[0].ok, v[0].detail);
 
   console.log("— the paper trail");
   await admin.from("codes").insert({ game_id: gid, code: "BLACKTIDE", color: "red" });

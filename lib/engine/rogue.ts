@@ -422,10 +422,10 @@ export async function appointFrontman(admin: SupabaseClient, gameId: string, pla
   if (p.role !== "minion") return { ok: false, result: "frontman_must_be_minion" };
   if (p.burned) return { ok: false, result: "burned_players_never_front_again" };
   if (p.panic) return { ok: false, result: "never_appoint_panic" };
-  // D48: hosts are conductors with fixed November roles (Paul = chaos agent,
-  // Co-Host = the good AI's champion) — and a host front man would know WHO,
-  // killing the one surprise the game keeps for them. Never.
-  if (p.is_host) return { ok: false, result: "hosts_never_front" };
+  // D57: hosts ARE eligible (reverses D48). A front man only knows they're the
+  // rogue's voice, not who the other minions are (one-way knowledge) — so a host
+  // fronting doesn't spoil the WHO-surprise. The Commissioner outed as the
+  // machine's puppet, or BOSUN's champion seduced into fronting, are prize beats.
   await admin.from("games").update({ frontman_player_id: p.id }).eq("id", gameId);
   await emit(admin, gameId, "frontman_appointed", { payload: { player: p.name } }); // private event
   return { ok: true, result: "appointed" };

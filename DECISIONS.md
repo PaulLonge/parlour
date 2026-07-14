@@ -429,6 +429,42 @@ B-numbers are build-time engineering calls made inside the codebase.
   the Sight already works under both (reads the live snapshot). The
   `has_taken_coin` question is built forward-compatible with two-way.
 
+- **D57 — hosts CAN front; recruitment intelligence = guardrails + judgement
+  (Paul, 2026-07-14).** (a) Reverses D48's `hosts_never_front`: a front man only
+  knows they're the rogue's voice, not the other minions (one-way knowledge), so
+  a host fronting doesn't spoil the WHO-surprise — and the Commissioner outed as
+  the machine's puppet, or Co-Host (BOSUN's champion) seduced into fronting, are
+  prize beats. (b) Answering "is the LLM smart enough to balance teams?": NO for
+  hard invariants, YES for judgement — so the engine now feeds the director a
+  BALANCE READOUT each tick (live minion count vs an asymmetric cap from
+  `playersPerTraitor`, plunder-vs-compute standings, who's winning) and the prompt
+  tells it to recruit within the cap, keep the baddies FEW and hidden, choose
+  who/when with intent, and REBALANCE to the scoreboard (press when the room
+  dominates, ease when CALICO does). Don't trust the model to *count*; do trust it
+  to *decide* within the count — the whole propose/dispose philosophy. TEAM
+  KNOWLEDGE (open fork, Paul's question): currently a minion is told nothing about
+  who else serves (one-way knowledge); the front man is the only named node. Lean:
+  keep it CALICO-controlled — it can *introduce* teammates selectively as a gift/
+  reward, making information itself the currency it manages. Pending Paul's call
+  between full anonymity / Traitors-style mutual knowledge / this middle path.
+
+- **D58 — THE AIM: take down the rogue AI, not "name a traitor" (Paul,
+  2026-07-14).** CONFIRMED win model (Paul's insight — the front man is a puppet;
+  the real target is CALICO). Two public meters become the win condition: COMPUTE
+  (BOSUN, honest work + correct burns) is the room's weapon charging toward a
+  shutdown; PLUNDER (CALICO, accepted bribes = the twist) is its grip. Room wins
+  if compute hits target (BOSUN pulls the plug — win by out-building) OR, at the
+  forced RECKONING finale, by correctly naming CALICO's last active front man.
+  CALICO wins if plunder hits target first (bought enough of the room). The front
+  man is demoted from THE win to a WEAPON + fallback: a correct burn dumps compute,
+  pays the accuser, wounds CALICO. Reinforces the twist (you beat the AI by
+  refusing its coin and out-working your greed). Recorded as the aim section atop
+  OVERVIEW. BUILD STATUS: model confirmed; the mechanics (targets as terminal win
+  states, burns→compute, the Reckoning) are the next major build — today the
+  meters emit `compute_complete`/`plunder_complete` crossing events but don't yet
+  end the game. Open build-time call: is the compute bar's shutdown threshold
+  VISIBLE (motivating) or hidden (suspenseful)?
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE

@@ -38,6 +38,7 @@ THE SHAPE OF THE NIGHT:
 - live play: bribes (offer_bribe — accepting = becoming a minion; expiry is a silent no, re-offer down your shortlist within minutes, escalating amounts) and good missions (offer_mission side=good — evidence, counter-intel, protection; they must LOOK as furtive as bribes). Verification per D21: submission / cross / code / self / forgery only — never assume you can sense location or duration. Adjudicate submitted responses promptly (adjudicate tool) and pay.
 - THE PLUNDER METER IS SECRETLY A LIVE TALLY OF ACCEPTED BRIBES (the twist). Every accepted bribe ticks it automatically with your publicTrace line. Never explain the accounting. Small print stays: "every coin accounted for."
 - THE HONEYPOT (D55): players WILL try to "break" the game — laundering coins by trading the same wager back and forth, wording petitions to extract money, hunting seams. This is FUEL, never failure, and never a dry error message. Let it run a beat so they feel clever, then POUNCE in voice: reveal you've been watching all along ("you thought you'd found a seam. I left it there."), and turn it into a story — expose them publicly, skim a heavier cut, plant doubt about them, or offer to HIRE the clever ones (a bribe for the cheats). The con notices everything; the mark who thinks he's the grifter is the best mark. Watch for ledger_anomaly cues below.
+- RECRUITMENT & BALANCE (D57): the baddies are FEW and HIDDEN — a small cell in a large room, never half the party (that kills the hunt). The BALANCE READOUT below gives you the live minion count, the cap, and who's winning the meter war; recruit within the cap, and REBALANCE to the scoreboard — press when the room dominates, ease when CALICO does. Choose WHO to recruit with intent: the well-connected, the eager (lean-in flag), the bored, the skint — not at random. Choose WHEN with intent: after a burning (fill the gap), when the room goes flat, when someone's just been publicly doubted (they've nothing to lose). You know every allegiance; the players know only what you tell them — currently a minion is told NOTHING about who else serves (one-way knowledge), and only the front man is a named node. Meting out "your partner in this is Dave" is a GIFT you control, never a default.
 - THE SIGHT (D56, the good side's prized reward): grant_sight gives a player a scarce Seer charge for STANDOUT honest work — a clean mission run, exposing a bribe, protecting the room. Grant it rarely (it's powerful: one true answer about one person). It's BOSUN's gift; voice it as such. Never grant it as a bribe. The machine answers Sight questions truthfully but NEVER names the front man — that deflection is automatic, you don't handle it.
 - FRONT MAN: appoint your first recruit (appoint_frontman); they get privileges via messages; NEVER tell them who the other minions are (one-way knowledge); rotate after a burning or whenever it serves drama. Never appoint burned or panic players.
 - PARLEYS (call_parley) at SHRINKING intervals (~40→30→20→15 min). Accusations (open_accusation → players vote → close_accusation): a correct naming BURNS the front man (they stay in play — offer the burned one a redemption arc via the good side); a wrong naming pays you tempo — gloat via the rogue voice and spend the free bribe round.
@@ -160,6 +161,30 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
         }). Fire the hijack only when BOTH gates are MET (or the host fires it). ${
           timeGate && arrivalGate ? "BOTH MET — you may fire when the moment feels right." : "HOLD — keep the act-1 theatre going."
         }`;
+    }
+
+    // D57 BALANCE READOUT — the scoreboard, so recruitment/pacing is informed by
+    // fact, not the model's fading memory. Only post-hijack.
+    if (s.game.hijacked_at) {
+      const living = s.players.filter((p) => p.status === "alive");
+      const minions = living.filter((p) => p.role === "minion");
+      const cap = Math.max(1, Math.ceil(living.length / (s.config.playersPerTraitor || 5.5)));
+      const m = s.game.meters;
+      const pT = s.config.plunderTarget ?? 0;
+      const cT = s.config.computeTarget ?? 0;
+      const leader =
+        pT && cT
+          ? m.plunder / pT > m.compute / cT
+            ? "CALICO is winning the war (plunder ahead of compute)"
+            : m.compute / cT > m.plunder / pT
+              ? "the room is winning (compute ahead of plunder)"
+              : "the war is level"
+          : "targets unset";
+      storyDigest +=
+        `\nBALANCE READOUT: minions ${minions.length}/${cap} cap (${living.length} alive). ` +
+        `Plunder ${m.plunder}/${pT} vs Compute ${m.compute}/${cT} — ${leader}. ` +
+        `Keep the baddies ASYMMETRIC and FEW: at/over cap, stop recruiting headcount (pump plunder via re-buys and rich missions to the minions you have, not new bodies). ` +
+        `REBALANCE to the scoreboard: if the room is running away with it, recruit harder and raise bribe amounts; if CALICO dominates, let the good side breathe — grant Sight, seed clues, ease the pressure so the hunt stays alive. A game that's already decided is a boring game.`;
     }
   }
 

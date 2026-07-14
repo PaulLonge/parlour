@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 13 — D56 THE SIGHT / the Seer: scarce earned charge, one bounded true answer, never names the front man. Rev 12: AI powers one-pager. Rev 11: GDD wave 1 D51–D55)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 14 — D58 "the aim of the game" section (take down the AI; meters become the win); D57 hosts can front + balance readout for smart recruitment. Rev 13: D56 the Seer)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -39,6 +39,40 @@ either is WHO among the *guests* is bought, which is sealed from Paul too and em
 live. Everyone else: real names after the hijack, no acting homework, no one ever
 eliminated.
 
+## The aim of the game (D58)
+
+**Take down the rogue AI.** Not "name a traitor" — the front man is CALICO's human
+puppet, and exposing the glove doesn't stop the hand. The night is a tug-of-war
+between two public meters that finally *decide* something:
+
+- **Compute (BOSUN) = the room's weapon charging up.** Honest work — and every
+  correct burning of a front man — builds the good AI toward the power to pull
+  CALICO's plug.
+- **Plunder (CALICO) = its grip tightening** — and secretly, per the twist, the
+  running tally of the room's own accepted bribes. Every coin taken powers the
+  thing you're trying to kill.
+
+**The room wins** if compute crosses its target (BOSUN shuts CALICO down — you win
+by *out-building* the rogue) or, at the forced **Reckoning** finale, by correctly
+naming CALICO's last active front man to sever its final connection. **CALICO wins**
+if plunder crosses *its* target first — it has bought enough of the room that it no
+longer needs to hide. The front man is a **weapon and a fallback**, richly rewarded
+by BOSUN (a correct burn dumps compute, pays the accuser, wounds CALICO), never the
+sole objective.
+
+Underneath, each guest plays their own book: end **rich** (Richest Pirate + awards)
+and **on the winning side** — and *which* side is a live, repeated choice (D-loyalty
+market, pending). CALICO's coin is fast money with real risk (exposure, burning,
+you're a target); honest work is slow money with safety, information, the Sight, and
+a clean name at the reveal. The one-line pitch: **"Whose side are you on tonight —
+and is it worth what they're paying you?"** You beat the rogue AI by refusing its
+coin and out-working your own temptation — which is why the reveal ("that's not what
+it stole, that's what you *sold*") lands twice as hard.
+
+*Status: the aim/win model is CONFIRMED (D58); the meter-race endgame mechanics —
+targets as terminal win states, burns feeding compute, the Reckoning — are the next
+build. Today the meters emit crossing events but don't yet end the game.*
+
 ## The intrigue stack
 
 Every mechanic below is referee-validated (the AI proposes; deterministic code
@@ -52,7 +86,7 @@ and other players' testimony — never phantom sensors).
 | **Missions** | Paid tasks from either AI: evidence-gathering, counter-intel, mischief | Good-side work is engineered to look exactly as furtive as bribery |
 | **Paper codes** | Printed slips (typed, not scanned) hidden around the house | Hide/find chains verify both ends; the AI can dictate NEW slips for humans to write mid-game |
 | **Glyph handshakes** | Your phone shows a rotating mark; verifiers tap what they were shown | Deterministic proximity proof — zero typing, zero ambiguity |
-| **The front man** | The rogue's one knowing human agent, with privileges | Never told who else is bought (one-way knowledge); the role ROTATES when burned |
+| **The front man** | The rogue's one knowing human agent, with privileges | Never told who else is bought (one-way knowledge); the role ROTATES when burned; **anyone can be it, hosts included** (D57) |
 | **Accusations** | Parley votes to name the front man | Right: they're *burned* — exposed, ineligible forever, still in play, and cheap for the good side to flip. Wrong: everyone is billed for it |
 | **The Unmasking** | One final simultaneous naming | Two-sided: wrong = the rogue wins outright |
 | **Audiences** | Pay Ƀ to ask an AI one question, answered in voice | The economy sink; architecturally cannot leak the front man (the answering model doesn't hold the data) |
