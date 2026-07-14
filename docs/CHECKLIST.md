@@ -24,11 +24,11 @@ The design ran ahead of the code; these three are the foundation everything else
 ## ⧗ Queued next (pressure tools, then the rest of GDD wave 2)
 
 - [x] **Blackmail** (D62) — machine weaponises wiretapped mail; real teeth (refuse → the
-      expiry sweep leaks it publicly); panic exempt. Shipped `<pending>`.
+      expiry sweep leaks it publicly); panic exempt. Shipped `da8fd4c`.
 - [x] **Dead-drop** (D62) — held message delivered on a timer or on-burn/on-unmasking;
-      `fireDueDrops`, atomic. Shipped `<pending>`.
-- [ ] **Bounty** — public price on an action, a *race* (first to claim wins), phone-verified
-      (no TV needed). Next focused build — open-to-everyone claim flow + UI.
+      `fireDueDrops`, atomic. Shipped `da8fd4c`.
+- [x] **Bounty** (D63) — public price on an action, a *race* (first correct answer wins),
+      phone-verified, server-only answer; BountyBoard on Now. Shipped `<pending>`.
 - [ ] **Resolve + explicit refusal** — DECLINE button banks a token → good-side powers; fixes
       "take every bribe." (GDD #1)
 - [ ] **Front-man lifecycle** — min tenure, office-acts leak clues, announce THAT the hat

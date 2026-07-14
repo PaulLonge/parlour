@@ -191,6 +191,15 @@ export const Blackmail = z.object({
   expiresInMinutes: z.number().min(2).max(60).default(15),
 });
 
+export const PostBounty = z.object({
+  tool: z.literal("post_bounty"),
+  brief: z.string().describe("the public dare: 'first to type the word on the galley door', 'first to tell me Paul's favourite anime'"),
+  reward: z.number().min(1),
+  kind: z.enum(["passphrase", "code"]).default("passphrase"),
+  expected: z.array(z.string()).describe("accepted answers (passphrase) or the single slip code (code)"),
+  expiresInMinutes: z.number().min(1).max(60).default(10),
+});
+
 export const DeadDrop = z.object({
   tool: z.literal("dead_drop"),
   toPlayerName: z.string().optional().describe("recipient; omit for a PUBLIC message to the whole room"),
@@ -320,6 +329,7 @@ export const DirectorTool = z.discriminatedUnion("tool", [
   GrantPower,
   Blackmail,
   DeadDrop,
+  PostBounty,
   ResolveWager,
   SetWagerCap,
 ]);

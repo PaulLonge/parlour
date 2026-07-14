@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 18 — D62 pressure tools: blackmail (real teeth) + dead-drop (timer/on-burn/on-unmasking); bounty next. Rev 17: D61 powers economy + fake bars. Rev 16: D60 endgame)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 18 — pressure-tools trio: D62 blackmail (real teeth) + dead-drop; D63 bounty (public race). Rev 17: D61 powers economy + fake bars. Rev 16: D60 endgame)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.

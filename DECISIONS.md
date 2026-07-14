@@ -539,8 +539,17 @@ B-numbers are build-time engineering calls made inside the codebase.
   `on_unmasking`). `fireDueDrops` delivers: called each tick for delays, and from
   the burning / unmasking-open referee cases for the event kinds; atomic claim so
   a racing tick can't double-deliver; recipient omitted → public announce. Both
-  are director-side (no player UI). **BOUNTY is next** (its open-to-everyone race
-  + claim flow gets its own focused build). Build green.
+  are director-side (no player UI). Build green.
+
+- **D63 — BOUNTY (Paul, greenlit; 2026-07-14).** A PUBLIC price on an action,
+  open to the whole room, settled as a RACE — first correct answer wins (mint
+  0007 `bounties`, server-only so the answer never leaks; `post_bounty` tool
+  broadcasts only the brief + reward via a public `bounty_posted` event).
+  `claimBounty` verifies server-side (passphrase via `matchAnswer`, or a slip
+  code) and claims atomically (`.eq status open`) so exactly one racer is paid;
+  `bounty_claimed` is public so the room sees who snatched it. Phone-verified, no
+  TV needed. Player-facing BountyBoard on Now reads open bounties from the public
+  event feed (posted minus claimed). Completes the pressure-tools trio.
 
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than

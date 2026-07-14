@@ -336,6 +336,8 @@ export function useGame(code: string) {
         post("/api/seer", { code, question, targetName, confirm }).then((r) => (refetch(), r)),
       usePower: (power: string, targetName?: string) =>
         post("/api/power", { code, power, targetName }).then((r) => (refetch(), r)),
+      claimBounty: (bountyId: string, answer: string) =>
+        post("/api/bounty", { code, bountyId, answer }).then((r) => (refetch(), r)),
       volunteer: () => post("/api/volunteer", { code }),
       sendNote: (to: string, text: string) =>
         post("/api/note", { code, to, text }).then((r) => (refetch(), r)),

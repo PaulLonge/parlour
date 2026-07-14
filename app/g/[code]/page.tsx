@@ -533,6 +533,8 @@ function NowPanel({
 
       {rogueLive && game.status === "live" && me.status === "alive" && <PowersCard g={g} aliveNames={aliveNames} />}
 
+      {rogueLive && game.status === "live" && me.status === "alive" && <BountyBoard g={g} />}
+
       {rogueLive && game.status === "live" && me.status === "alive" && <WagerHub g={g} />}
 
       {rogueLive &&
@@ -580,6 +582,68 @@ function NowPanel({
           Your character will find you when the story is sealed.
         </div>
       )}
+    </div>
+  );
+}
+
+// D63: public bounties — a race. Open ones = posted minus claimed/expired,
+// read from the public event feed. First correct answer wins.
+function BountyBoard({ g }: { g: ReturnType<typeof useGame> }) {
+  const claimed = new Set(
+    g.publicEvents
+      .filter((e) => e.type === "bounty_claimed" || e.type === "bounty_expired")
+      .map((e) => (e.payload as { bountyId?: string }).bountyId)
+  );
+  const open = g.publicEvents
+    .filter((e) => e.type === "bounty_posted")
+    .map((e) => e.payload as { bountyId?: string; brief?: string; reward?: number })
+    .filter((p) => p.bountyId && !claimed.has(p.bountyId));
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<Record<string, string>>({});
+  if (!open.length) return null;
+
+  return (
+    <div className="panel p-4" style={{ borderColor: "var(--gold)" }}>
+      <p className="kicker" style={{ color: "var(--gold)" }}>🏴 bounties — first to claim wins</p>
+      <div className="mt-2 flex flex-col gap-3">
+        {open.map((b) => (
+          <div key={b.bountyId} className="text-sm">
+            <p>
+              {b.brief} — <b style={{ color: "var(--gold)" }}>{b.reward}</b>
+            </p>
+            <div className="mt-1 flex gap-2">
+              <input
+                className="input flex-1"
+                aria-label="your answer"
+                placeholder="claim it…"
+                value={answers[b.bountyId!] ?? ""}
+                onChange={(e) => setAnswers((a) => ({ ...a, [b.bountyId!]: e.target.value }))}
+              />
+              <button
+                className="btn"
+                disabled={busy || !(answers[b.bountyId!] ?? "").trim()}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    const r = await g.actions.claimBounty(b.bountyId!, answers[b.bountyId!].trim());
+                    setNote((n) => ({ ...n, [b.bountyId!]: r.ok ? `✓ +${r.reward}` : (r.result?.replaceAll("_", " ") ?? "no") }));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                Claim
+              </button>
+            </div>
+            {note[b.bountyId!] && (
+              <p className="mt-1 text-xs" style={{ color: note[b.bountyId!].startsWith("✓") ? "var(--gold)" : "var(--danger)" }}>
+                {note[b.bountyId!]}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

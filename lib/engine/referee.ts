@@ -622,6 +622,30 @@ export async function applyDirectorMoves(
           await emit(admin, gameId, "blackmail_issued", { payload: { to: p.name } });
           break;
         }
+        case "post_bounty": {
+          requireRogue(s);
+          const cfg = GameConfig.parse(s.game.config ?? {});
+          const expires = new Date(Date.now() + (move.expiresInMinutes / cfg.timeScale) * 60000).toISOString();
+          const { data: b, error } = await admin
+            .from("bounties")
+            .insert({
+              game_id: gameId,
+              brief: move.brief,
+              reward: move.reward,
+              kind: move.kind,
+              expected: move.expected,
+              expires_at: expires,
+            })
+            .select("id")
+            .single();
+          if (error) throw new Error(error.message);
+          // public FACE only — brief + reward, never the answer
+          await emit(admin, gameId, "bounty_posted", {
+            payload: { bountyId: b.id, brief: move.brief, reward: move.reward },
+            isPublic: true,
+          });
+          break;
+        }
         case "dead_drop": {
           requireRogue(s);
           const rid = move.toPlayerName ? byName(s, move.toPlayerName)?.id : null;
