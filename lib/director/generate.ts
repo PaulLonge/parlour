@@ -7,6 +7,15 @@ import { emit } from "@/lib/engine/state";
 import goldenJson from "@/content/golden-story.json";
 import rogueReferenceJson from "@/content/rogue-reference-story.json";
 import pubStoryJson from "@/content/pub-story.json";
+import vaultStoryJson from "@/content/vault-story.json";
+
+// D69: rogue scenarios seal one of these packs by key (content/scenarios.ts).
+// Add a game = add a JSON here + a registry entry. No engine change.
+const PACKS: Record<string, unknown> = {
+  reference: rogueReferenceJson,
+  pub: pubStoryJson,
+  vault: vaultStoryJson,
+};
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -73,9 +82,9 @@ async function seal(
 export async function sealRogueReference(
   admin: SupabaseClient,
   gameId: string,
-  variant: "reference" | "pub" = "reference"
+  storyKey: string = "reference"
 ): Promise<GenerateResult> {
-  const story = RogueStory.parse(variant === "pub" ? pubStoryJson : rogueReferenceJson);
+  const story = RogueStory.parse(PACKS[storyKey] ?? rogueReferenceJson);
   const { data: players } = await admin
     .from("players")
     .select("id, name")
@@ -99,7 +108,7 @@ export async function sealRogueReference(
         meta: {
           title: story.meta.coverStoryTitle, // the lie IS the branding (D19)
           genre: "a murder mystery in three acts",
-          tagline: "Sharpen your cutlasses. Sharpen your alibis.",
+          tagline: story.meta.tagline, // D69: from the pack, so the skin is agnostic
           setting: story.meta.setting,
         },
       },

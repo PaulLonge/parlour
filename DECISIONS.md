@@ -584,6 +584,25 @@ B-numbers are build-time engineering calls made inside the codebase.
   a power you already hold. GDD REVIEW ADOPTION IS NOW COMPLETE — every green-lit
   item shipped; only the Dead-Reckoning paper-fallback kit remains deferred (D-review).
 
+- **D69 — SCENARIOS: the game registry (agnostic modes) + a third game
+  (Paul, 2026-07-14).** Games are now DATA, not code. `content/scenarios.ts` is a
+  registry: each entry = {mode, storyKey, preset, skin}. `/new` renders the list;
+  `game/create` resolves the mode + preset from the chosen scenario and records
+  its id in config; `story/generate` seals the pack named by the scenario
+  (`PACKS` map in generate.ts). Adding a game = **adding a registry entry + a
+  story JSON — no engine change.** The rogue engine was already theme-agnostic
+  (all content comes from the sealed `RogueStory`); this formalises it. Proof
+  shipped: a THIRD scenario, **THE VAULT** (`content/vault-story.json`) — a casino
+  heist reskin (MIDAS the house vs LEDGER the auditor, currency ◆ Chips, cover
+  "Death at the Baccarat Table", the same hijack→bribes→meters→accusation→
+  unmasking shape, the same twist reframed: "the house didn't rob you, you paid
+  to play"). Persona-less like the pub; schema-validated. The two November games
+  (Long Con, Field Trial) and Classic Murder are now registry entries too;
+  induction + sandbox stay orthogonal toggles. Back-compatible: games without a
+  scenario id fall back to the old pub/reference split. NOTE: murder mode is a
+  separate (elimination) engine; the registry's agnosticism is over the rogue
+  "social-economy" engine, which is the one that flexes to new skins.
+
 - **GDD REVIEW — STAGED (next build wave, Traitors-informed).** Paul green-lit
   the following; they are design-heavy and being built deliberately rather than
   rushed. Locked design intent: **(a) Resolve + explicit refusal** — a DECLINE

@@ -72,6 +72,8 @@ export const GameConfig = z.object({
   // D47: THE INDUCTION — deterministic two-phone tutorial/QA; a scripted
   // step-runner replaces the LLM director entirely for these games
   tutorial: z.boolean().default(false),
+  // D69: which scenario this game is (content/scenarios.ts) — picks the sealed pack
+  scenario: z.string().optional(),
 });
 
 // D44/D45: night 1 is THE FIELD TRIAL — a pub, openly AI-run, no personas,

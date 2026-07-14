@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { GameConfig } from "@/lib/schemas/config";
+import { scenarioById } from "@/content/scenarios";
 import { emit } from "@/lib/engine/state";
 import { TUTORIAL_STORY, TUTORIAL_STORY_PUBLIC } from "@/content/tutorial-script";
 import { tickDirector } from "@/lib/director/director";
@@ -11,6 +12,7 @@ const Body = z.object({
   title: z.string().min(1).max(80).default("The Gathering"),
   hostName: z.string().min(1).max(40),
   mode: z.enum(["murder", "rogue"]).default("murder"),
+  scenario: z.string().optional(), // D69: pick a game from the registry (resolves mode+preset)
   password: z.string().max(30).optional(), // D45: the night selector word
   config: GameConfig.partial().default({}),
 });
@@ -31,7 +33,7 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-  const { title, hostName, mode, password, config } = parsed.data;
+  const { title, hostName, mode, scenario: scenarioId, password, config } = parsed.data;
 
   const admin = supabaseAdmin();
   const code = Array.from(
@@ -39,12 +41,20 @@ export async function POST(req: Request) {
     () => CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]
   ).join("");
 
-  const fullConfig = GameConfig.parse(config);
+  // D69: a scenario resolves the mode + preset + records its id (so the seal
+  // picks the right pack). Explicit mode/config still win if passed (back-compat).
+  const scenario = scenarioById(scenarioId);
+  const resolvedMode = scenario?.mode ?? mode;
+  const fullConfig = GameConfig.parse({
+    ...(scenario?.preset ?? {}),
+    ...config,
+    ...(scenarioId ? { scenario: scenarioId } : {}),
+  });
   // D47: induction games are rogue-mode and arrive pre-sealed with the tiny
   // training story (gives the hijack an AI name, the Ask tab a voice, the UI
   // a currency) — no generation, nothing to spoil, safe to re-run forever
   const tutorial = fullConfig.tutorial === true;
-  const effectiveMode = tutorial ? "rogue" : mode;
+  const effectiveMode = tutorial ? "rogue" : resolvedMode;
   const { data: game, error: gErr } = await admin
     .from("games")
     .insert({

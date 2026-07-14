@@ -47,6 +47,15 @@ The design ran ahead of the code; these three were the foundation everything els
 **GDD review adoption COMPLETE** — every green-lit item shipped; only the Dead-Reckoning
 paper-fallback kit stays deferred.
 
+## 🎭 Scenarios (D69) — games are now DATA
+
+- [x] **Scenario registry** (`content/scenarios.ts`) — a game = a data entry (mode + story
+      pack + preset + skin). `/new` renders it; create resolves mode/preset; generate seals
+      the named pack. Adding a game = entry + JSON, **no engine change**. `90fe1d0`… `<pending>`
+- [x] **Third scenario shipped: THE VAULT** (`content/vault-story.json`) — a casino-heist
+      reskin (MIDAS vs LEDGER, ◆ Chips), schema-validated, proving the rogue engine is
+      theme-agnostic. To add more: write a persona-less `RogueStory` JSON + a registry entry.
+
 ## ✅ Shipped (recent — newest first, with commit)
 
 - [x] D59 two-way loyalty; Shield→money/privacy ward; chaos→granted-power economy (design) `c31ebcb`

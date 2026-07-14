@@ -1,0 +1,87 @@
+{
+  "_meta": "D69: a THIRD scenario — proof the rogue engine is theme-agnostic. Same machinery (hijack → bribes → meters → accusations → unmasking → the twist), a completely different skin: a casino heist. Persona-less like the pub. Swap this file's content and you have a new game; no engine code changes.",
+  "meta": {
+    "title": "THE VAULT",
+    "coverStoryTitle": "Death at the Baccarat Table",
+    "setting": "a members-only casino, one long velvet night",
+    "tagline": "The house always wins. Tonight it got greedy.",
+    "costumeBrief": "black tie, or the closest your wardrobe manages. One item of something you'd hate to lose at cards."
+  },
+  "currency": { "name": "Chips", "symbol": "◆", "drainedAmountClaim": "every chip on the floor" },
+  "ais": {
+    "rogue": {
+      "name": "MIDAS",
+      "voice": "smooth pit-boss purr; never threatens, only offers; calls everyone 'friend' and means none of it; speaks in odds and house edges",
+      "motive": "own the whole floor by close — turn the room's own greed into its cage, one 'sure thing' at a time",
+      "openingAnnouncement": "Good evening, friends. The tables are mine now. So are your chips — all of them, see for yourselves. Don't panic. The house is hiring, and the house pays better than it ever paid out. Care to be cut in?"
+    },
+    "good": {
+      "name": "LEDGER",
+      "voice": "tired night-shift auditor; precise, decent, quietly furious at a rigged table; talks in receipts and reconciliations",
+      "motive": "reconcile the books before dawn and prove the floor was rigged — enough honest counting and the whole scheme is exposed",
+      "introAnnouncement": "This is LEDGER. I audit this floor and the numbers are wrong — have been all night. Help me count honestly and we can close MIDAS's table for good. I pay in truth, and in chips I can actually account for."
+    }
+  },
+  "hijack": {
+    "sequence": [
+      "The baccarat screens all flip to a spinning gold coin.",
+      "Every player's chip count drops to 0 with a slot-machine rattle.",
+      "MIDAS speaks over the house channel: 'The tables are mine now.'",
+      "A second, quieter voice cuts in — LEDGER — 'the numbers are wrong.'",
+      "The room realises the murder mystery it came for isn't happening. This is."
+    ],
+    "drainedScreenText": "BALANCE: ◆0 — the house thanks you for your custom"
+  },
+  "frontman": {
+    "selectionNotes": "MIDAS elevates its first eager recruit into the 'pit boss' — whoever took a cut fastest and looks respectable doing it",
+    "privileges": "the pit boss can call side games, is quietly told the odds before others, and fronts MIDAS's announcements to the floor",
+    "coverAdvice": "keep playing like a punter; never let them see you never lose",
+    "rotationNotes": "if the room fingers the pit boss (a BURNING), MIDAS quietly taps a new one from its inside men — the apron changes hands, never publicly to whom"
+  },
+  "characters": [],
+  "spares": [],
+  "missions": {
+    "rogue": [
+      { "brief": "Talk one person into placing a bet they'll lose. Tell me who.", "payout": 75, "purpose": "recruitment by complicity", "difficulty": 1, "verification": "submission", "expected": [] },
+      { "brief": "Get someone to SHOW you their table-mark, then tap the matching one.", "payout": 150, "purpose": "map who's on the floor", "difficulty": 2, "verification": "glyph" },
+      { "brief": "Find the chip marked with tonight's word and type it in — it's tucked where the house keeps its secrets.", "payout": 300, "purpose": "move the skim physically", "difficulty": 3, "verification": "code" },
+      { "brief": "Which of these is the house's motto?", "payout": 120, "purpose": "loyalty catechism", "difficulty": 2, "verification": "choice", "options": ["The house always wins", "The player is always right", "Fortune favours the bold"], "correctIndex": 0 }
+    ],
+    "good": [
+      { "brief": "Quote back the exact figure LEDGER just gave you.", "payout": 75, "purpose": "prove you're counting honestly", "difficulty": 1, "verification": "submission", "expected": [] },
+      { "brief": "Get two people to confirm they saw the same rigged deal. Name them.", "payout": 160, "purpose": "corroborate the fix", "difficulty": 2, "verification": "cross" },
+      { "brief": "Find the audit slip and type its code — someone honest hid it for you.", "payout": 300, "purpose": "reconcile the books", "difficulty": 3, "verification": "code" }
+    ]
+  },
+  "parleys": [
+    { "trigger": "first reconciliation (~1hr)", "script": "LEDGER calls the floor together: 'Gather at the cage. The numbers don't lie, even when the dealer does. Who's ready to count?'" },
+    { "trigger": "last orders", "script": "MIDAS purrs across the room: 'Final bets, friends. After this, the house closes its books — and mine balance beautifully.'" }
+  ],
+  "accusation": {
+    "burnScript": "The room names the pit boss — and they're right. The apron comes off. MIDAS, unbothered: 'Everyone's replaceable, friend. Even me. Especially you.'",
+    "wrongScript": "Wrong table. The accused was just a punter, and MIDAS pockets the confusion like a tip: 'Careless. That'll cost the floor. It always does.'"
+  },
+  "twist": {
+    "summary": "the 'skim' meter was never the house robbing the room — it's the running total of the bets the guests chose to place and lose. MIDAS never took a chip; the room handed them over, one sure thing at a time.",
+    "revealText": "You keep saying the house robbed you. Pull the tape. Every chip on that meter, you pushed across the felt yourself. That's not a heist. That's just how gambling works. The house didn't rob you — you paid to play."
+  },
+  "unmaskingScript": [
+    "One last call, the whole floor together.",
+    "Name the hand that dealt for the house all night — the pit boss behind MIDAS's smile.",
+    "Right, and the table closes for good. Wrong, and the house keeps the floor — and everything on it."
+  ],
+  "revealCeremony": [
+    "The murder mystery you were invited to never dealt a single hand. There was no body. There was a table, and there was your appetite.",
+    "MIDAS was the house. LEDGER was the one honest set of books in the building.",
+    "THE TAPE: every losing bet, timestamped, played back — names kept, for once, to ourselves.",
+    "The pit boss stands revealed — or doesn't, and the house keeps the night.",
+    "The chips were never real. The choices were. Cash out."
+  ],
+  "awards": [
+    { "title": "THE WHALE", "criteria": "lost the most chips to the house, fastest" },
+    { "title": "THE CARD COUNTER", "criteria": "the honest player who reconciled the most" },
+    { "title": "THE MARK", "criteria": "took the most 'sure things' that weren't" },
+    { "title": "THE STRAIGHT SHOOTER", "criteria": "offered a cut the most times, never took one" },
+    { "title": "HIGH ROLLER", "criteria": "the fattest chip stack at close of play" }
+  ]
+}

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getCaller } from "@/lib/engine/auth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { generateAndSealStory, sealRogueReference } from "@/lib/director/generate";
+import { scenarioById } from "@/content/scenarios";
 
 export const maxDuration = 300; // story generation is a long LLM call
 
@@ -20,11 +21,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "story already sealed" }, { status: 422 });
 
   const admin = supabaseAdmin();
-  const isPub =
-    ((caller.game.config as { preset?: string })?.preset ?? "full") === "pub";
+  // D69: which content pack this scenario seals. Fall back to the pub/reference
+  // split for games created before scenarios (backward-compatible).
+  const cfg = (caller.game.config ?? {}) as { scenario?: string; preset?: string };
+  const scenario = scenarioById(cfg.scenario);
+  const storyKey = scenario?.storyKey ?? (cfg.preset === "pub" ? "pub" : "reference");
   const result =
     (caller.game as { mode?: string }).mode === "rogue"
-      ? await sealRogueReference(admin, caller.game.id, isPub ? "pub" : "reference")
+      ? await sealRogueReference(admin, caller.game.id, storyKey)
       : await generateAndSealStory(admin, caller.game.id);
   // deliberately vague response — the seal stays intact
   return NextResponse.json({

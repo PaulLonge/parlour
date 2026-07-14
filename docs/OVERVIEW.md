@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 19 — GDD review adoption COMPLETE: D64 Resolve/refusal, D65 bribe retune, D66 scaled targets, D67 front-man lifecycle, D68 decoy-survives + collaborator + Swap/Copy. Rev 18: pressure tools. Rev 17: powers economy)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-14 (rev 20 — D69 SCENARIOS: games are now DATA (a registry + a content pack, no engine change); THIRD game shipped — THE VAULT, a casino-heist reskin proving the engine is theme-agnostic. Rev 19: GDD adoption complete)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
