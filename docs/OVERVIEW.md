@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-14 (rev 20 — D69 SCENARIOS: games are now DATA (a registry + a content pack, no engine change); THIRD game shipped — THE VAULT, a casino-heist reskin proving the engine is theme-agnostic. Rev 19: GDD adoption complete)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-15 (rev 21 — THE GATE opens: Paul's Supabase project live, all 8 migrations applied against it. Rev 20: D69 SCENARIOS: games are now DATA (a registry + a content pack, no engine change); THIRD game shipped — THE VAULT, a casino-heist reskin proving the engine is theme-agnostic. Rev 19: GDD adoption complete)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -197,7 +197,7 @@ black box.
 | Testing | `npm run simulate` + `npm run simulate:rogue` | Full scripted games (no LLM) asserting phases, the kill/bribe locks, burnings, mail interception, unmasking |
 
 Repo: `github.com/PaulLonge/parlour` (private). 22 API routes, 7 pages, 2 game
-modes, 2 SQL migrations.
+modes, 8 SQL migrations.
 
 ## Current status (honest)
 
@@ -237,11 +237,12 @@ modes, 2 SQL migrations.
   (only the optional audience step touches the model), crowd-scale load, and
   forgeries/petitions/wiretaps (director-judgement mechanics — exercised by
   `simulate:rogue` instead).
-- **Not yet executed:** the app has never touched a live database — awaiting a
-  Supabase project + Anthropic API key (~15 min of setup, `README.md` has the
-  checklist). First run: migrations → both simulate scripts → deploy → **the
-  induction on Paul's and Co-Host's phones** (it was built to be exactly this
-  first-hour test).
+- **Gate progress (2026-07-15):** Paul's Supabase project (`parlour`) is live and
+  all 8 migrations are applied against it — the schema, RLS, and column grants
+  above are now running for real, not just compile-verified. Anthropic key is in
+  place; still open: `SUPABASE_SERVICE_ROLE_KEY` into the deploy target, both
+  simulate scripts against the real DB, Vercel deploy, and **the induction on
+  Paul's and Co-Host's phones** (it was built to be exactly this first-hour test).
 - **Designed, not built:** the PDCA setup dialogue (host ↔ AI planning the physical
   night), the slip print-sheet page, TTS house voice, costume portraits, paper-pack
   export, November's story content (unblocked — the surprise is WHO, not WHAT).

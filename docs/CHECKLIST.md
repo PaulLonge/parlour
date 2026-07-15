@@ -2,13 +2,14 @@
 
 > The resume point. Any session starts here: what's shipped, what's mid-build, what's
 > next, what's waiting on Paul. Canonical *why* lives in [`DECISIONS.md`](../DECISIONS.md);
-> this is the *state*. Update it in the same commit as the work. Last touched: 2026-07-14.
+> this is the *state*. Update it in the same commit as the work. Last touched: 2026-07-15.
 
 ## ✔ THE INTRIGUE ENGINE IS BUILT
 
-The spine + every green-lit GDD-review item are shipped (see below). What remains is the
-GATE (nothing has run against a real DB) and lower-priority backlog. The next real signal
-comes from keys → migrations → simulates → the induction on two phones.
+The spine + every green-lit GDD-review item are shipped (see below). THE GATE is now
+**half-open** (2026-07-15): Paul's Supabase project exists and all 8 migrations are
+applied against it. Still open: service-role key wired into the deploy target, both
+simulate scripts run for real, Vercel deploy, and the two-phone induction.
 
 ## ▶ The spine (all shipped)
 
@@ -81,12 +82,24 @@ paper-fallback kit stays deferred.
 - [ ] Physical prizes beyond the canon foam finger (the Wrong'un)
 - [ ] NHIE question vetting (post-keys)
 
-## ⛔ THE GATE (blocks all execution — nothing has run against a real DB)
+## ⛔ THE GATE (half-open — schema is live, nothing else has run yet)
 
-- [ ] Paul's Supabase project + Anthropic API key
-- [ ] Run **4 migrations** in order (0001 → 0004)
+- [x] Paul's Supabase project — `parlour` (`zhaajhegqztymrvvnsgz`, eu-west-2), created 2026-07-15
+- [x] Anthropic API key — added to the Claude Code cloud environment's env vars
+- [x] Run **all 8 migrations** in order (0001 → 0008) — applied 2026-07-15 against the
+      real project via the Supabase MCP connector. (Note: this repo's migration files
+      aren't in the Supabase-CLI timestamp-prefixed naming convention, so the
+      GitHub↔Supabase auto-deploy integration may not track/reapply them the normal
+      way — verify once that integration is exercised for real, don't assume it works
+      on the strength of this manual run.)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` — grab from Supabase dashboard (Project Settings → API,
+      service_role secret) and add wherever the app actually runs (Vercel env vars, or
+      local `.env.local` for `npm run simulate`)
 - [ ] `npm run simulate` + `npm run simulate:rogue` green against real Supabase
-- [ ] Vercel deploy + env vars
+- [ ] Vercel: project created, linked to the Supabase project (native integration syncs
+      `NEXT_PUBLIC_SUPABASE_URL`/anon key/service-role key automatically), plus
+      `ANTHROPIC_API_KEY` + `DIRECTOR_TICK_SECRET` set manually (Supabase's integration
+      doesn't know about those two)
 - [ ] **THE INDUCTION on Paul's + Co-Host's phones** (built to be exactly this first-hour test)
 - [ ] Real director prompt spot-checks (the thing the induction deliberately can't test)
 

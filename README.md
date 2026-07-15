@@ -53,7 +53,9 @@ lib/engine/             the deterministic referee + rogue engine: phase legality
                         lock, votes, economy, wagers, notes/wiretaps, glyphs, stats
 lib/director/           the AI director loop + story generation (LLM, zod-validated)
 lib/schemas/            the constraint language: Story, RogueStory, DirectorTool, GameConfig
-supabase/migrations/    0001_init.sql + 0002_rogue.sql — schema, RLS, column grants (BOTH required)
+supabase/migrations/    0001_init.sql through 0008_resolve.sql — schema, RLS, column
+                        grants, and every economy/pressure-tool addition since (run
+                        ALL, in order)
 content/                golden-story.json (murder fallback), rogue-reference-story.json,
                         pub-story.json, pub-games.json, quiz-bank.json
 scripts/                simulate.ts (murder), simulate-rogue.ts (rogue), land-story.ts
@@ -62,9 +64,9 @@ scripts/                simulate.ts (murder), simulate-rogue.ts (rogue), land-st
 ## Setup (~15 minutes)
 
 1. **Supabase**: create a free project at supabase.com → SQL Editor → paste & run
-   `supabase/migrations/0001_init.sql`, **then** `0002_rogue.sql` — both, in order.
-   The default mode at `/new` (rogue) does not work without 0002.
-   (Or `npx supabase link --project-ref XXX && npx supabase db push`.)
+   every file in `supabase/migrations/`, in order (`0001_init.sql` through
+   `0008_resolve.sql`). The default mode at `/new` (rogue) does not work without
+   0002 onward. (Or `npx supabase link --project-ref XXX && npx supabase db push`.)
 2. **Env**: `copy .env.example .env.local` and fill in the Supabase URL, anon key,
    service-role key (Project Settings → API) and your `ANTHROPIC_API_KEY`.
 3. **Run**: `npm run dev` → http://localhost:3000 → create an evening, open two more
