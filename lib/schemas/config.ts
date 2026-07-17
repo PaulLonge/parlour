@@ -74,6 +74,15 @@ export const GameConfig = z.object({
   tutorial: z.boolean().default(false),
   // D69: which scenario this game is (content/scenarios.ts) — picks the sealed pack
   scenario: z.string().optional(),
+  // backlog #1 THE INVITATION: guest-safe pre-party extras, read straight off
+  // games_public.config. Both optional; set at /new later (not this task) —
+  // the invite page only renders a field when it's present.
+  invitation: z
+    .object({
+      costumeBrief: z.string().optional(),
+      hostLine: z.string().optional(),
+    })
+    .optional(),
 });
 
 // D44/D45: night 1 is THE FIELD TRIAL — a pub, openly AI-run, no personas,

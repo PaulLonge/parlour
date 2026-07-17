@@ -683,13 +683,14 @@ B-numbers are build-time engineering calls made inside the codebase.
 
 ## Not built yet (deliberate, ordered by likely value)
 
-1. Pre-party intake/invitation drip flow (currently intake rides the join call; a nicer form + invite links wanted before September playtest)
-2. TTS house voice (pre-rendered lines; OpenAI `gpt-4o-mini-tts` recommended by research)
-3. Costume portraits batch job (Gemini image; ~$2–5 for 30)
-4. Paper-pack export (I15 insurance; content is already all-JSON so this is a formatting task)
-5. PWA install + web push as optional enhancement (never a gate)
-6. Awards ceremony interactivity (awards exist in the story schema; director announces them at reveal)
-7. Photo-judged tasks, Web-NFC-on-Android easter egg, diegetic theme evolution mid-game (skin tokens already flow from story → TV page)
+1. TTS house voice (pre-rendered lines; OpenAI `gpt-4o-mini-tts` recommended by research)
+2. Costume portraits batch job (Gemini image; ~$2–5 for 30)
+3. Paper-pack export (I15 insurance; content is already all-JSON so this is a formatting task)
+4. PWA install + web push as optional enhancement (never a gate)
+5. Awards ceremony interactivity (awards exist in the story schema; director announces them at reveal)
+6. Photo-judged tasks, Web-NFC-on-Android easter egg, diegetic theme evolution mid-game (skin tokens already flow from story → TV page)
+
+(D75 — 2026-07-17 — closed item 1, pre-party intake/invitation drip: `/invite/[code]`.)
 
 - **D70 — THE MANUAL (guide) + guide:capture QA harness (July 2026).** An illustrated
   in-app guide at `/guide` (THE MANUAL), zero-config, two tiers: guest-safe walkthrough
@@ -800,3 +801,34 @@ B-numbers are build-time engineering calls made inside the codebase.
   intercepted-radio-log read on case-file bond, mono cadence in the co-op,
   murder mode's terminal untouched; UNVERIFIED and claimed-sender stay loud
   (D54). Every room Paul picked from The Gallery is now built into the app.
+
+- **D75 — THE INVITATION (backlog #1, 2026-07-17).** A shareable, guest-safe
+  pre-party page at `/invite/[code]`: guests RSVP and answer the intake days
+  before the night, so the story generator has material and the door is fast.
+  Reads ONLY `games_public` (title, `story_public.meta`, `config.targetEndAt`
+  formatted "the evening of {date}") — no sealed data, no scenario blurbs, no
+  mode hints (D8/D13/D14 hold). RSVP reuses `/api/join` exactly as the in-game
+  JoinScreen does (same pseudo-account seats, same 401 tonight's-word
+  handling, minimal — a cross-device name clash just points guests at the
+  host rather than building full takeover UI, out of scope for a pre-party
+  page); intake reuses `/api/intake` — it fits because the RSVP call already
+  minted the browser's anonymous session, same precondition the in-game
+  IntakeCard relies on. On success: "You are expected." plus the seat code,
+  shown once, with a save-this line. `GameConfig` gained an additive-optional
+  `invitation: { costumeBrief?, hostLine? }` (undefined for every existing
+  game; rendered only when a future `/new` sets it — not this task). No
+  engine changes, no new tables. Verified with a Playwright pass over a real
+  throwaway game (create → RSVP → intake → success, screenshotted), game
+  deleted after. Closes backlog item 1 (pre-party intake/invitation drip).
+
+- **D75 addendum — the pack and the voice (same session).** THE PAPER PACK
+  (/print/[code], host-only via the existing breakglass read_seats auth): seat
+  cards with codes + join line, 12 blank manila code slips ("PROPERTY OF THE
+  HOUSE"), the glyph sheet "for the conductor's pocket — not for the walls";
+  A4 print CSS, non-hosts see only "the house doesn't know you as the host."
+  THE HOUSE VOICE (TV, Web Speech API — zero cost): default OFF, persisted per
+  code; the candles click is the audio-unlock AND the never-replay-history
+  baseline; en-GB voice, unhurried (rate .92, pitch .85), brisker once
+  hijacked; speaks new announcements and three sparse ceremony beats, never
+  receipts. Backlog items 1, 2, 4 closed; item 3 (costume portraits) BLOCKED
+  on choosing an image-generation service — Paul's call, not buildable today.

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGame, type PublicEvent } from "@/lib/client/useGame";
 import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
 
@@ -147,6 +147,67 @@ function useCeremonyStage(active: boolean, reducedMotion: boolean, receiptsCount
   return { stage, receiptsShown, showMoreLine, cap };
 }
 
+// backlog #2 — THE HOUSE VOICE: zero-cost browser TTS for the public channel.
+// Default OFF, remembered per game code. Nothing is ever spoken until a guest
+// opts in AND the candles-gate click (a real user gesture) has run — that's
+// what unlocks audio playback, and what baselines the "don't replay history"
+// cutoff (see TvPage's begin()).
+function useHouseVoice(code: string) {
+  const storageKey = `parlour-voice-${code.toUpperCase()}`;
+  const [supported, setSupported] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    setSupported(true);
+    try {
+      setEnabled(localStorage.getItem(storageKey) === "1");
+    } catch {}
+    // deterministic pick — prefer en-GB, else first English voice, else
+    // whatever's first. Never random, never re-picked per message.
+    const pick = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return;
+      const v =
+        voices.find((x) => x.lang?.toLowerCase() === "en-gb") ??
+        voices.find((x) => x.lang?.toLowerCase().startsWith("en-gb")) ??
+        voices.find((x) => x.lang?.toLowerCase().startsWith("en")) ??
+        voices[0];
+      setVoice(v ?? null);
+    };
+    pick();
+    window.speechSynthesis.addEventListener("voiceschanged", pick);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", pick);
+  }, [storageKey]);
+
+  const setPersisted = useCallback(
+    (next: boolean) => {
+      setEnabled(next);
+      try {
+        localStorage.setItem(storageKey, next ? "1" : "0");
+      } catch {}
+      if (!next && typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    },
+    [storageKey]
+  );
+
+  return { supported, enabled, setEnabled: setPersisted, voice };
+}
+
+// rate ~0.92 / pitch slightly low — the house is unhurried; a hijacked game
+// nudges rate up (the machine is brisk). No other per-message variation.
+function speakHouseLine(text: string, voice: SpeechSynthesisVoice | null, brisk: boolean) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window) || !text) return;
+  const u = new SpeechSynthesisUtterance(text);
+  if (voice) u.voice = voice;
+  u.rate = brisk ? 1.02 : 0.92;
+  u.pitch = 0.85;
+  window.speechSynthesis.speak(u);
+}
+
 type Mote = { left: number; delay: number; dur: number; size: number };
 
 // The house channel (I12): a TV/laptop left open all night. It is also the
@@ -156,6 +217,21 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
   const g = useGame(code);
   const [begun, setBegun] = useState(false);
   const { themeClass, glitching } = useRogueTheme(g.game?.mode, g.game?.hijacked_at);
+
+  // backlog #2 — THE HOUSE VOICE. lastSpokenEventId is baselined in begin()
+  // (the candles-gate gesture) so nothing already on the board ever gets
+  // spoken; lastSpokenCeremonyStage stops the DESCENT beats repeating on re-render.
+  const houseVoice = useHouseVoice(code);
+  const lastSpokenEventId = useRef<number | null>(null);
+  const lastSpokenCeremonyStage = useRef<CeremonyStage | null>(null);
+
+  // cancel any in-flight utterance on unmount — the TV shouldn't keep
+  // talking after the tab's gone
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    };
+  }, []);
 
   const heartbeatMs = useMemo(() => {
     const s = (g.game?.config?.heartbeatSeconds as number) ?? 180;
@@ -210,8 +286,42 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
   const ceremonyReady = !!(atCeremony && unmasked && receipts && finalAwards);
   const ceremony = useCeremonyStage(ceremonyReady, reducedMotion, receiptsCount);
 
+  // speak new public announcements once the candles are lit — never the
+  // backlog, only what arrives after (id > baseline set in begin()).
+  useEffect(() => {
+    if (!begun || !houseVoice.enabled || !latest) return;
+    if (lastSpokenEventId.current === latest.id) return;
+    lastSpokenEventId.current = latest.id;
+    speakHouseLine((latest.payload.text as string) ?? "", houseVoice.voice, hijacked);
+  }, [begun, houseVoice.enabled, houseVoice.voice, latest, hijacked]);
+
+  // DESCENT beats, sparingly: the surface line, the midnight verdict
+  // headline, the floor's final outcome line. Never the receipts themselves.
+  useEffect(() => {
+    if (!begun || !houseVoice.enabled || !ceremonyReady) return;
+    if (lastSpokenCeremonyStage.current === ceremony.stage) return;
+    lastSpokenCeremonyStage.current = ceremony.stage;
+    const u = unmasked?.payload as UnmaskedPayload | undefined;
+    if (ceremony.stage === "surface") {
+      speakHouseLine("The books close. The house tallies the night, one line at a time.", houseVoice.voice, hijacked);
+    } else if (ceremony.stage === "verdict" && u) {
+      speakHouseLine(`Midnight. ${ceremonyHeadline(u)}. The room named ${u.named ?? "no one"}.`, houseVoice.voice, hijacked);
+    } else if (ceremony.stage === "floor" && u) {
+      speakHouseLine(`${ceremonyHeadline(u)}. The hat sat on ${u.frontman ?? "no one"}.`, houseVoice.voice, hijacked);
+    }
+  }, [begun, houseVoice.enabled, houseVoice.voice, ceremonyReady, ceremony.stage, unmasked, hijacked]);
+
   async function begin() {
     setBegun(true);
+    // baseline the voice cutoff to "now" — this click is the user gesture
+    // that unlocks audio playback, and the moment after which new
+    // announcements get spoken (never anything already on the board)
+    lastSpokenEventId.current = latest?.id ?? null;
+    if (houseVoice.enabled) {
+      try {
+        speakHouseLine(" ", houseVoice.voice, hijacked);
+      } catch {}
+    }
     try {
       await navigator.wakeLock?.request("screen");
     } catch {}
@@ -367,10 +477,21 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
       <div className="vignette" />
 
       {!begun && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-black/90">
           <button className="btn candle px-10 py-6 text-2xl" onClick={begin}>
             🕯 Light the candles
           </button>
+          {houseVoice.supported && (
+            <button
+              type="button"
+              className="btn btn-ghost px-5 py-2 text-base"
+              style={{ opacity: houseVoice.enabled ? 1 : 0.55 }}
+              aria-pressed={houseVoice.enabled}
+              onClick={() => houseVoice.setEnabled(!houseVoice.enabled)}
+            >
+              🔊 the house speaks — {houseVoice.enabled ? "ON" : "OFF"}
+            </button>
+          )}
         </div>
       )}
 
