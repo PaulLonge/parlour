@@ -6,14 +6,16 @@
 // (POST /api/breakglass { action: "read_seats" }, authorized server-side via
 // getCaller().player.is_host — see app/api/breakglass/route.ts). We never
 // duplicate that check client-side; we just render whatever it decides.
-// No engine/API changes, no deps — plain CSS, scoped by the .print-pack
-// class, with a real @media print pass (white ground, black ink, buttons
-// gone) plus @page for A4.
+// No engine/API changes — plain CSS, scoped by the .print-pack class, with a
+// real @media print pass (white ground, black ink, buttons gone) plus @page
+// for A4. The one dep this page (and the TV lobby) picked up since: a QR for
+// the join URL — see lib/client/qr.tsx (review #4).
 
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useGame } from "@/lib/client/useGame";
 import { GLYPHS, GLYPH_WINDOW_MINUTES } from "@/lib/engine/glyphs";
+import { QrCode } from "@/lib/client/qr";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "";
 const HOST_DENIED = "the house doesn't know you as the host.";
@@ -93,6 +95,11 @@ export default function PrintPackPage({ params }: { params: Promise<{ code: stri
   const game = g.game;
   const title = game.story_public?.meta?.title ?? game.title;
   const byName = new Map(seats.map((s) => [s.name, s.seat_code]));
+  // content/tutorial-script.ts already names "the join QR, printed, at the
+  // door" as part of night two's kit — nothing generated one until now
+  // (review #4). Falls back to window.location.origin so a missing
+  // NEXT_PUBLIC_BASE_URL doesn't ship an unscannable code.
+  const joinUrl = `${BASE_URL || (typeof window !== "undefined" ? window.location.origin : "")}/g/${game.code}`;
 
   return (
     <main className="print-pack themed theme-decoy">
@@ -112,8 +119,22 @@ export default function PrintPackPage({ params }: { params: Promise<{ code: stri
         </div>
       </header>
 
+      <section className="pp-section pp-door">
+        <h2 className="pp-h2">1 · The door QR</h2>
+        <p className="pp-note no-print">
+          Tape this at the door, or next to the seat cards below — a phone camera beats hand-typing
+          a URL for a queue of fifteen.
+        </p>
+        <div className="door-card">
+          <QrCode value={joinUrl} size={168} label={`QR code to join — code ${game.code}`} />
+          <p className="seat-card-join mt-2">
+            join at {BASE_URL || "the house"} · code {game.code}
+          </p>
+        </div>
+      </section>
+
       <section className="pp-section">
-        <h2 className="pp-h2">1 · Seat cards</h2>
+        <h2 className="pp-h2">2 · Seat cards</h2>
         <p className="pp-note no-print">
           One per player currently on the roster. Cut along the dashed lines and hand them out —
           each is that guest's re-entry code if their phone dies mid-party.
@@ -141,7 +162,7 @@ export default function PrintPackPage({ params }: { params: Promise<{ code: stri
       </section>
 
       <section className="pp-section">
-        <h2 className="pp-h2">2 · Blank code slips</h2>
+        <h2 className="pp-h2">3 · Blank code slips</h2>
         <p className="pp-note no-print">
           Twelve slips, unwritten. Pick a code, write it by hand, hide it — the paper is the
           secret, not the printer.
@@ -159,7 +180,7 @@ export default function PrintPackPage({ params }: { params: Promise<{ code: stri
       </section>
 
       <section className="pp-section">
-        <h2 className="pp-h2">3 · The glyph sheet</h2>
+        <h2 className="pp-h2">4 · The glyph sheet</h2>
         <p className="pp-note">for the conductor&rsquo;s pocket — not for the walls.</p>
         <table className="glyph-table">
           <thead>
@@ -206,6 +227,12 @@ export default function PrintPackPage({ params }: { params: Promise<{ code: stri
           color: var(--ink-dim); background: var(--bg); padding: 0 0.25em; line-height: 1;
         }
 
+        .print-pack .door-card {
+          display: inline-flex; flex-direction: column; align-items: center;
+          border: 1px solid var(--border-strong); border-radius: var(--radius);
+          padding: 1.25rem; background: var(--panel-solid);
+        }
+
         .print-pack .seat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
         .print-pack .seat-card-name { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
         .print-pack .seat-card-code { font-size: 1.5rem; letter-spacing: 0.22em; color: var(--gold); font-weight: 700; margin: 0.4rem 0; }
@@ -236,6 +263,7 @@ export default function PrintPackPage({ params }: { params: Promise<{ code: stri
           }
           .print-pack .cut-card { background: #fff !important; border-color: #000 !important; }
           .print-pack .cut-card::before { background: #fff !important; color: #000 !important; }
+          .print-pack .door-card { background: #fff !important; border-color: #000 !important; }
           .print-pack .slip-box { background: #fff !important; border-color: #000 !important; }
           .print-pack .glyph-table th, .print-pack .glyph-table td { border-color: #000 !important; }
           .print-pack .pp-h2 { border-bottom-color: #000 !important; }

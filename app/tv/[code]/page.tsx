@@ -3,6 +3,7 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGame, type PublicEvent } from "@/lib/client/useGame";
 import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
+import { QrCode } from "@/lib/client/qr";
 
 // D71 — BENTHICA: once a rogue game is hijacked, the TV becomes a descent
 // (techniques borrowed from The Gallery's BENTHICA room, MIT — deep
@@ -523,6 +524,30 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
           {g.game.paused && "  ⏸ the game holds its breath"}
         </p>
       </header>
+
+      {/* the door queue's fastest way in — a 4-char code hand-typed by 15
+          people is real friction; a phone camera reads this instead
+          (review #4 — content/tutorial-script.ts already names "the join
+          QR" as part of the kit, nothing generated one) */}
+      {g.game.status === "lobby" && (
+        <aside
+          className="fixed right-6 bottom-6 z-20 flex flex-col items-center gap-2 rounded p-3"
+          style={{
+            background: "color-mix(in srgb, var(--bg) 82%, transparent)",
+            border: "1px solid var(--border-strong)",
+            backdropFilter: "blur(4px)",
+          }}
+        >
+          <p className="kicker text-xs" style={{ color: "var(--ink-dim)" }}>
+            scan to join
+          </p>
+          <QrCode
+            value={`${typeof window !== "undefined" ? window.location.origin : ""}/g/${g.game.code}`}
+            size={132}
+            label={`QR code to join the game — code ${g.game.code}`}
+          />
+        </aside>
+      )}
 
       {hijacked && <DepthHUD plunder={plunder} compute={compute} depthFrac={depthFrac} />}
 

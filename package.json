@@ -18,6 +18,7 @@
     "@supabase/supabase-js": "^2.110.2",
     "ai": "^7.0.22",
     "next": "16.2.10",
+    "qrcode-generator": "^2.0.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "zod": "^4.4.3"
