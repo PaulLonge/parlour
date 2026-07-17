@@ -194,9 +194,9 @@ export default function Guide() {
 
         <GuestSection n={6} title="The house channel">
           <p>
-            Somewhere in the room, a television stays on all night — a second face of the game everyone can glance
-            at together. The evening's join code lives there in the lobby, and announcements appear there for the
-            whole room at once.
+            If the room has a screen to spare — a TV, a propped-up laptop — the house can put a face on it: the
+            join code while guests trickle in, announcements for everyone at once, and a stage for the finale.
+            Entirely optional. The game never needs it; everything the screen shows reaches your phone regardless.
           </p>
           <Row>
             <Shot file="05-tv-gate.png" alt="The TV screen dark, waiting for its candles to be lit" caption="unlit — waiting for the host" frame="tv" />
