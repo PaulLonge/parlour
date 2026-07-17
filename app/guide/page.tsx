@@ -59,6 +59,60 @@ function tilt(seed: string, spread = 1.6): number {
   return (((h % 200) - 100) / 100) * spread;
 }
 
+// style objects below stash animation inputs (tilt angle, stamp delay) in
+// CSS custom properties, so `as CSSVars` sidesteps the CSSProperties literal
+// check for those `--name` keys.
+type CSSVars = React.CSSProperties & Record<string, string | number>;
+
+// ---- D71: scroll-triggered entrance ---------------------------------------
+// One shared IntersectionObserver for the whole page (perf: not one per
+// sheet). Sections register a DOM node via `useReveal()`'s ref callback; the
+// first time it crosses into view it flips to `data-reveal="active"` and is
+// unobserved — never re-triggers on scroll-up. Everything downstream (evidence
+// photos, tape, stamps) reacts to that same attribute via CSS descendant
+// selectors, so nothing else needs its own observer entry.
+// Reduced motion, and anything already on-screen at mount (nothing to
+// "scroll into"), skip straight to the resting state — no class ever
+// applied, so there's nothing to animate and nothing to flash.
+let sharedRevealObserver: IntersectionObserver | null = null;
+
+function getSharedRevealObserver(): IntersectionObserver | null {
+  if (typeof window === "undefined") return null;
+  if (sharedRevealObserver) return sharedRevealObserver;
+  sharedRevealObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.setAttribute("data-reveal", "active");
+          sharedRevealObserver?.unobserve(entry.target);
+        }
+      }
+    },
+    // threshold is a fraction of the *target's own* area, not the viewport —
+    // keep it tiny so tall sheets (several evidence rows stacked) don't need
+    // an implausibly large chunk on-screen at once to fire. A shallow bottom
+    // rootMargin gives a decent window to sample within on a fast scroll
+    // fling, rather than requiring the element to sit deep in the viewport.
+    { threshold: 0.01, rootMargin: "0px 0px -4% 0px" },
+  );
+  return sharedRevealObserver;
+}
+
+function revealRefCallback(el: HTMLElement | null) {
+  if (!el || typeof window === "undefined") return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const rect = el.getBoundingClientRect();
+  if (rect.top < window.innerHeight && rect.bottom > 0) return; // already on screen — nothing to settle in from
+  el.setAttribute("data-reveal", "pending");
+  getSharedRevealObserver()?.observe(el);
+}
+
+// stable identity across renders (module-scoped function) — safe to hand
+// straight to `ref` without a useCallback wrapper.
+function useReveal() {
+  return revealRefCallback;
+}
+
 function Paperclip({ rotate = 4, style }: { rotate?: number; style?: React.CSSProperties }) {
   return (
     <svg viewBox="0 0 30 84" className="paperclip" style={{ transform: `rotate(${rotate}deg)`, ...style }} aria-hidden>
@@ -85,8 +139,14 @@ function Stamp({
   rotate?: number;
   className?: string;
 }) {
+  // deterministic per-instance delay (from the same rotate seed) so stamps in
+  // the same sheet don't all thud in on the exact same frame.
+  const delay = 0.28 + Math.min(Math.abs(rotate), 10) * 0.014;
   return (
-    <span className={`stamp stamp-${tone} ${className}`} style={{ transform: `rotate(${rotate}deg)` }}>
+    <span
+      className={`stamp stamp-${tone} ${className}`}
+      style={{ "--rot": `${rotate}deg`, "--stamp-delay": `${delay.toFixed(3)}s` } as CSSVars}
+    >
       {text}
     </span>
   );
@@ -106,7 +166,7 @@ function EvidencePhoto({
   const [w, h] = DIMS[file];
   const rot = tilt(file, 1.8);
   return (
-    <figure className="evidence-photo" style={{ maxWidth: frameMaxW(frame), transform: `rotate(${rot}deg)` }}>
+    <figure className="evidence-photo" style={{ maxWidth: frameMaxW(frame), "--rot": `${rot}deg` } as CSSVars}>
       <span className="tape tape-l" aria-hidden />
       <span className="tape tape-r" aria-hidden />
       <img
@@ -139,7 +199,7 @@ function Exhibit({
   children: React.ReactNode;
 }) {
   return (
-    <section className="sheet" style={{ transform: `rotate(${tilt("x" + title, 0.6)}deg)` }}>
+    <section className="sheet" style={{ "--tilt": `${tilt("x" + title, 0.6)}deg` } as CSSVars} ref={useReveal()}>
       <Paperclip rotate={tilt(title + "clip", 9) - 3} style={{ top: "-22px", left: "9%" }} />
       <p className="sheet-kicker">
         Exhibit {n} — {title}
@@ -152,7 +212,7 @@ function Exhibit({
 
 function Memo({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <section className="sheet sheet-memo" style={{ transform: `rotate(${tilt("m" + title, 0.6)}deg)` }}>
+    <section className="sheet sheet-memo" style={{ "--tilt": `${tilt("m" + title, 0.6)}deg` } as CSSVars} ref={useReveal()}>
       <Paperclip rotate={tilt(title + "clip2", 9) - 3} style={{ top: "-22px", left: "8%" }} />
       <div className="sheet-head">
         <p className="sheet-kicker">
@@ -248,6 +308,8 @@ export default function Guide() {
           font-family: var(--font-type); font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
           border: 3px solid currentColor; border-radius: 3px;
           padding: .22em .55em .1em; font-size: .66rem;
+          transform: rotate(var(--rot, 0deg));
+          opacity: 1;
         }
         .stamp-red { color: var(--red); background: color-mix(in srgb, var(--red) 7%, transparent); }
         .stamp-ink { color: var(--ink-dim); background: color-mix(in srgb, var(--ink-dim) 7%, transparent); }
@@ -264,6 +326,8 @@ export default function Guide() {
           border: 1px solid rgba(0,0,0,.14);
           box-shadow: 2px 5px 14px rgba(45,28,10,.26);
           padding: 1.35rem 1.25rem 1.85rem;
+          transform: rotate(var(--tilt, 0deg));
+          opacity: 1;
         }
         .sheet-memo { background: var(--bond-aged); }
         .sheet-kicker { font-size: .68rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
@@ -275,6 +339,8 @@ export default function Guide() {
           position: relative; background: #fbf8ef; padding: 8px 8px 32px;
           box-shadow: 0 3px 10px rgba(40,25,10,.32); border: 1px solid rgba(0,0,0,.12);
           width: 100%;
+          transform: rotate(var(--rot, 0deg));
+          opacity: 1;
         }
         .evidence-photo-img { width: 100%; display: block; object-fit: cover; background: rgba(0,0,0,.15); }
         .tape {
@@ -301,9 +367,11 @@ export default function Guide() {
         .seal-flap::-webkit-details-marker { display: none; }
         .seal-flap::marker { content: ""; }
         .seal-stamp {
+          --rot: -2deg;
           font-family: var(--font-type); font-weight: 800; letter-spacing: .12em; font-size: 1.15rem;
           text-transform: uppercase; border: 3px solid var(--bond); display: inline-block;
-          padding: .18em .5em; align-self: flex-start; transform: rotate(-2deg);
+          padding: .18em .5em; align-self: flex-start; transform: rotate(var(--rot));
+          opacity: 1;
         }
         .seal-text { font-size: .78rem; line-height: 1.55; }
         .seal-contents { margin-top: 1.35rem; display: flex; flex-direction: column; gap: 1.35rem; }
@@ -323,6 +391,78 @@ export default function Guide() {
           background-image: var(--grain); opacity: .35; mix-blend-mode: multiply;
         }
         .archive-caption { text-align: center; font-family: var(--font-hand); color: var(--pen); font-size: .95rem; margin-top: .5rem; }
+
+        /* ---- D71: scroll-triggered entrance --------------------------------
+           A sheet starts a touch askew and lifted, drops + rotates into its
+           resting tilt as it crosses into view (revealRefCallback above
+           flips data-reveal pending to active, once, then unobserves). Photos
+           and tape ride a beat behind it; stamps thud in last, overshooting
+           their rotation slightly before settling, as if the paper is already
+           down by the time the ink hits it. Transform/opacity only, so
+           nothing shifts layout while it's mid-animation. */
+        .sheet[data-reveal="pending"] {
+          opacity: 0;
+          transform: translateY(-26px) rotate(calc(var(--tilt, 0deg) + 7deg)) scale(.97);
+        }
+        .sheet[data-reveal="active"] {
+          opacity: 1;
+          transform: translateY(0) rotate(var(--tilt, 0deg)) scale(1);
+          transition: transform .6s cubic-bezier(.22,1,.36,1), opacity .5s ease-out;
+        }
+
+        .sheet[data-reveal="pending"] .evidence-photo {
+          opacity: 0;
+          transform: translateY(14px) rotate(var(--rot, 0deg)) scale(.97);
+        }
+        .sheet[data-reveal="active"] .evidence-photo {
+          opacity: 1;
+          transform: translateY(0) rotate(var(--rot, 0deg)) scale(1);
+          transition: transform .5s cubic-bezier(.22,1,.36,1) .08s, opacity .45s ease-out .08s;
+        }
+
+        .sheet[data-reveal="pending"] .tape { opacity: 0; }
+        .sheet[data-reveal="active"] .tape {
+          opacity: 1;
+          transition: opacity .3s ease-out .32s;
+        }
+
+        .sheet[data-reveal="pending"] .stamp,
+        .seal-flap[data-reveal="pending"] .seal-stamp {
+          opacity: 0;
+          transform: scale(1.6) rotate(calc(var(--rot, 0deg) - 8deg));
+        }
+        .sheet[data-reveal="active"] .stamp {
+          opacity: 1;
+          transform: scale(1) rotate(var(--rot, 0deg));
+          transition:
+            transform .4s cubic-bezier(.34,1.56,.64,1) var(--stamp-delay, .32s),
+            opacity .22s ease-out var(--stamp-delay, .32s);
+        }
+        .seal-flap[data-reveal="active"] .seal-stamp {
+          opacity: 1;
+          transform: scale(1) rotate(var(--rot, 0deg));
+          transition: transform .4s cubic-bezier(.34,1.56,.64,1) .1s, opacity .22s ease-out .1s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .sheet[data-reveal="pending"],
+          .sheet[data-reveal="active"],
+          .sheet[data-reveal="pending"] .evidence-photo,
+          .sheet[data-reveal="active"] .evidence-photo,
+          .sheet[data-reveal="pending"] .tape,
+          .sheet[data-reveal="active"] .tape,
+          .sheet[data-reveal="pending"] .stamp,
+          .sheet[data-reveal="active"] .stamp,
+          .seal-flap[data-reveal="pending"] .seal-stamp,
+          .seal-flap[data-reveal="active"] .seal-stamp {
+            transition: none !important;
+            opacity: 1 !important;
+          }
+          .sheet[data-reveal="pending"] { transform: rotate(var(--tilt, 0deg)) !important; }
+          .sheet[data-reveal="pending"] .evidence-photo { transform: rotate(var(--rot, 0deg)) !important; }
+          .sheet[data-reveal="pending"] .stamp,
+          .seal-flap[data-reveal="pending"] .seal-stamp { transform: rotate(var(--rot, 0deg)) !important; }
+        }
       `}</style>
 
       <main className="mx-auto flex max-w-2xl flex-col gap-9 px-4 pb-24 pt-4 md:px-8">
@@ -441,7 +581,10 @@ export default function Guide() {
         {/* -------------------------------- THE SEAL -------------------------------- */}
 
         <details className="seal">
-          <summary className="seal-flap">
+          {/* ref on the flap itself, not the <details> — once opened the
+              details element's box balloons to the whole spoiler section,
+              which stays too tall to ever satisfy a percentage threshold */}
+          <summary className="seal-flap" ref={useReveal()}>
             <span className="seal-stamp">Sealed — spoilers</span>
             <span className="seal-text">
               Everything beyond this seal reveals the surprises of the night. If you will ever be a GUEST at this
