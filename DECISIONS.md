@@ -736,3 +736,21 @@ B-numbers are build-time engineering calls made inside the codebase.
   leaned to, wearing the card-table identity). Other rooms are fair game per feature
   (glyphaus/shortwave/nightmarket flagged). Build order: landing+guide → Cold Case
   act one → Apiary hijack flip → Benthica TV + Legerdemain wagers.
+
+- **D72 — THE INTERACTION PASS + THE BOARD (Paul, 2026-07-17).** Paul's read on D71
+  wave 1: visuals landed but the anchors' *signature interactions* were missing.
+  Folded in, each verified by its own agent's Playwright pass: the landing's
+  movement now COMES APART on scroll (sticky exploded view, guest-safe caption
+  plates, "wound and waiting"); the /guide dossier ASSEMBLES as you read (sheets
+  settle, tape presses, stamps thud in — one IntersectionObserver, data-reveal
+  CSS); and THE BOARD — Paul's pick from the coldcase room — replaces the
+  "My notes" textarea in the More tab: private notes become draggable pinned
+  slips on a corkboard with red string the player ties between them (SVG
+  quadratic sag, pointer-capture touch drag, keyboard nudge/tie, 280-char notes).
+  Storage stays device-local under the same key; legacy free-text notes migrate
+  line-per-note automatically. Also lives in /preview as a playground. HELD for
+  its own design pass: Benthica descent-as-ceremony (the reveal scrolling down
+  through the night's receipts). Notable bugs the verification passes caught:
+  React Strict Mode double-invoking a state updater silently cancelled string
+  ties; one-axis overflow-x kills position:sticky; an opened <details> can never
+  satisfy an IntersectionObserver area threshold.

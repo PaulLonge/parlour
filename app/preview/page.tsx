@@ -14,6 +14,7 @@ import {
 } from "@/lib/client/cards";
 import { MetersStrip, PurseChip, BribeCard, CodeEntryBox, GlyphBadge, ActionRow } from "@/lib/client/rogue-cards";
 import { MiniGame } from "@/lib/client/minigames";
+import { EvidenceBoard } from "@/lib/client/evidence-board";
 import golden from "@/content/golden-story.json";
 
 const THEMES = [
@@ -265,6 +266,14 @@ export default function Preview() {
             </p>
           </section>
         </div>
+
+        {/* ------------------------------ the board ----------------------------- */}
+        <section className={`themed mx-auto mt-10 max-w-xl ${theme.cls}`}>
+          <p className="deco-rule kicker justify-center text-center">the board (D71 follow-up) — &quot;My notes&quot;, pinned</p>
+          <div className="panel mt-3 p-4">
+            <EvidenceBoard storageKey="preview" />
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -24,6 +24,7 @@ import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
 import { Accordion, errorText, InfoDot, TabBar } from "@/lib/client/ui";
 import { SandboxBar } from "@/lib/client/SandboxBar";
 import { WagerHub } from "@/lib/client/wager-hub";
+import { EvidenceBoard } from "@/lib/client/evidence-board";
 
 const PHASE_LABEL: Record<string, string> = {
   none: "",
@@ -1124,14 +1125,9 @@ function VolunteerButton({ g }: { g: ReturnType<typeof useGame> }) {
 function MorePanel({ g, rogueLive }: { g: ReturnType<typeof useGame>; rogueLive: boolean }) {
   const me = g.me!;
   const game = g.game!;
+  // same storage key the old free-text notes used — EvidenceBoard's loadBoard()
+  // migrates the legacy plain-text blob in place on first read (see that file).
   const notesKey = `parlour-notes-${game.id}-${me.id}`;
-  const [notes, setNotes] = useState(() => {
-    try {
-      return localStorage.getItem(notesKey) ?? "";
-    } catch {
-      return "";
-    }
-  });
 
   // rules first and OPEN all night (IA review #11); the dead persona demotes
   const about = (
@@ -1161,19 +1157,8 @@ function MorePanel({ g, rogueLive }: { g: ReturnType<typeof useGame>; rogueLive:
         </div>
       )}
 
-      <Accordion title="My notes" kicker="📔 yours alone — never leaves this phone">
-        <textarea
-          className="input h-36"
-          aria-label="your private notes"
-          placeholder="Suspicions, alibis, who toasted whom…"
-          value={notes}
-          onChange={(e) => {
-            setNotes(e.target.value);
-            try {
-              localStorage.setItem(notesKey, e.target.value);
-            } catch {}
-          }}
-        />
+      <Accordion title="My notes" kicker="📌 yours alone — never leaves this phone">
+        <EvidenceBoard storageKey={notesKey} />
       </Accordion>
 
       {g.history.length > 0 && (
