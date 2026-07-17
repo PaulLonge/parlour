@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { TUTORIAL_PRESET } from "@/lib/schemas/config";
 import { SCENARIOS, DEFAULT_SCENARIO } from "@/content/scenarios";
 
@@ -125,6 +126,9 @@ export default function NewGame() {
           {busy ? "Preparing the house…" : `Create${tutorial ? " induction" : scenario ? ` — ${scenario.label}` : ""}`}
         </button>
       </div>
+      <Link href="/guide" className="text-center text-sm underline" style={{ color: "var(--ink-dim)" }}>
+        📖 The manual — how the evening works
+      </Link>
     </main>
   );
 }

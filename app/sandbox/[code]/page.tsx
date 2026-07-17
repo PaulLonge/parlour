@@ -128,6 +128,9 @@ export default function Sandbox({ params }: { params: Promise<{ code: string }> 
           <code>config.timeScale</code> (e.g. 10) at game creation to fast-forward every timer, or ask the
           director to compress via break-glass.
         </p>
+        <Link href="/guide" className="mt-2 block text-center text-sm underline" style={{ color: "var(--ink-dim)" }}>
+          📖 The manual — how the evening works
+        </Link>
       </div>
 
       <div className="panel p-4">
