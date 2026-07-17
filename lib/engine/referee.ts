@@ -287,6 +287,9 @@ export async function applyDirectorMoves(
           const r = await closeVote(admin, gameId);
           if (!r.ok) throw new Error(r.result);
           detail = r.result;
+          // closeVote() phases itself off its own loaded state, not this batch's `s` —
+          // keep in-memory state coherent for subsequent moves in the same batch.
+          Object.assign(s.game, { status: "round", round_phase: "banishment" });
           break;
         }
 

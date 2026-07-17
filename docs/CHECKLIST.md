@@ -2,14 +2,16 @@
 
 > The resume point. Any session starts here: what's shipped, what's mid-build, what's
 > next, what's waiting on Paul. Canonical *why* lives in [`DECISIONS.md`](../DECISIONS.md);
-> this is the *state*. Update it in the same commit as the work. Last touched: 2026-07-15.
+> this is the *state*. Update it in the same commit as the work. Last touched: 2026-07-17.
 
 ## ✔ THE INTRIGUE ENGINE IS BUILT
 
 The spine + every green-lit GDD-review item are shipped (see below). THE GATE is now
-**half-open** (2026-07-15): Paul's Supabase project exists and all 8 migrations are
-applied against it. Still open: service-role key wired into the deploy target, both
-simulate scripts run for real, Vercel deploy, and the two-phone induction.
+**open** (2026-07-17): Supabase is live and migrated, `.env.local` is fully filled, both
+`npm run simulate` + `npm run simulate:rogue` pass clean against the real project (two real
+bugs found and fixed along the way — see below), and Vercel is git-linked, has all env vars
+set, and is deployed live at https://parlour-six-alpha.vercel.app. Still open: the
+two-phone induction and real director prompt spot-checks.
 
 ## ▶ The spine (all shipped)
 
@@ -82,26 +84,54 @@ paper-fallback kit stays deferred.
 - [ ] Physical prizes beyond the canon foam finger (the Wrong'un)
 - [ ] NHIE question vetting (post-keys)
 
-## ⛔ THE GATE (half-open — schema is live, nothing else has run yet)
+## ⛔ THE GATE (open — schema live, both simulates green, deploy still needs env vars)
 
 - [x] Paul's Supabase project — `parlour` (`zhaajhegqztymrvvnsgz`, eu-west-2), created 2026-07-15
-- [x] Anthropic API key — added to the Claude Code cloud environment's env vars
-- [x] Run **all 8 migrations** in order (0001 → 0008) — applied 2026-07-15 against the
-      real project via the Supabase MCP connector. (Note: this repo's migration files
-      aren't in the Supabase-CLI timestamp-prefixed naming convention, so the
-      GitHub↔Supabase auto-deploy integration may not track/reapply them the normal
-      way — verify once that integration is exercised for real, don't assume it works
-      on the strength of this manual run.)
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` — grab from Supabase dashboard (Project Settings → API,
-      service_role secret) and add wherever the app actually runs (Vercel env vars, or
-      local `.env.local` for `npm run simulate`)
-- [ ] `npm run simulate` + `npm run simulate:rogue` green against real Supabase
-- [ ] Vercel: project created, linked to the Supabase project (native integration syncs
-      `NEXT_PUBLIC_SUPABASE_URL`/anon key/service-role key automatically), plus
-      `ANTHROPIC_API_KEY` + `DIRECTOR_TICK_SECRET` set manually (Supabase's integration
-      doesn't know about those two)
+- [x] Run **all 8 migrations** in order (0001 → 0008) — applied 2026-07-15 via a Claude Code
+      cloud session, confirmed still applied 2026-07-17 (this repo's migration files aren't
+      in the Supabase-CLI timestamp-prefixed naming convention, so don't assume any
+      GitHub↔Supabase auto-deploy integration tracks/reapplies them the normal way).
+- [x] `.env.local` fully filled (2026-07-17) — Supabase URL/anon key via MCP,
+      `SUPABASE_SERVICE_ROLE_KEY` + `ANTHROPIC_API_KEY` pasted in by Paul, `DIRECTOR_TICK_SECRET`
+      generated. Local-only — none of this is in Vercel's env vars yet (see below).
+- [x] Fixed a real bug found running `npm run simulate` for the first time: `package.json`
+      had no `"type": "module"`, so tsx/esbuild transformed the top-level-await scripts as
+      CJS and crashed before touching the DB. Added `"type": "module"` (2026-07-17, no CJS
+      `require`/`module.exports` anywhere in the codebase, so this is safe).
+- [x] Fixed a real referee bug found by that same first run: `close_vote`'s case in
+      `applyDirectorMoves` (`lib/engine/referee.ts`) calls `closeVote()`, which phases itself
+      off its own freshly-loaded `GameState` — not the batch's shared `s` — so the phase
+      change to `round.banishment` never propagated back, and any later move in the *same*
+      director tool-call batch (e.g. closing a vote then advancing to `endgame`) was wrongly
+      rejected as an illegal transition. This isn't just a test artifact — a real director
+      batching those two moves together would have hit it too. Fixed by syncing `s.game` after
+      `close_vote`, mirroring the pattern `setPhase` already uses.
+- [x] `npm run simulate` — **fully green, 29/29** (2026-07-17), after both fixes above.
+- [x] `npm run simulate:rogue` — **fully green** (2026-07-17): hijack, bribe-arming, front-man
+      appointment, wager economy + pari-mutuel side bets, hide/find codes, wiretaps + held/edited
+      mail, wrongful-vs-burning accusations, rotation, two-sided unmasking. 55 events, 22
+      transactions in one throwaway game.
+- [x] Vercel project **created and git-linked** (Paul did the dashboard import) — `parlour`
+      on team `paul-longe-s-projects`, auto-deployed from `main`.
+- [x] Vercel env vars set (2026-07-17, via `vercel env add` — the Vercel MCP connector has
+      no write tool for this, so the CLI was installed and Paul ran `vercel login`
+      interactively). All 9 keys from `.env.local` pushed to production/preview/development;
+      `NEXT_PUBLIC_BASE_URL` uses the real canonical alias (`https://parlour-six-alpha.vercel.app`)
+      for production/preview and `localhost:3002` for development. Redeployed to production
+      (`dpl_7fxZFfdbjDz1hULcHF4wUE8Jr6H7`, READY, aliased live) — homepage and `/new` verified
+      200 with no runtime errors. Note: only static/client pages were smoke-tested; the
+      Supabase/Anthropic-calling API routes haven't been exercised on the live deployment yet
+      (deliberately didn't POST a real game into production Supabase from here).
 - [ ] **THE INDUCTION on Paul's + Co-Host's phones** (built to be exactly this first-hour test)
 - [ ] Real director prompt spot-checks (the thing the induction deliberately can't test)
+
+Security note: Supabase advisors flag `players_public`/`wagers_public`/`games_public` as
+SECURITY DEFINER views and `beats`/`bounties`/`codes`/`director_log`/`murders`/
+`scheduled_messages`/`wiretaps` as RLS-enabled-no-policy. The no-policy tables on
+`murders`/`beats`/`director_log` are correct per AGENTS.md (no client policies, spoiler
+containment); `bounties`/`codes`/`scheduled_messages`/`wiretaps` having zero policies is
+worth a deliberate check — confirm those are meant to be server-route-only (service role)
+and not something a client needs direct read access to.
 
 ## 🗄 Backlog (designed, not built — lower priority)
 
