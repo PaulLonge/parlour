@@ -243,7 +243,9 @@ async function skipCurrentStep(label: string) {
 // Playwright helpers
 // ---------------------------------------------------------------------------
 async function openTab(page: Page, name: "Now" | "Inbox" | "Ask" | "More") {
-  await page.getByRole("tab", { name, exact: true }).click();
+  // no exact match: an unread badge extends the accessible name to
+  // e.g. "Inbox 2 waiting in Inbox" (sr-only span in TabBar)
+  await page.getByRole("tab", { name: new RegExp(`\\b${name}\\b`) }).click();
 }
 
 async function freshNow(page: Page) {
@@ -277,6 +279,16 @@ async function main() {
   const hostCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   const secondCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   const tvCtx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, reducedMotion: "reduce" });
+  // Next's dev error overlay (<nextjs-portal>) swallows pointer events when a
+  // dev-only warning fires (e.g. the hydration nit Playwright's caret-hiding
+  // can trigger) and would photobomb screenshots — keep it out of the run.
+  for (const c of [hostCtx, secondCtx, tvCtx]) {
+    await c.addInitScript(() => {
+      // plain interval: MutationObserver/DOMContentLoaded approaches proved
+      // unreliable from init-script timing — this one verifiably works
+      setInterval(() => document.querySelectorAll("nextjs-portal").forEach((n) => n.remove()), 100);
+    });
+  }
   const hostPage = await hostCtx.newPage();
   const secondPage = await secondCtx.newPage();
   const tvPage = await tvCtx.newPage();
@@ -339,6 +351,12 @@ async function main() {
     note("tv shows the join code (best-effort, same race as 04)", (await tvPage.textContent("body"))?.includes(code) ?? false);
     await shot(tvPage, "06-tv-lobby.png");
 
+    // park the TV: its heartbeat also ticks the director, and tutorialTick has
+    // no concurrency guard — a TV tick racing this script's ticks double-runs
+    // a step's moves (duplicate letters observed). Real engine race, flagged
+    // upstream; for a clean capture this script must be the only ticker.
+    await tvPage.goto("about:blank");
+
     // ---------------------------------------------------------------- 07 --
     // step0 "assemble" (players >= 2) is already satisfied by the two joins —
     // advance to step1 "arrive", which flips game.status off lobby.
@@ -346,6 +364,7 @@ async function main() {
     await advanceTo(1, "arrive");
     await freshNow(hostPage);
     const arriveBtn = hostPage.getByRole("button", { name: "🚪 I have arrived at the party" });
+    await arriveBtn.waitFor({ state: "visible", timeout: 30_000 }).catch(() => {});
     check("arrive button visible on host BEFORE tapping", await arriveBtn.isVisible());
     await shot(hostPage, "07-arrive.png");
     await arriveBtn.click();
@@ -358,7 +377,7 @@ async function main() {
     console.log("— step 2→3: the letters");
     await freshNow(secondPage);
     await openTab(secondPage, "Inbox");
-    await secondPage.getByText("A letter, sealed").waitFor({ state: "visible", timeout: 30_000 });
+    await secondPage.getByText("A letter, sealed").first().waitFor({ state: "visible", timeout: 30_000 });
     await shot(secondPage, "08-inbox-letter.png");
     // both submit their reading-comprehension mission (verification: submission)
     await openTab(hostPage, "Now");
@@ -430,10 +449,18 @@ async function main() {
     // wager: needs a phone-passed duel + BOTH sides self-reporting a matching
     // winner — the interaction-heaviest step in the script. Skipped by design.
     await skipCurrentStep("wager (phone-duel + dual report)");
-    // the guard loop inside tutorialTick also auto-skips step 9 ("an audience
-    // with the machine") since ANTHROPIC_API_KEY is unset — one more tick
-    // should carry us past both onto step 10.
-    await advanceTo(10, "wager(skipped)+audience(auto-skip)→night-one");
+    // step 9 "an audience with the machine" auto-skips only when the server
+    // has no ANTHROPIC_API_KEY. When the key IS present (the live setup), the
+    // step waits for a real paid question — grab the Ask tab for the guide,
+    // then skip it explicitly rather than spend an LLM call in a QA loop.
+    const afterWager = await advanceTo(9, "wager(skipped)→audience-or-beyond");
+    if (afterWager?.key === "audience") {
+      await freshNow(secondPage);
+      await openTab(secondPage, "Ask");
+      await shot(secondPage, "14-ask-audience.png");
+      await skipCurrentStep("audience (would spend a real LLM call)");
+    }
+    await advanceTo(10, "→night-one");
 
     // ---------------------------------------------------------------- -- --
     // steps 10-13: four briefing quizzes. Each step's missions are only
@@ -472,7 +499,12 @@ async function main() {
     // ---------------------------------------------------------------- 10 --
     console.log("— step 14: the accusation (vote UI)");
     await freshNow(hostPage);
-    const accusationVote = hostPage.locator(".panel", { hasText: "The accusation" }).first();
+    // NB: the InductionStrip is also a .panel containing "The accusation" —
+    // require the candidate button so we anchor to the real vote panel
+    const accusationVote = hostPage
+      .locator(".panel", { hasText: "The accusation" })
+      .filter({ has: hostPage.getByRole("button", { name: "Co-Host" }) })
+      .first();
     await accusationVote.waitFor({ state: "visible", timeout: 30_000 });
     check("accusation VoteTable rendered", await accusationVote.isVisible());
     await shot(hostPage, "10-vote.png");
@@ -482,7 +514,10 @@ async function main() {
     // ---------------------------------------------------------------- -- --
     console.log("— step 16: THE UNMASKING (final vote)");
     await freshNow(hostPage);
-    const unmaskingVote = hostPage.locator(".panel", { hasText: "THE UNMASKING" }).first();
+    const unmaskingVote = hostPage
+      .locator(".panel", { hasText: "THE UNMASKING" })
+      .filter({ has: hostPage.getByRole("button", { name: "Co-Host" }) })
+      .first();
     await unmaskingVote.waitFor({ state: "visible", timeout: 30_000 });
     await unmaskingVote.getByRole("button", { name: "Co-Host" }).click();
     await advanceTo(17, "unmasking→curtain");
@@ -569,6 +604,26 @@ async function main() {
     };
     writeFileSync(pathJoin(GUIDE_DIR, "manifest.json"), JSON.stringify(manifest, null, 2));
     console.log(`— manifest written: ${shots.length} shots, ${checks - failures}/${checks} checks passed.`);
+  } catch (err) {
+    // post-mortem before the finally deletes the evidence: game state + the
+    // last few director_log verdicts usually name the move that bounced
+    if (gameId) {
+      const { data: g } = await admin
+        .from("games")
+        .select("status, round_phase, round_no, hijacked_at")
+        .eq("id", gameId)
+        .maybeSingle();
+      console.error("— post-mortem game row:", JSON.stringify(g));
+      const { data: logs } = await admin
+        .from("director_log")
+        .select("trigger, proposals, verdicts")
+        .eq("game_id", gameId)
+        .order("id", { ascending: false })
+        .limit(3);
+      for (const l of logs ?? [])
+        console.error(`— post-mortem director_log [${l.trigger}]:`, JSON.stringify(l.verdicts));
+    }
+    throw err;
   } finally {
     await browser.close().catch(() => {});
     if (gameId) {

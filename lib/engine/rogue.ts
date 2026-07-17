@@ -432,6 +432,10 @@ export async function closeAccusation(admin: SupabaseClient, gameId: string) {
       payload: { player: accused.name, votes: sorted[0][1], compute: burnCompute },
       isPublic: true,
     });
+    // closure marker for every outcome (the public theatre stays with
+    // `burning`/`wrongful_accusation`) — the induction's verdict step waits
+    // on this, and before it existed a CORRECT naming stalled the tutorial
+    await emit(admin, gameId, "accusation_closed", { payload: { outcome: "burned" } });
     return { ok: true, result: "burned", player: accused.name };
   }
   // WRONG: the rogue gains tempo. NOT plunder (GDD review #7): the plunder
@@ -447,6 +451,7 @@ export async function closeAccusation(admin: SupabaseClient, gameId: string) {
     payload: { player: accused.name, votes: sorted[0][1] },
     isPublic: true,
   });
+  await emit(admin, gameId, "accusation_closed", { payload: { outcome: "wrongful" } });
   return { ok: true, result: "wrongful", player: accused.name };
 }
 
