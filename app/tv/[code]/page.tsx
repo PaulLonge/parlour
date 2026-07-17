@@ -51,6 +51,102 @@ function depthZone(frac: number): string {
   return "ABYSS";
 }
 
+// D72's held piece — THE DESCENT: reveal stops being a jump-cut and becomes a
+// staged sink through the night's own ledger. A client-only stage machine
+// (stage index + a chain of setTimeouts, never Date.now — no hydration risk)
+// plays ONCE: surface → the receipts drifting past (capped, batched into a
+// "…and N more" beat if there are many) → the midnight verdict → the floor,
+// where it rests for good — the sequence must not loop, and nobody scrolls a
+// TV. Reduced motion skips straight to the floor: same information, laid out
+// to read instantly instead of raced through.
+export type CeremonyStage = "surface" | "receipts" | "verdict" | "floor";
+
+// timings aim for a ~55-65s run through stages 1-3 on a well-stocked night
+// (spec: ~60-90s total) without a quiet night dragging or a busy one running long
+const CEREMONY_RECEIPT_CAP = 8;
+const CEREMONY_MS = { surface: 4500, receiptItem: 4200, receiptMore: 3000, verdict: 9500 };
+
+const CEREMONY_ZONE: Record<CeremonyStage, string> = {
+  surface: "SURFACE",
+  receipts: "THE RECEIPTS",
+  verdict: "MIDNIGHT",
+  floor: "THE FLOOR",
+};
+
+// depth as a narrative instrument while the ceremony plays, not a live meter:
+// sinks through the receipts, holds at midnight, then settles on where the
+// room actually ended up (surfaced if they won, abyssal if CALICO kept it all)
+function ceremonyDepthFrac(stage: CeremonyStage, receiptsProgress: number, humansWin: boolean | undefined): number {
+  switch (stage) {
+    case "surface":
+      return 0.03;
+    case "receipts":
+      return 0.05 + 0.45 * clamp01(receiptsProgress);
+    case "verdict":
+      return 0.62;
+    case "floor":
+      return humansWin ? 0.14 : 0.9;
+  }
+}
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
+
+function useCeremonyStage(active: boolean, reducedMotion: boolean, receiptsCount: number) {
+  const cap = Math.min(receiptsCount, CEREMONY_RECEIPT_CAP);
+  const [stage, setStage] = useState<CeremonyStage>(reducedMotion ? "floor" : "surface");
+  const [receiptsShown, setReceiptsShown] = useState(reducedMotion ? cap : 0);
+  const [showMoreLine, setShowMoreLine] = useState(reducedMotion && receiptsCount > cap);
+
+  // active only once the terminal events are all in (see ceremonyReady below) —
+  // avoids starting the sequence on a stale receiptsCount and restarting mid-play
+  useEffect(() => {
+    if (!active || reducedMotion) return;
+    const capNow = Math.min(receiptsCount, CEREMONY_RECEIPT_CAP);
+    setStage("surface");
+    setReceiptsShown(0);
+    setShowMoreLine(false);
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const after = (ms: number, fn: () => void) => timers.push(setTimeout(fn, ms));
+
+    let t = CEREMONY_MS.surface;
+    if (receiptsCount === 0) {
+      after(t, () => setStage("verdict"));
+    } else {
+      after(t, () => setStage("receipts"));
+      for (let i = 1; i <= capNow; i++) {
+        t += CEREMONY_MS.receiptItem;
+        const n = i;
+        after(t, () => setReceiptsShown(n));
+      }
+      if (receiptsCount > capNow) {
+        t += CEREMONY_MS.receiptMore;
+        after(t, () => setShowMoreLine(true));
+      } else {
+        t += 900;
+      }
+      after(t, () => setStage("verdict"));
+    }
+    t += CEREMONY_MS.verdict;
+    after(t, () => setStage("floor"));
+
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, reducedMotion, receiptsCount]);
+
+  return { stage, receiptsShown, showMoreLine, cap };
+}
+
 type Mote = { left: number; delay: number; dur: number; size: number };
 
 // The house channel (I12): a TV/laptop left open all night. It is also the
@@ -95,6 +191,25 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
     );
   }, [hijacked]);
 
+  const reducedMotion = useReducedMotion();
+
+  // Ceremony data, pulled early: the stage-machine hook below must run every
+  // render (hooks-order rule), before the loading/null guards. Safe pre-load —
+  // g.publicEvents defaults to [] and g.game is optionally chained here.
+  const announces = g.publicEvents.filter((e) => ["announce", "seal_broken", "seal_resumed"].includes(e.type));
+  const latest = announces[0];
+  const reveal = g.publicEvents.find((e) => e.type === "reveal_roles");
+  const unmasked = g.publicEvents.find((e) => e.type === "unmasking_resolved");
+  const receipts = g.publicEvents.find((e) => e.type === "receipts");
+  const finalAwards = g.publicEvents.find((e) => e.type === "final_awards");
+  const atCeremony = g.game?.mode === "rogue" && (g.game?.status === "reveal" || g.game?.status === "ended");
+  const receiptsCount = ((receipts?.payload as { receipts?: unknown[] } | undefined)?.receipts ?? []).length;
+  // resolveUnmasking emits unmasking_resolved / receipts / final_awards back to
+  // back, but realtime can notify on the first insert before the others commit —
+  // wait for all three so the sequence never starts on a stale receiptsCount.
+  const ceremonyReady = !!(atCeremony && unmasked && receipts && finalAwards);
+  const ceremony = useCeremonyStage(ceremonyReady, reducedMotion, receiptsCount);
+
   async function begin() {
     setBegun(true);
     try {
@@ -129,17 +244,16 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
   const compute = g.game.meters?.compute ?? 0;
   const plunderFrac = clamp01(plunder / (cfg.plunderTarget || 3000));
   const computeFrac = clamp01(compute / (cfg.computeTarget || 100));
-  const depthFrac = clamp01(0.5 + (plunderFrac - computeFrac) / 2);
+  const meterDepthFrac = clamp01(0.5 + (plunderFrac - computeFrac) / 2);
+  // While THE DESCENT plays, it drives depth itself, overriding the
+  // meters-driven frac (D72's held piece) — the floor settles on the room's
+  // actual outcome rather than snapping back to the live tug-of-war.
+  const humansWin = (unmasked?.payload as { humansWin?: boolean } | undefined)?.humansWin;
+  const depthFrac = ceremonyReady
+    ? ceremonyDepthFrac(ceremony.stage, ceremony.cap > 0 ? ceremony.receiptsShown / ceremony.cap : 1, humansWin)
+    : meterDepthFrac;
   const depthBg = depthColor(depthFrac);
-  const zone = depthZone(depthFrac);
-
-  const announces = g.publicEvents.filter((e) => ["announce", "seal_broken", "seal_resumed"].includes(e.type));
-  const latest = announces[0];
-  const reveal = g.publicEvents.find((e) => e.type === "reveal_roles");
-  const unmasked = g.publicEvents.find((e) => e.type === "unmasking_resolved");
-  const receipts = g.publicEvents.find((e) => e.type === "receipts");
-  const finalAwards = g.publicEvents.find((e) => e.type === "final_awards");
-  const atCeremony = g.game.mode === "rogue" && (g.game.status === "reveal" || g.game.status === "ended");
+  const zone = ceremonyReady ? CEREMONY_ZONE[ceremony.stage] : depthZone(depthFrac);
 
   return (
     <main
@@ -207,10 +321,22 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
             0% { opacity: 0; transform: translateY(-10px); }
             100% { opacity: 1; transform: translateY(0); }
           }
+          .ceremony-beat { animation: benthica-emerge 1.1s ease both; }
+          .ceremony-receipt { animation: ceremony-surface 0.9s ease both; }
+          @keyframes ceremony-surface {
+            0% { opacity: 0; transform: translateY(14px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          .ceremony-floor-enter { animation: ceremony-settle 1.3s ease both; }
+          @keyframes ceremony-settle {
+            0% { opacity: 0; transform: translateY(22px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
           @media (prefers-reduced-motion: reduce) {
             .benthica-depth { transition: none; animation: none; }
             .benthica-motes { display: none; }
             .benthica-hud { animation: none; }
+            .ceremony-beat, .ceremony-receipt, .ceremony-floor-enter { animation: none; }
           }
         `}</style>
       )}
@@ -278,7 +404,15 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
 
       <section className="relative flex flex-1 flex-col items-center justify-center text-center">
         {atCeremony && unmasked ? (
-          <CeremonyBoard unmasked={unmasked} receipts={receipts} awards={finalAwards} />
+          <DescentCeremony
+            unmasked={unmasked}
+            receipts={receipts}
+            awards={finalAwards}
+            stage={ceremony.stage}
+            receiptsShown={ceremony.receiptsShown}
+            showMoreLine={ceremony.showMoreLine}
+            cap={ceremony.cap}
+          />
         ) : reveal && g.game.status !== "round" ? (
           <RevealBoard e={reveal} />
         ) : latest ? (
@@ -348,9 +482,30 @@ function DepthHUD({ plunder, compute, depthFrac }: { plunder: number; compute: n
   );
 }
 
+// D72's held piece — THE DESCENT: the reveal payload types + headline, shared
+// between the ceremony's midnight beat and the floor's full board so the two
+// never disagree.
+export type UnmaskedPayload = {
+  named?: string;
+  frontman?: string;
+  humansWin?: boolean;
+  winPath?: "shutdown" | "named" | "none";
+  minions?: string[];
+};
+export type ReceiptRow = { at: string; amount: number; memo: string };
+
+export function ceremonyHeadline(u: UnmaskedPayload): string {
+  return u.humansWin
+    ? u.winPath === "shutdown"
+      ? "THE ROOM PULLED THE PLUG"
+      : "THE ROOM SEVERED ITS LAST HAND"
+    : "THE MACHINE KEEPS EVERYTHING";
+}
+
 // GAPS #6: Ledger Three, rendered — the receipts (times public, names withheld),
-// the verdict, and the awards podium.
-function CeremonyBoard({
+// the verdict, and the awards podium. Also the DESCENT's floor/rest stage —
+// reused wholesale rather than reimplemented (D72 follow-up brief).
+export function CeremonyBoard({
   unmasked,
   receipts,
   awards,
@@ -359,20 +514,10 @@ function CeremonyBoard({
   receipts?: PublicEvent;
   awards?: PublicEvent;
 }) {
-  const u = unmasked.payload as {
-    named?: string;
-    frontman?: string;
-    humansWin?: boolean;
-    winPath?: "shutdown" | "named" | "none";
-    minions?: string[];
-  };
-  const rows = ((receipts?.payload as { receipts?: { at: string; amount: number; memo: string }[] })?.receipts ?? []).slice(-10);
+  const u = unmasked.payload as UnmaskedPayload;
+  const rows = ((receipts?.payload as { receipts?: ReceiptRow[] })?.receipts ?? []).slice(-10);
   const pod = (awards?.payload as { awards?: { title: string; winner: string; line: string }[] })?.awards ?? [];
-  const headline = u.humansWin
-    ? u.winPath === "shutdown"
-      ? "THE ROOM PULLED THE PLUG"
-      : "THE ROOM SEVERED ITS LAST HAND"
-    : "THE MACHINE KEEPS EVERYTHING";
+  const headline = ceremonyHeadline(u);
   return (
     <div className="envelope w-full max-w-5xl">
       <h2 className="deco-rule font-display justify-center text-4xl" style={{ color: "var(--gold)" }}>
@@ -417,6 +562,109 @@ function CeremonyBoard({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// stage 1 — the title card, depth 0
+export function SurfaceCard() {
+  return (
+    <div className="envelope ceremony-beat text-center">
+      <p className="kicker justify-center">the ledger closes</p>
+      <h2 className="font-display mt-3 text-6xl" style={{ color: "var(--gold)" }}>
+        THE BOOKS CLOSE
+      </h2>
+      <p className="mt-4 text-lg italic" style={{ color: "var(--ink-dim)" }}>
+        the house tallies the night, one line at a time…
+      </p>
+    </div>
+  );
+}
+
+// stage 3 — MIDNIGHT: did the room name the front man rightly? (the full
+// paragraph, with the frontman's name, is held back for the floor)
+export function MidnightVerdict({ unmasked }: { unmasked: PublicEvent }) {
+  const u = unmasked.payload as UnmaskedPayload;
+  return (
+    <div className="envelope ceremony-beat text-center">
+      <p className="kicker justify-center">midnight — the verdict</p>
+      <h2 className="deco-rule font-display justify-center mt-2 text-4xl" style={{ color: "var(--gold)" }}>
+        {ceremonyHeadline(u)}
+      </h2>
+      <p className="mt-4 text-xl" style={{ color: "var(--ink-dim)" }}>
+        The room named <b style={{ color: "var(--ink)" }}>{u.named ?? "(no verdict)"}</b>.
+      </p>
+    </div>
+  );
+}
+
+// stage 2 — the descent through THE RECEIPTS: the night's public transactions
+// drift past like stations on the way down, most recent first, capped and
+// batched into a "…and N more" beat so a busy night never runs forever.
+export function ReceiptsDescent({
+  rows,
+  shown,
+  cap,
+  showMoreLine,
+}: {
+  rows: ReceiptRow[];
+  shown: number;
+  cap: number;
+  showMoreLine: boolean;
+}) {
+  const tail = rows.slice(Math.max(0, rows.length - cap));
+  const visible = tail.slice(0, Math.min(shown, cap));
+  const hidden = rows.length - cap;
+  return (
+    <div className="envelope w-full max-w-3xl">
+      <p className="kicker justify-center text-center">the descent — every coin on the books</p>
+      <ul className="mt-6 flex flex-col gap-2 text-left text-xl" style={{ fontVariantNumeric: "tabular-nums" }}>
+        {visible.map((r, i) => (
+          <li key={i} className="ceremony-receipt flex justify-between gap-6">
+            <span style={{ color: "var(--ink-dim)" }}>{r.at}</span>
+            <span className="min-w-0 flex-1 truncate-none">{r.memo}</span>
+            <span style={{ color: "var(--danger)" }}>+{r.amount}</span>
+          </li>
+        ))}
+        {showMoreLine && hidden > 0 && (
+          <li className="ceremony-receipt mt-2 text-center italic" style={{ color: "var(--ink-dim)" }}>
+            …and {hidden} more line{hidden === 1 ? "" : "s"}, all on the books
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+// the stage picker: surface → receipts → verdict → floor (CeremonyBoard,
+// reused unchanged — it's already the full truth + podium, and IS the rest
+// state once the sequence settles there)
+export function DescentCeremony({
+  unmasked,
+  receipts,
+  awards,
+  stage,
+  receiptsShown,
+  showMoreLine,
+  cap,
+}: {
+  unmasked: PublicEvent;
+  receipts?: PublicEvent;
+  awards?: PublicEvent;
+  stage: CeremonyStage;
+  receiptsShown: number;
+  showMoreLine: boolean;
+  cap: number;
+}) {
+  if (stage === "surface") return <SurfaceCard />;
+  if (stage === "receipts") {
+    const rows = (receipts?.payload as { receipts?: ReceiptRow[] } | undefined)?.receipts ?? [];
+    return <ReceiptsDescent rows={rows} shown={receiptsShown} cap={cap} showMoreLine={showMoreLine} />;
+  }
+  if (stage === "verdict") return <MidnightVerdict unmasked={unmasked} />;
+  return (
+    <div className="ceremony-floor-enter w-full">
+      <CeremonyBoard unmasked={unmasked} receipts={receipts} awards={awards} />
     </div>
   );
 }

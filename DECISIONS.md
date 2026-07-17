@@ -766,3 +766,23 @@ B-numbers are build-time engineering calls made inside the codebase.
   sandbox deserves a ground-up rethink now the redesign landed — it predates
   the case-file/co-op faces, THE BOARD, and the venue-free heartbeat, and reads
   as a dev readout rather than a playtest cockpit.
+
+- **D74 — THE MACHINE WAS MUTE (found by the cockpit, fixed) + the casting sheet
+  completes (2026-07-17).** The gravest find of the build: every REAL LLM director
+  tick — and any classic-murder story generation — had been failing with "Schemas
+  contains too many optional parameters (48), limit 24". The AI SDK's default
+  structured-output mode compiles the 34-tool DirectorTool union into Anthropic's
+  strict grammar, which caps optional params at 24; the schema outgrew the limit
+  unnoticed because everything automated (simulates, induction, capture harness)
+  is deliberately LLM-free. On the night, the machine would have been silent. It
+  surfaced only because D73's cockpit gave the tick crank an honest error readout.
+  Fix: structuredOutputMode "jsonTool" on both generateObject calls (plain JSON
+  tool call, no grammar; zod + the referee still validate everything) — verified
+  with a real tick against a live throwaway game (7fbd704). LESSON, recorded
+  deliberately: the no-LLM test strategy that makes every other path cheap to
+  verify is also a blind spot — the real director path needs one paid canary tick
+  in the pre-party checklist. ALSO SHIPPED, closing D71/D72's queue: THE DESCENT
+  (the rogue reveal as a staged sink through the night's receipts to the truth on
+  the floor — auto-plays once on the TV, rests on the full ceremony; reduced
+  motion gets the summary instantly), THE COCKPIT (D73), and the Legerdemain
+  wager table in-game. The Gallery casting sheet is fully built.
