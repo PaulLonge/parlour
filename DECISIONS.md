@@ -264,8 +264,8 @@ B-numbers are build-time engineering calls made inside the codebase.
 - **D47 — THE INDUCTION (Paul + Claude, July 2026).** The sandbox family gains a
   guided two-phone tutorial/QA mode: a `/new` checkbox creates a rogue game whose
   director is a DETERMINISTIC step-runner (`lib/engine/tutorial.ts` +
-  `content/tutorial-script.ts`) — no LLM, no cost, reproducible. Fourteen steps
-  teach every mechanic in-voice ("THE MACHINE runs staff induction"), and each
+  `content/tutorial-script.ts`) — no LLM, no cost, reproducible. Eighteen steps
+  (the count grew twice via D47a's amendments below) teach every mechanic in-voice ("THE MACHINE runs staff induction"), and each
   step is verified by the REAL mechanic it teaches (arrivals, expected-answer +
   choice + glyph verification, a bribe, stamps + a note, a handed slip typed in,
   a full escrowed wager + duel + both-report, an optional LLM audience, an
