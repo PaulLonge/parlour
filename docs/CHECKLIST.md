@@ -122,6 +122,17 @@ paper-fallback kit stays deferred.
       200 with no runtime errors. Note: only static/client pages were smoke-tested; the
       Supabase/Anthropic-calling API routes haven't been exercised on the live deployment yet
       (deliberately didn't POST a real game into production Supabase from here).
+- [x] **First real click-through caught a genuine gap**: "Create induction" silently did
+      nothing on the live site. Root cause — Supabase's anonymous auth (`lib/engine/auth.ts`,
+      how every player's identity works, no real accounts) is OFF by default on new projects,
+      and nobody had toggled it since this project had only been exercised through
+      service-role scripts, never a real browser. Fixed by Paul in the dashboard
+      (Authentication → Providers): "Allow anonymous sign-ins" ON, "Confirm email" OFF.
+      Documented in `README.md` Setup step 1 and `.env.example` (2026-07-17) — this is a
+      dashboard-only setting, no migration or env var covers it. ⚠️ Rate-limited to
+      **30 anonymous sign-ins/hour/IP** by default — everyone at the real party shares one
+      home wifi's public IP, so this is realistic to hit on the night; raise it in
+      Authentication → Rate Limits before September's playtest, not during it.
 - [ ] **THE INDUCTION on Paul's + Co-Host's phones** (built to be exactly this first-hour test)
 - [ ] Real director prompt spot-checks (the thing the induction deliberately can't test)
 

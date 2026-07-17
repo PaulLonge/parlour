@@ -67,6 +67,19 @@ scripts/                simulate.ts (murder), simulate-rogue.ts (rogue), land-st
    every file in `supabase/migrations/`, in order (`0001_init.sql` through
    `0008_resolve.sql`). The default mode at `/new` (rogue) does not work without
    0002 onward. (Or `npx supabase link --project-ref XXX && npx supabase db push`.)
+   **Then, Authentication → Providers** (`/dashboard/project/_/auth/providers`):
+   turn ON "Allow anonymous sign-ins" and turn OFF "Confirm email". Every player's
+   identity (`lib/engine/auth.ts`) runs on anonymous-auth sessions, not real
+   accounts — without this toggle, `/new` and `/api/join` both fail with
+   "Anonymous sign-ins are disabled" and nothing else in the app will work.
+   This is a project-level Auth setting, not something a migration can set —
+   there's no CLI/API shortcut here, it's dashboard-only.
+   ⚠️ **Anonymous sign-ins are rate-limited to 30/hour per IP** (Authentication →
+   Rate Limits). Fine for a normal dev loop, but everyone at the actual party
+   shares one home wifi's public IP — with rejoins, phone refreshes, and the
+   induction dry run all counting against the same 30, this is realistic to hit
+   on the night. Raise it in the dashboard before September's playtest, not
+   during it.
 2. **Env**: `copy .env.example .env.local` and fill in the Supabase URL, anon key,
    service-role key (Project Settings → API) and your `ANTHROPIC_API_KEY`.
 3. **Run**: `npm run dev` → http://localhost:3000 → create an evening, open two more
