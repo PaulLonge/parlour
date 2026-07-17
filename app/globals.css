@@ -76,25 +76,124 @@
    Act 1 = the decoy: warm, cheery, a shade too naff — exactly what the
    invitation promised. Post-hijack = CALICO's ledger: black, bone, stamp-red,
    monospaced menace. The swap happens live on every phone at once. */
+/* D71 wave 2a — Act 1 restyled as an unresolved CASE FILE (Gallery room
+   "coldcase" anchor, MIT). Manila ground, bond-paper panels, typewriter body
+   type, stamp-red + pen-blue ink accents. Still the cheerful decoy — the
+   gravitas here is paperwork, not horror; see the decoy-scoped rules below
+   the var block for the grain/stamp/tab decorations. */
 .theme-decoy {
-  --bg: #f4e6c8;
-  --bg-glow: radial-gradient(ellipse 80% 50% at 50% -10%, #fdf6e0 0%, transparent 60%);
-  --panel: rgba(255, 250, 236, 0.85);
-  --panel-solid: #fdf6e3;
-  --border: rgba(146, 100, 40, 0.35);
-  --border-strong: rgba(146, 100, 40, 0.6);
-  --accent: #c2452c;
-  --accent-ink: #fff6ea;
-  --danger: #c2452c;
-  --ink: #4a321c;
-  --ink-dim: #6f5a3c; /* was #8a7350 — failed AA on the light ground (visual review #3) */
-  --gold: #a2661f;
-  --seal: #c2452c;
-  --font-display: var(--font-manor), Georgia, serif;
-  --font-body: "Segoe UI", system-ui, sans-serif;
-  --radius: 1rem;
-  --btn-radius: 999px;
-  --tracking: 0.02em;
+  --decoy-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' seed='11'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.14 0 0 0 0 0.11 0 0 0 0 0.06 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+  --bg: #d9c48f;
+  --bg-glow: radial-gradient(1100px 650px at 15% -10%, rgba(255, 250, 224, 0.45), transparent 60%),
+             radial-gradient(1200px 800px at 105% 20%, rgba(110, 80, 35, 0.16), transparent 60%),
+             var(--decoy-grain);
+  --panel: rgba(243, 234, 210, 0.94);
+  --panel-solid: #f3ead2;
+  --border: rgba(42, 35, 23, 0.16);
+  --border-strong: rgba(42, 35, 23, 0.34);
+  --accent: #9c2b21;
+  --accent-ink: #f6efdc;
+  --danger: #7c1f17;
+  --ink: #2a2317;
+  --ink-dim: #5c4e36;
+  --gold: #2d3f5c; /* pen-blue — reserves stamp-red (--accent/--danger/--seal) for the urgent marks */
+  --seal: #9c2b21;
+  --font-display: ui-monospace, "SFMono-Regular", Consolas, "Courier New", Courier, monospace;
+  --font-body: ui-monospace, "SFMono-Regular", Consolas, "Courier New", Courier, monospace;
+  --radius: 0.15rem;
+  --btn-radius: 3px;
+  --tracking: 0.03em;
+}
+
+/* decoy-only surface treatments, scoped so every other theme block above and
+   below is untouched. Panels read as bond-paper sheets on the manila ground;
+   kickers as file tabs; letters as filed evidence; buttons as ink stamps. */
+.theme-decoy .panel {
+  background-image: var(--decoy-grain);
+  background-blend-mode: multiply;
+  box-shadow: 2px 5px 14px rgba(45, 28, 10, 0.22);
+}
+/* corner flourish becomes a brass fastener, not a gilt bracket */
+.theme-decoy .panel-hero::before,
+.theme-decoy .panel-hero::after {
+  width: 11px;
+  height: 11px;
+  border: none;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #e4cf95, #8a6d1f 65%, #5c4a12 100%);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.35);
+  opacity: 0.85;
+}
+.theme-decoy .panel-hero::before { top: 8px; left: 8px; }
+.theme-decoy .panel-hero::after { bottom: 6px; right: 8px; top: auto; left: auto; }
+
+/* file-tab kickers — the label reads as a manila tab peeking above the sheet */
+.theme-decoy .kicker {
+  display: inline-block;
+  background: color-mix(in srgb, var(--gold) 12%, var(--panel-solid));
+  border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
+  padding: 0.2em 0.5em 0.15em;
+  margin: -0.15em -0.3em 0;
+}
+.theme-decoy .kicker-danger {
+  background: color-mix(in srgb, var(--danger) 14%, var(--panel-solid));
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+}
+
+/* evidence slips (MessageEnvelope, tagged .evidence-slip in cards.tsx) get a
+   filed stamp — hangs off the top edge like an ink stamp catching the corner,
+   never over the body text underneath. */
+.theme-decoy .evidence-slip {
+  position: relative;
+}
+.theme-decoy .evidence-slip::after {
+  content: "RECEIVED";
+  position: absolute;
+  top: -10px;
+  right: 14px;
+  transform: rotate(-6deg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  color: var(--seal);
+  background: var(--panel-solid);
+  border: 2px solid var(--seal);
+  border-radius: 3px;
+  padding: 0.12em 0.5em 0.06em;
+  opacity: 0.62;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* AI transmissions stay typed transcripts on the paper ground, not a black
+   terminal — the base .transmission rule is too dark for a manila theme. */
+.theme-decoy .transmission {
+  background: color-mix(in srgb, var(--panel-solid) 90%, var(--ink) 10%);
+  color: var(--ink);
+}
+
+/* stamped, not glossy */
+.theme-decoy .btn {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-width: 2px;
+  box-shadow: 1px 2px 0 rgba(42, 35, 23, 0.28);
+}
+.theme-decoy .btn:active {
+  box-shadow: none;
+  transform: translate(1px, 2px);
+}
+
+/* bond-paper input slots — the base .input's near-black fill reads wrong,
+   and low-contrasts, on a manila theme (readability first — D71 constraint 4) */
+.theme-decoy .input {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--border-strong);
+  color: var(--ink);
 }
 
 .theme-hijacked {

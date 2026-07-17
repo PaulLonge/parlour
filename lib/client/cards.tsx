@@ -121,7 +121,7 @@ export function MessageEnvelope({ m }: { m: Msg }) {
   // at face value. (When notary seals ship, sealed mail loses this tag.)
   const unverified = !!m.claimed_sender && (isNote || transmission);
   return (
-    <div className={`panel envelope p-4 ${transmission ? "transmission" : ""}`}>
+    <div className={`panel envelope evidence-slip p-4 ${transmission ? "transmission" : ""}`}>
       <p className="kicker flex items-baseline justify-between gap-2">
         <span>
           {kicker}
