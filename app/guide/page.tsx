@@ -6,7 +6,6 @@
 // seal — the machinery of the hijack. Nothing in tier 1 may hint at the twist.
 // Zero-config: no DB, no env, static content + local screenshots only.
 
-import { useState } from "react";
 import Link from "next/link";
 import manifest from "@/public/guide/manifest.json";
 
@@ -69,61 +68,6 @@ function Shot({
         className="w-full rounded-xl border"
         style={{ borderColor: "var(--border)", aspectRatio: `${w} / ${h}`, objectFit: "cover", background: "rgba(0,0,0,0.3)" }}
       />
-      {caption && (
-        <figcaption className="text-center text-xs italic" style={{ color: "var(--ink-dim)" }}>
-          {caption}
-        </figcaption>
-      )}
-    </figure>
-  );
-}
-
-function SpoilerShot({
-  file,
-  alt,
-  frame = "phone",
-  caption,
-}: {
-  file: keyof typeof DIMS;
-  alt: string;
-  frame?: Frame;
-  caption?: string;
-}) {
-  const [revealed, setRevealed] = useState(false);
-  const [w, h] = DIMS[file];
-  return (
-    <figure className="flex flex-col items-center gap-2" style={{ maxWidth: frameMaxW(frame) }}>
-      <button
-        type="button"
-        onClick={() => setRevealed((r) => !r)}
-        className="relative block w-full overflow-hidden rounded-xl border"
-        style={{ borderColor: "var(--border)" }}
-        aria-label={revealed ? `hide ${alt}` : `reveal ${alt}`}
-      >
-        <img
-          src={`/guide/${file}`}
-          alt={alt}
-          width={w}
-          height={h}
-          loading="lazy"
-          className="w-full"
-          style={{
-            aspectRatio: `${w} / ${h}`,
-            objectFit: "cover",
-            filter: revealed ? "none" : "blur(12px)",
-            transition: "filter 0.25s ease",
-            background: "rgba(0,0,0,0.3)",
-          }}
-        />
-        {!revealed && (
-          <span
-            className="absolute inset-0 flex items-center justify-center px-4 text-center text-xs font-semibold"
-            style={{ background: "rgba(5,4,2,0.55)", color: "var(--ink)" }}
-          >
-            ⚠️ spoiler — tap to reveal
-          </span>
-        )}
-      </button>
       {caption && (
         <figcaption className="text-center text-xs italic" style={{ color: "var(--ink-dim)" }}>
           {caption}
@@ -285,8 +229,8 @@ export default function Guide() {
                 once. The interface itself performs the hijack — the same app changes its skin in front of you.
               </p>
               <Row>
-                <SpoilerShot file="20-preview-decoy.png" alt="The sunny Act 1 decoy interface, before the hijack" />
-                <SpoilerShot file="20-preview-hijacked.png" alt="The hijacked interface, after new management takes over" />
+                <Shot file="20-preview-decoy.png" alt="The sunny Act 1 decoy interface, before the hijack" />
+                <Shot file="20-preview-hijacked.png" alt="The hijacked interface, after new management takes over" />
               </Row>
             </SpoilerSection>
 
@@ -297,9 +241,9 @@ export default function Guide() {
                 cooldown and no taking it back.
               </p>
               <Row>
-                <SpoilerShot file="11-meters-purse.png" alt="A player's purse and the twin room meters" />
-                <SpoilerShot file="21-bribe-card.png" alt="A bribe offer card, ready to accept" frame="crop" />
-                <SpoilerShot file="21-purse-chip.png" alt="The purse balance chip with recent transactions" frame="crop" />
+                <Shot file="11-meters-purse.png" alt="A player's purse and the twin room meters" />
+                <Shot file="21-bribe-card.png" alt="A bribe offer card, ready to accept" frame="crop" />
+                <Shot file="21-purse-chip.png" alt="The purse balance chip with recent transactions" frame="crop" />
               </Row>
             </SpoilerSection>
 
@@ -311,9 +255,9 @@ export default function Guide() {
                 schemes, and hears volunteers.
               </p>
               <Row>
-                <SpoilerShot file="21-glyph-badge.png" alt="A player's secret glyph mark, shown to verify identity" frame="crop" />
-                <SpoilerShot file="21-code-entry.png" alt="A code entry box for a found paper slip" frame="crop" />
-                <SpoilerShot file="14-ask-audience.png" alt="The Ask tab, buying an audience with the machine" />
+                <Shot file="21-glyph-badge.png" alt="A player's secret glyph mark, shown to verify identity" frame="crop" />
+                <Shot file="21-code-entry.png" alt="A code entry box for a found paper slip" frame="crop" />
+                <Shot file="14-ask-audience.png" alt="The Ask tab, buying an audience with the machine" />
               </Row>
             </SpoilerSection>
 
@@ -324,7 +268,7 @@ export default function Guide() {
                 final naming made together — THE UNMASKING.
               </p>
               <Row>
-                <SpoilerShot file="10-vote.png" alt="The final unmasking vote, naming the front man together" />
+                <Shot file="10-vote.png" alt="The final unmasking vote, naming the front man together" />
               </Row>
             </SpoilerSection>
 
@@ -335,8 +279,8 @@ export default function Guide() {
                 machine picked, and who's really behind anything, stays sealed from the whole room — host included.
               </p>
               <Row>
-                <SpoilerShot file="13-host-tools.png" alt="The host tools panel, with break-glass and skip-step controls" />
-                <SpoilerShot file="12-more-about.png" alt="The full rulebook, shown in the More tab" />
+                <Shot file="13-host-tools.png" alt="The host tools panel, with break-glass and skip-step controls" />
+                <Shot file="12-more-about.png" alt="The full rulebook, shown in the More tab" />
               </Row>
             </SpoilerSection>
 
@@ -347,7 +291,7 @@ export default function Guide() {
                 the real mechanic behind it, not eyeballed by hand.
               </p>
               <Row>
-                <SpoilerShot
+                <Shot
                   file="02-new-evening.png"
                   alt="The new-evening screen, showing the scenario registry and the staff-induction toggle"
                 />
@@ -366,9 +310,9 @@ export default function Guide() {
                 before a story is allowed to ship.
               </p>
               <Row>
-                <SpoilerShot file="20-preview-manor.png" alt="The Candlelit Manor theme preview" frame="crop" />
-                <SpoilerShot file="20-preview-deco.png" alt="The Deco Noir theme preview" frame="crop" />
-                <SpoilerShot file="20-preview-seance.png" alt="The Séance theme preview" frame="crop" />
+                <Shot file="20-preview-manor.png" alt="The Candlelit Manor theme preview" frame="crop" />
+                <Shot file="20-preview-deco.png" alt="The Deco Noir theme preview" frame="crop" />
+                <Shot file="20-preview-seance.png" alt="The Séance theme preview" frame="crop" />
               </Row>
             </SpoilerSection>
 

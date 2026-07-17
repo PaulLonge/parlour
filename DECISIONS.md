@@ -696,8 +696,9 @@ B-numbers are build-time engineering calls made inside the codebase.
   (getting in, tabs, votes, the post, the TV house channel, the panic way-out), then a
   closed-by-default spoiler curtain whose summary explicitly warns guests away — hosts
   are told the machinery is theirs to know, only the WHO of the night stays sealed
-  (D24 scope). Behind it every screenshot renders blurred until tapped; the footer
-  cites the capture manifest. Linked from /new and /sandbox only, never the landing
+  (D24 scope). One seal, not two: Paul cut the per-image blur-until-tap layer as
+  redundant friction — clicking through the explicit curtain IS the consent. The
+  footer cites the capture manifest. Linked from /new and /sandbox only, never the landing
   page or the player app.
   `npm run guide:capture` (scripts/capture-guide.ts) is a Playwright harness that
   creates a real INDUCTION game through /new, drives two phones + TV through all 18
