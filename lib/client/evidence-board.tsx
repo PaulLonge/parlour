@@ -425,23 +425,37 @@ export function EvidenceBoard({ storageKey }: { storageKey: string }) {
           max-height: 6.5em;
           overflow: hidden;
         }
+        /* 44px tap target, same center as the old 22px badge — glyph stays
+           small, the invisible hit area grows around it (review #4, same
+           technique as CodeEntryBox/InfoDot, visual review #2) */
         .board-note-edit-btn {
           position: absolute;
-          top: -9px;
-          right: -9px;
+          top: -20px;
+          right: -20px;
+          width: 44px;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: transparent;
+          border: none;
+          color: var(--ink-dim);
+        }
+        .board-note-edit-glyph {
           width: 22px;
           height: 22px;
           border-radius: 999px;
           background: var(--panel-solid);
           border: 1px solid var(--border-strong);
-          color: var(--ink-dim);
+          color: inherit;
           font-size: 0.7rem;
           line-height: 1;
           display: flex;
           align-items: center;
           justify-content: center;
         }
-        .board-note-edit-btn:hover, .board-note-edit-btn:focus-visible { color: var(--gold); border-color: var(--gold); }
+        .board-note-edit-btn:hover .board-note-edit-glyph,
+        .board-note-edit-btn:focus-visible .board-note-edit-glyph { color: var(--gold); border-color: var(--gold); }
         .board-note-edit-panel {
           background: var(--panel-solid);
           border: 1px solid var(--border-strong);
@@ -562,7 +576,9 @@ export function EvidenceBoard({ storageKey }: { storageKey: string }) {
                     <p className="board-note-text">{n.text}</p>
                   </div>
                   <button type="button" className="board-note-edit-btn" aria-label="edit or delete this note" onClick={() => startEdit(n.id)}>
-                    ✎
+                    <span className="board-note-edit-glyph" aria-hidden>
+                      ✎
+                    </span>
                   </button>
                 </>
               )}

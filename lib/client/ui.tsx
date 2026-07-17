@@ -66,19 +66,27 @@ export function Accordion({
 export function InfoDot({ hint, edge = "center" }: { hint: string; edge?: "center" | "right" }) {
   const [show, setShow] = useState(false);
   return (
-    <span className="relative inline-block">
+    <span className="relative ml-1 inline-block align-middle">
+      {/* 44px tap target via padding + negative margin, glyph stays small
+          (review #4 — same technique as CodeEntryBox's toggle, visual review #2) */}
       <button
         aria-label="what is this?"
         aria-expanded={show}
-        className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full border text-[10px] align-middle"
-        style={{ borderColor: "var(--ink-dim)", color: "var(--ink-dim)" }}
+        className="-m-3 inline-flex items-center justify-center p-3"
+        style={{ minWidth: 44, minHeight: 44 }}
         onClick={(e) => {
           e.stopPropagation();
           setShow(!show);
         }}
         onBlur={() => setShow(false)}
       >
-        ?
+        <span
+          aria-hidden
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full border text-[10px]"
+          style={{ borderColor: "var(--ink-dim)", color: "var(--ink-dim)" }}
+        >
+          ?
+        </span>
       </button>
       {show && (
         <span
