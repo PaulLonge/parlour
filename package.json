@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "simulate": "tsx scripts/simulate.ts",
-    "simulate:rogue": "tsx scripts/simulate-rogue.ts"
+    "simulate:rogue": "tsx scripts/simulate-rogue.ts",
+    "guide:capture": "tsx scripts/capture-guide.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.12",
