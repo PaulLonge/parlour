@@ -91,23 +91,44 @@ scripts/                simulate.ts (murder), simulate-rogue.ts (rogue), land-st
 5. **Deploy**: push to GitHub → import in Vercel → set the same env vars →
    your party URL is live. Print the QR.
 
-### Optional: server-side heartbeat (belt & braces)
+### Optional: server-side heartbeat (belt & braces, D71: TV never required)
 
-The TV page ticks the director while open. For a backup that survives the TV tab
-dying, run in the Supabase SQL editor (replace URL + secret):
+The TV page ticks the director while open (`app/tv/[code]/page.tsx`), but the
+game must not stall if nobody has it open. `supabase/migrations/0010_heartbeat.sql`
+adds a Supabase-native backup: pg_cron + pg_net call `/api/director/cron` once a
+minute, and that route ticks **every** active game itself — no per-game code to
+configure, unlike the old single-game cron snippet this replaces.
 
-```sql
-create extension if not exists pg_cron;
-create extension if not exists pg_net;
-select cron.schedule('parlour-heartbeat', '*/3 * * * *', $$
-  select net.http_post(
-    url := 'https://YOUR-APP.vercel.app/api/director/tick',
-    headers := '{"content-type":"application/json","x-tick-secret":"YOUR_SECRET"}'::jsonb,
-    body := '{"code":"YOURCODE","trigger":"heartbeat"}'::jsonb
-  );
-$$);
--- when the party's over:  select cron.unschedule('parlour-heartbeat');
-```
+1. Apply `0010_heartbeat.sql` (same SQL-editor-or-`db push` path as the other
+   migrations in `supabase/migrations/`).
+2. Insert the one config row it reads its target from — **do this via the SQL
+   editor or Supabase MCP, never commit it to a migration**:
+   ```sql
+   insert into public.heartbeat_config (id, url, secret)
+   values (true, 'https://YOUR-APP.vercel.app', 'YOUR_DIRECTOR_TICK_SECRET')
+   on conflict (id) do update set url = excluded.url, secret = excluded.secret;
+   ```
+   `secret` must equal the deployed app's `DIRECTOR_TICK_SECRET`. Until this row
+   exists the cron job is a harmless no-op (it checks and returns early).
+
+The TV stays up as a bonus ticker, not a conflict: `tickDirector()`
+(`lib/director/director.ts`) coalesces per game — any tick within ~15s of the
+last `director_log` row for that game is skipped before it reaches the LLM, so
+a cron tick landing seconds apart from the TV's own heartbeat for the same
+game normally costs one extra read, not a second model call. Honest gap: that
+check-then-insert isn't wrapped in an advisory lock (the code says so — "gap
+#3 (interim)"), so two ticks arriving within milliseconds of each other could
+both pass the check before either logs, and both call the LLM. Harmless
+(the referee still validates both proposals), just not free — a real lock is
+still on the backlog. The tutorial/induction path doesn't have this gap: it's
+guarded by a DB unique index instead (`0009_tutorial_lock.sql`).
+
+Verify locally before trusting it at the party: start a game past lobby,
+`curl -X POST http://localhost:3000/api/director/cron -H "x-tick-secret: YOUR_SECRET"`,
+and confirm a new `director_log` row appears for it (or `{"skipped":"..."}` in
+the response if it was coalesced/paused/ended) — then check the live game state
+moved. Calling it with no games running, or with the wrong secret (expect 401),
+should also behave.
 
 ### Vetting generation quality (without spoiling your party)
 

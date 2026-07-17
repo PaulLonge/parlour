@@ -4,6 +4,55 @@ import { use, useEffect, useMemo, useState } from "react";
 import { useGame, type PublicEvent } from "@/lib/client/useGame";
 import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
 
+// D71 — BENTHICA: once a rogue game is hijacked, the TV becomes a descent
+// (techniques borrowed from The Gallery's BENTHICA room, MIT — deep
+// teal-to-abyss gradient, mono HUD instrument readouts, drifting motes, a
+// zone/depth footer bar). Plunder (CALICO) pulls the room deeper; compute
+// (BOSUN) drags it back toward the surface — the room sinks as the machine
+// wins, surfaces as the room fights back. Pre-hijack decoy stays untouched.
+const DEPTH_STOPS: [number, string][] = [
+  [0, "#0F7E8A"], // sunlit — the room is winning
+  [0.4, "#0A3B5C"], // twilight
+  [0.7, "#041526"], // midnight
+  [1, "#010409"], // abyss — CALICO is winning
+];
+
+function clamp01(n: number) {
+  return Math.min(1, Math.max(0, n));
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function depthColor(frac: number): string {
+  const f = clamp01(frac);
+  for (let i = 1; i < DEPTH_STOPS.length; i++) {
+    const [t0, c0] = DEPTH_STOPS[i - 1];
+    const [t1, c1] = DEPTH_STOPS[i];
+    if (f <= t1 || i === DEPTH_STOPS.length - 1) {
+      const local = t1 === t0 ? 0 : (f - t0) / (t1 - t0);
+      const [r0, g0, b0] = hexToRgb(c0);
+      const [r1, g1, b1] = hexToRgb(c1);
+      const r = Math.round(r0 + (r1 - r0) * local);
+      const g = Math.round(g0 + (g1 - g0) * local);
+      const b = Math.round(b0 + (b1 - b0) * local);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+  }
+  return DEPTH_STOPS[DEPTH_STOPS.length - 1][1];
+}
+
+function depthZone(frac: number): string {
+  if (frac < 0.25) return "SUNLIT";
+  if (frac < 0.5) return "TWILIGHT";
+  if (frac < 0.75) return "MIDNIGHT";
+  return "ABYSS";
+}
+
+type Mote = { left: number; delay: number; dur: number; size: number };
+
 // The house channel (I12): a TV/laptop left open all night. It is also the
 // game's metronome — while this page is up, the director's heartbeat ticks.
 export default function TvPage({ params }: { params: Promise<{ code: string }> }) {
@@ -26,6 +75,25 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
     const t = setInterval(() => g.actions.tick(), heartbeatMs);
     return () => clearInterval(t);
   }, [begun, heartbeatMs, gameId, g.actions]);
+
+  // marine snow, generated client-side only — random per-mote layout would
+  // otherwise mismatch the server-rendered HTML on hydration
+  const hijacked = g.game?.mode === "rogue" && !!g.game?.hijacked_at;
+  const [motes, setMotes] = useState<Mote[]>([]);
+  useEffect(() => {
+    if (!hijacked) {
+      setMotes([]);
+      return;
+    }
+    setMotes(
+      Array.from({ length: 22 }, () => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 12,
+        dur: 16 + Math.random() * 14,
+        size: 2 + Math.random() * 3,
+      }))
+    );
+  }, [hijacked]);
 
   async function begin() {
     setBegun(true);
@@ -52,6 +120,19 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
       ? ({ ["--bg" as string]: skin.bg, ["--accent" as string]: skin.accent, ["--ink" as string]: skin.text } as React.CSSProperties)
       : undefined;
 
+  // D71 depth mapping: net tension between the two meters, each normalized
+  // against its own win target (D66 scales targets to headcount). 0 = fully
+  // surfaced (compute dominant, room fighting back), 1 = fully abyssal
+  // (plunder dominant, CALICO winning). Centred at 0.5 when even.
+  const cfg = (g.game.config ?? {}) as { plunderTarget?: number; computeTarget?: number };
+  const plunder = g.game.meters?.plunder ?? 0;
+  const compute = g.game.meters?.compute ?? 0;
+  const plunderFrac = clamp01(plunder / (cfg.plunderTarget || 3000));
+  const computeFrac = clamp01(compute / (cfg.computeTarget || 100));
+  const depthFrac = clamp01(0.5 + (plunderFrac - computeFrac) / 2);
+  const depthBg = depthColor(depthFrac);
+  const zone = depthZone(depthFrac);
+
   const announces = g.publicEvents.filter((e) => ["announce", "seal_broken", "seal_resumed"].includes(e.type));
   const latest = announces[0];
   const reveal = g.publicEvents.find((e) => e.type === "reveal_roles");
@@ -61,8 +142,102 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
   const atCeremony = g.game.mode === "rogue" && (g.game.status === "reveal" || g.game.status === "ended");
 
   return (
-    <main className={`relative flex min-h-dvh flex-col p-10 ${themeClass}`} style={style}>
+    <main
+      className={`relative flex min-h-dvh flex-col p-10 ${themeClass}${hijacked ? " benthica" : ""}`}
+      style={style}
+    >
+      {hijacked && (
+        <style>{`
+          .benthica-depth {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            transition: background-color 3s ease;
+            animation: benthica-flood 2.6s ease both;
+          }
+          @keyframes benthica-flood {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+          .benthica-glow {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background: radial-gradient(60% 45% at 50% 6%, rgba(100, 240, 210, 0.10), transparent 70%);
+          }
+          .benthica-motes { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+          .benthica-motes .mote {
+            position: absolute; bottom: -5%; border-radius: 999px;
+            background: #64F0D2; opacity: 0;
+            box-shadow: 0 0 6px 1px rgba(100, 240, 210, 0.55);
+            animation: benthica-drift linear infinite;
+          }
+          @keyframes benthica-drift {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            8% { opacity: 0.55; }
+            92% { opacity: 0.32; }
+            100% { transform: translateY(-110vh) translateX(14px); opacity: 0; }
+          }
+          .benthica-hud {
+            position: fixed; top: 1.4rem; right: 1.4rem; z-index: 20;
+            font-family: Consolas, "Courier New", monospace;
+            text-align: right;
+            padding: 0.8rem 1.1rem 0.7rem 1.3rem;
+            background: rgba(1, 4, 9, 0.5);
+            backdrop-filter: blur(6px);
+            border-right: 2px solid rgba(100, 240, 210, 0.35);
+            animation: benthica-emerge 2.2s ease both;
+          }
+          .benthica-hud-title {
+            font-size: 0.6rem; letter-spacing: 0.22em; color: rgba(159, 195, 207, 0.75);
+            margin-bottom: 0.55rem; white-space: nowrap;
+          }
+          .benthica-readout { display: flex; justify-content: flex-end; align-items: baseline; gap: 0.6em; margin: 0.32rem 0; font-variant-numeric: tabular-nums; }
+          .benthica-readout .lbl { font-size: 0.62rem; letter-spacing: 0.16em; color: rgba(159, 195, 207, 0.7); white-space: nowrap; }
+          .benthica-readout .val { font-size: 1.2rem; font-weight: 600; color: #E6F1F4; min-width: 3ch; }
+          .benthica-readout .unit { font-size: 0.6rem; letter-spacing: 0.08em; color: rgba(159, 195, 207, 0.6); }
+          .benthica-zonebar {
+            position: relative; z-index: 5;
+            display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+            margin-top: 0.9rem; padding: 0.55rem 0.3rem 0;
+            border-top: 1px solid rgba(100, 240, 210, 0.18);
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.7rem; letter-spacing: 0.2em; color: #9FC3CF;
+          }
+          .benthica-zonebar .lbl { color: rgba(159, 195, 207, 0.55); margin-right: 0.6em; }
+          .benthica-zonebar-note { font-style: italic; letter-spacing: 0.05em; opacity: 0.75; }
+          .benthica-announce { text-shadow: 0 0 26px rgba(100, 240, 210, 0.35); }
+          @keyframes benthica-emerge {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .benthica-depth { transition: none; animation: none; }
+            .benthica-motes { display: none; }
+            .benthica-hud { animation: none; }
+          }
+        `}</style>
+      )}
       <GlitchOverlay active={glitching} />
+      {hijacked && (
+        <>
+          <div className="benthica-depth" style={{ backgroundColor: depthBg }} aria-hidden />
+          <div className="benthica-glow" aria-hidden />
+          {motes.length > 0 && (
+            <div className="benthica-motes" aria-hidden>
+              {motes.map((m, i) => (
+                <span
+                  key={i}
+                  className="mote"
+                  style={{
+                    left: `${m.left}%`,
+                    width: `${m.size}px`,
+                    height: `${m.size}px`,
+                    animationDelay: `${m.delay}s`,
+                    animationDuration: `${m.dur}s`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
       <div className="vignette" />
 
       {!begun && (
@@ -99,21 +274,7 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
         </p>
       </header>
 
-      {g.game.mode === "rogue" && g.game.hijacked_at && (
-        <div className="relative mx-auto mt-6 flex w-full max-w-3xl items-center justify-between gap-8 text-2xl">
-          <span>
-            ☠ <b style={{ color: "var(--danger)" }}>{g.game.meters.plunder}</b>{" "}
-            <span className="text-base" style={{ color: "var(--ink-dim)" }}>drained</span>
-          </span>
-          <span className="flex-1 text-center text-xs italic" style={{ color: "var(--ink-dim)" }}>
-            every coin accounted for
-          </span>
-          <span>
-            🏮 <b style={{ color: "var(--gold)" }}>{g.game.meters.compute}</b>{" "}
-            <span className="text-base" style={{ color: "var(--ink-dim)" }}>compute</span>
-          </span>
-        </div>
-      )}
+      {hijacked && <DepthHUD plunder={plunder} compute={compute} depthFrac={depthFrac} />}
 
       <section className="relative flex flex-1 flex-col items-center justify-center text-center">
         {atCeremony && unmasked ? (
@@ -121,7 +282,10 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
         ) : reveal && g.game.status !== "round" ? (
           <RevealBoard e={reveal} />
         ) : latest ? (
-          <p key={latest.id} className="envelope drift max-w-4xl font-display text-5xl leading-snug">
+          <p
+            key={latest.id}
+            className={`envelope drift max-w-4xl font-display text-5xl leading-snug${hijacked ? " benthica-announce" : ""}`}
+          >
             “{(latest.payload.text as string) ?? ""}”
           </p>
         ) : (
@@ -130,6 +294,16 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
           </p>
         )}
       </section>
+
+      {hijacked && (
+        <div className="benthica-zonebar">
+          <p>
+            <span className="lbl">ZONE</span>
+            {zone}
+          </p>
+          <p className="benthica-zonebar-note">every coin accounted for — {Math.round(depthFrac * 100)}% depth</p>
+        </div>
+      )}
 
       <footer className="relative flex flex-wrap justify-center gap-x-6 gap-y-2 text-base" style={{ color: "var(--ink-dim)" }}>
         {g.roster.map((p) => (
@@ -144,6 +318,33 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
         ))}
       </footer>
     </main>
+  );
+}
+
+// D71 BENTHICA: the twin meters as depth instruments — mono, letterspaced
+// caps, tabular numerics, backdrop-blurred HUD corner cluster (borrowed from
+// The Gallery's BENTHICA room). Same data as the old centered meters bar,
+// just read as instruments instead of a ledger line.
+function DepthHUD({ plunder, compute, depthFrac }: { plunder: number; compute: number; depthFrac: number }) {
+  return (
+    <aside className="benthica-hud" aria-label="Descent telemetry">
+      <p className="benthica-hud-title">CALICO — DEPTH TELEMETRY</p>
+      <div className="benthica-readout">
+        <span className="lbl">DEPTH</span>
+        <span className="val">{String(Math.round(depthFrac * 100)).padStart(3, "0")}</span>
+        <span className="unit">%</span>
+      </div>
+      <div className="benthica-readout">
+        <span className="lbl">DRAIN ☠</span>
+        <span className="val">{plunder}</span>
+        <span className="unit">plndr</span>
+      </div>
+      <div className="benthica-readout">
+        <span className="lbl">CHARGE 🏮</span>
+        <span className="val">{compute}</span>
+        <span className="unit">bosun</span>
+      </div>
+    </aside>
   );
 }
 
