@@ -147,6 +147,7 @@ export function useGame(code: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [gameId, setGameId] = useState<string | null>(null);
+  const [reconnectNonce, setReconnectNonce] = useState(0); // bumped to force a resubscribe (review #4)
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const refetch = useCallback(async () => {
@@ -263,6 +264,19 @@ export function useGame(code: string) {
     };
   }, [refetch]);
 
+  // belt-and-braces fallback poll (review #4): the TV is left open all
+  // night with nobody around to generate a focus/visibilitychange event, and
+  // a phone in someone's pocket isn't guaranteed to either — realtime was
+  // the ONLY thing keeping either screen current. If the websocket drops
+  // silently (flaky venue wifi, a laptop sleep/wake cycle) nothing else
+  // would ever notice, for the rest of the night, in front of the whole
+  // room. refetch() is the same idempotent read used by mount/focus/realtime,
+  // so a slow poll can only catch what those miss, never fight them.
+  useEffect(() => {
+    const t = setInterval(refetch, 25000);
+    return () => clearInterval(t);
+  }, [refetch]);
+
   // realtime: subscriptions are FILTERED to this game (review H6 — without the
   // filter every insert in ANY game refetched every client). Created once the
   // game id is known.
@@ -283,14 +297,24 @@ export function useGame(code: string) {
         .on("postgres_changes", { event: "*", schema: "public", table: "games", filter: `id=eq.${gameId}` }, refetch)
         .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: f }, refetch)
         .on("postgres_changes", { event: "*", schema: "public", table: "wagers", filter: f }, refetch)
-        .subscribe();
+        // resubscribe-on-drop (review #4): a dropped channel doesn't always
+        // rejoin itself. Refetch immediately so the gap is covered before
+        // the next slow-poll tick, and bump reconnectNonce to tear down and
+        // recreate the channel below.
+        .subscribe((status) => {
+          if (cancelled) return;
+          if (status === "TIMED_OUT" || status === "CHANNEL_ERROR" || status === "CLOSED") {
+            refetch();
+            setReconnectNonce((n) => n + 1);
+          }
+        });
       channelRef.current = ch;
     })();
     return () => {
       cancelled = true;
       channelRef.current?.unsubscribe();
     };
-  }, [gameId, refetch, supa]);
+  }, [gameId, refetch, supa, reconnectNonce]);
 
   const actions = useMemo(
     () => ({
