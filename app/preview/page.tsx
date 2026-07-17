@@ -12,7 +12,7 @@ import {
   VoteTable,
   DeadBanner,
 } from "@/lib/client/cards";
-import { MetersStrip, PurseChip, BribeCard, CodeEntryBox, GlyphBadge, ActionRow } from "@/lib/client/rogue-cards";
+import { MetersStrip, PurseChip, BribeCard, CodeEntryBox, GlyphBadge, GlyphGrid, ActionRow } from "@/lib/client/rogue-cards";
 import { MiniGame, PHONE_GAMES } from "@/lib/client/minigames";
 import { WagerHub } from "@/lib/client/wager-hub";
 import { EvidenceBoard } from "@/lib/client/evidence-board";
@@ -61,6 +61,7 @@ const MOCK_MESSAGES = [
     kind: "flavor",
     title: "The house notices you",
     body: "Someone has been in the study. The fire was lit twice today.",
+    claimed_sender: "THE HOUSE",
     created_at: "",
   },
 ];
@@ -118,6 +119,7 @@ const MOCK_PIRATE_MESSAGES = [
     kind: "flavor",
     title: "The tide is coming in",
     body: "The captain counts the crew at eight bells. Nobody has seen the captain.",
+    claimed_sender: "BOSUN",
     created_at: "",
   },
 ];
@@ -413,6 +415,26 @@ export default function Preview() {
           {wagerDemoGame && (
             <MiniGame gameName={wagerDemoGame} playerA="Paul" playerB="Co-Host" onClose={() => setWagerDemoGame(null)} />
           )}
+        </section>
+
+        {/* --------------------- the glyph handshake (D74 wave B1: GLYPHAUS) ---------------------- */}
+        {/* Theme-agnostic on purpose, same as the wager hub above: GlyphBadge/
+            GlyphGrid style themselves only off the surrounding theme's own
+            vars (D22 — no allegiance-specific chrome), so this section proves
+            the look in whichever house style is currently selected, decoy
+            and hijacked included, without needing the live rogueLive gate. */}
+        <section className={`themed mx-auto mt-10 max-w-[390px] ${theme.cls}`}>
+          <p className="deco-rule kicker justify-center text-center">the glyph handshake (D32/D74) — GLYPHAUS</p>
+          <div className="mt-3 flex flex-col gap-3">
+            <GlyphBadge gameId="preview" playerId="celia" />
+            <div className="panel p-4">
+              <p className="kicker">tap-grid verifier</p>
+              <p className="mt-1 text-xs italic" style={{ color: "var(--ink-dim)" }}>
+                Get them to show you their mark, then tap what you saw:
+              </p>
+              <GlyphGrid onTap={() => {}} />
+            </div>
+          </div>
         </section>
 
         {/* --------------------------- THE DESCENT ------------------------------ */}

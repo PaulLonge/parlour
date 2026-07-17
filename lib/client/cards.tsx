@@ -93,6 +93,26 @@ export function expiresIn(iso: string | null): string | null {
   return `~${Math.round(mins / 60)}h`;
 }
 
+// D74 wave B2 — the shortwave treatment (Gallery "shortwave" anchor, MIT):
+// every AI transmission gets a station/frequency-style header line, tuned
+// per theme in globals.css. The "station" is a deterministic hash of the
+// claimed sender string ONLY (never Math.random/Date.now — this runs in
+// the render path and must hydrate identically) so the same claimed name
+// always tunes to the same "station", the way a numbers station keeps its
+// frequency. It is flavor, not evidence: the claim is still unverified.
+function stationSignature(seed: string): { code: string; freq: string; bars: string } {
+  let h = 5381;
+  for (let i = 0; i < seed.length; i++) {
+    h = ((h << 5) + h + seed.charCodeAt(i)) >>> 0; // djb2
+  }
+  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // no I/O — never read as 1/0
+  const code = `${letters[h % letters.length]}-${10 + (h % 89)}`;
+  const freq = (5.6 + ((h >>> 3) % 1900) / 1000).toFixed(3);
+  const strength = 1 + ((h >>> 6) % 5);
+  const bars = "●".repeat(strength) + "○".repeat(5 - strength);
+  return { code, freq, bars };
+}
+
 const KIND_LABEL: Record<string, { icon: string; label: string }> = {
   secret: { icon: "🔎", label: "a secret finds you" },
   task: { icon: "✉️", label: "a note, passed" },
@@ -120,6 +140,9 @@ export function MessageEnvelope({ m }: { m: Msg }) {
   // (D38/D28). Mark it plainly so an emotionally specific note isn't taken
   // at face value. (When notary seals ship, sealed mail loses this tag.)
   const unverified = !!m.claimed_sender && (isNote || transmission);
+  // station/frequency header line — claimed sender + kind only, see
+  // stationSignature above (D74 wave B2).
+  const sig = transmission && m.claimed_sender ? stationSignature(m.claimed_sender) : null;
   return (
     <div className={`panel envelope evidence-slip p-4 ${transmission ? "transmission" : ""}`}>
       <p className="kicker flex items-baseline justify-between gap-2">
@@ -140,6 +163,14 @@ export function MessageEnvelope({ m }: { m: Msg }) {
           </span>
         )}
       </p>
+      {sig && (
+        <p className="transmission-meta" aria-hidden="true">
+          <span>sta {sig.code}</span>
+          <span>{sig.freq} mc/s</span>
+          <span className="transmission-bars">{sig.bars}</span>
+          <span>{k.label}</span>
+        </p>
+      )}
       {m.title && m.title !== "…" && !isIntercept && <p className="mt-1 font-semibold">{m.title}</p>}
       <p
         className={`mt-0.5 text-sm leading-relaxed whitespace-pre-wrap ${transmission ? "caret" : ""}`}

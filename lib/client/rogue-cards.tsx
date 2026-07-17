@@ -9,6 +9,107 @@ import type { Challenge, Txn } from "./useGame";
 import { expiresIn } from "./cards";
 import { GLYPHS, glyphFor, glyphWindow, GLYPH_WINDOW_MINUTES } from "@/lib/engine/glyphs";
 
+// D74 wave B1 (GLYPHAUS anchor, The Gallery, MIT): the glyph surfaces get a
+// "specimen" treatment — hairline-ruled plates, a sealed tile before reveal,
+// a lensed presentation after. Scoped to this file only; every colour comes
+// from the surrounding theme's own vars, so it repaints correctly whether the
+// house is the decoy case-file or the hijacked Apiary co-op (D22: no
+// allegiance-specific styling here — only content ever tells that story).
+// Shared by both GlyphBadge and GlyphGrid below; harmless if both mount at
+// once (a second identical <style> tag is a no-op).
+function GlyphausStyle() {
+  return (
+    <style>{`
+      .glyphaus-seal {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.2rem;
+        width: 3.25rem;
+        height: 3.25rem;
+        min-width: 44px;
+        min-height: 44px;
+        flex: none;
+        border: 2px solid var(--border-strong);
+        border-radius: calc(var(--radius) * 0.4);
+        background: color-mix(in srgb, var(--panel-solid) 88%, var(--ink) 4%);
+        color: var(--ink-dim);
+        cursor: crosshair;
+        transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+      }
+      .glyphaus-seal:hover, .glyphaus-seal:focus-visible {
+        background: var(--accent);
+        color: var(--accent-ink);
+        border-color: var(--accent);
+      }
+      .glyphaus-seal-mark { font-size: 1.15rem; line-height: 1; opacity: 0.85; }
+      .glyphaus-seal-label {
+        font-size: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-family: var(--font-body);
+      }
+
+      .glyphaus-lens {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 1.15rem 1rem 0.95rem;
+        border: 2px solid var(--border-strong);
+        border-radius: calc(var(--radius) * 0.5);
+        background: color-mix(in srgb, var(--panel-solid) 92%, transparent);
+      }
+      .glyphaus-lens-glyph { font-size: 3.5rem; line-height: 1; }
+      .glyphaus-lens-code {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--ink-dim);
+        font-family: var(--font-body);
+      }
+      @keyframes glyphaus-reveal {
+        from { opacity: 0; transform: scale(0.94); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .glyphaus-lens-in { animation: glyphaus-reveal 0.2s ease both; }
+      @media (prefers-reduced-motion: reduce) {
+        .glyphaus-lens-in { animation: none; }
+      }
+
+      .glyphaus-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--border-strong);
+        border: 2px solid var(--border-strong);
+        border-radius: calc(var(--radius) * 0.4);
+        overflow: hidden;
+      }
+      .glyphaus-cell {
+        aspect-ratio: 1;
+        min-height: 44px;
+        display: grid;
+        place-items: center;
+        background: var(--panel-solid);
+        font-size: 1.5rem;
+        line-height: 1;
+        color: var(--ink);
+        cursor: crosshair;
+        transition: background 0.14s ease, color 0.14s ease, transform 0.06s ease;
+      }
+      .glyphaus-cell:hover:not(:disabled), .glyphaus-cell:focus-visible {
+        background: var(--accent);
+        color: var(--accent-ink);
+      }
+      .glyphaus-cell:active:not(:disabled) { transform: scale(0.92); }
+      .glyphaus-cell:disabled { opacity: 0.4; cursor: default; }
+    `}</style>
+  );
+}
+
 // Your rotating glyph (D32): reveal-on-tap (GDD UX #4 — a mark used for
 // face-to-face proof shouldn't sit exposed on the default screen for anyone
 // to shoulder-surf or screenshot). Hold-to-show, auto-hides after 5s.
@@ -26,25 +127,34 @@ export function GlyphBadge({ gameId, playerId }: { gameId: string; playerId: str
   }, [shown]);
   const g = glyphFor(gameId, playerId, w);
   return (
-    <div className="panel flex items-center justify-between px-4 py-2">
-      <div>
-        <p className="kicker">your mark — show, never say</p>
-        <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
-          changes every {GLYPH_WINDOW_MINUTES} minutes
-        </p>
+    <div className="panel px-4 py-3">
+      <GlyphausStyle />
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="kicker">your mark — show, never say</p>
+          <p className="text-xs italic" style={{ color: "var(--ink-dim)" }}>
+            changes every {GLYPH_WINDOW_MINUTES} minutes
+          </p>
+        </div>
+        {!shown && (
+          <button
+            className="glyphaus-seal"
+            onClick={() => setShown(true)}
+            aria-label="reveal your mark for five seconds"
+          >
+            <span className="glyphaus-seal-mark" aria-hidden="true">◆</span>
+            <span className="glyphaus-seal-label">reveal</span>
+          </button>
+        )}
       </div>
-      {shown ? (
-        <span className="text-4xl" title={g.word} aria-label="your mark">
-          {g.emoji}
-        </span>
-      ) : (
-        <button
-          className="btn btn-ghost text-xs"
-          onClick={() => setShown(true)}
-          aria-label="reveal your mark for five seconds"
-        >
-          👁 reveal
-        </button>
+      {/* the SYMBOL is the credential — never print its word. A canonical
+          name under the glyph makes "what's yours?" answerable aloud, which
+          is exactly the shortcut show-never-say exists to kill (D32/D34). */}
+      {shown && (
+        <div className="glyphaus-lens glyphaus-lens-in mt-3" role="img" aria-label="your mark">
+          <span className="glyphaus-lens-glyph">{g.emoji}</span>
+          <span className="glyphaus-lens-code">show it — say nothing</span>
+        </div>
       )}
     </div>
   );
@@ -53,18 +163,22 @@ export function GlyphBadge({ gameId, playerId }: { gameId: string; playerId: str
 // tap-grid verifier: no typing, no candle-vs-flame — deterministic by construction
 export function GlyphGrid({ busy, onTap }: { busy?: boolean; onTap: (key: string) => void }) {
   return (
-    <div className="mt-3 grid grid-cols-4 gap-2">
-      {GLYPHS.map((g) => (
-        <button
-          key={g.key}
-          className="btn btn-ghost !px-0 !py-3 text-2xl"
-          disabled={busy}
-          title={g.word}
-          onClick={() => onTap(g.key)}
-        >
-          {g.emoji}
-        </button>
-      ))}
+    <div className="mt-3">
+      <GlyphausStyle />
+      <div className="glyphaus-grid" role="group" aria-label="tap the glyph you saw">
+        {GLYPHS.map((g) => (
+          <button
+            key={g.key}
+            className="glyphaus-cell"
+            disabled={busy}
+            title={g.word}
+            aria-label={g.word}
+            onClick={() => onTap(g.key)}
+          >
+            <span aria-hidden="true">{g.emoji}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -786,3 +786,17 @@ B-numbers are build-time engineering calls made inside the codebase.
   the floor — auto-plays once on the TV, rests on the full ceremony; reduced
   motion gets the summary instantly), THE COCKPIT (D73), and the Legerdemain
   wager table in-game. The Gallery casting sheet is fully built.
+
+- **D74 addendum — wave B lands; the casting sheet truly closes (2026-07-17).**
+  GLYPHAUS: the mark's reveal is a small ceremony (sealed plate → the glyph
+  large and composed) and the verification tap-grid is a specimen sheet —
+  hairline-gridded plates, accent hover-invert, one markup for every face.
+  Orchestrator overrule worth recording: the agent printed the glyph's WORD
+  under the revealed symbol; removed — a printed canonical name makes "what's
+  yours?" answerable aloud, the exact shortcut show-never-say exists to kill.
+  The caption now reads "show it — say nothing." SHORTWAVE: AI transmissions
+  carry a numbers-station meta line (station code + frequency + signal bars,
+  ALL derived deterministically from the claimed sender — no randomness), an
+  intercepted-radio-log read on case-file bond, mono cadence in the co-op,
+  murder mode's terminal untouched; UNVERIFIED and claimed-sender stay loud
+  (D54). Every room Paul picked from The Gallery is now built into the app.
