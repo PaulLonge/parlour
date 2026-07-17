@@ -73,6 +73,18 @@ export async function POST(req: Request) {
         { needsSeatCode: true, error: "seat code, please — check your other phone, or ask the host" },
         { status: 403 }
       );
+    // One session holds ONE seat per game: release any other seat this user
+    // occupies before taking this one. Without this, sandbox possession (and
+    // any same-device player switch) leaves BOTH rows carrying this auth_uid,
+    // and the client's who-am-I lookup — one row per game — errors into null:
+    // "Play as …" blanks and /g falls back to the join screen for good.
+    const { error: detachErr } = await admin
+      .from("players")
+      .update({ auth_uid: null })
+      .eq("game_id", game.id)
+      .eq("auth_uid", user!.id)
+      .neq("id", existing.id);
+    if (detachErr) return NextResponse.json({ error: detachErr.message }, { status: 500 });
     const { error } = await admin
       .from("players")
       .update({ auth_uid: user!.id, intake })
@@ -108,6 +120,14 @@ export async function POST(req: Request) {
   // lookalike ambiguity. Shown to the owner in More; needed to take the seat
   // from another device.
   const seat = String(Math.floor(1000 + Math.random() * 9000));
+  // same seat hygiene as the takeover path: this session releases any seat it
+  // already holds in this game before sitting down as someone new
+  const { error: detachErr } = await admin
+    .from("players")
+    .update({ auth_uid: null })
+    .eq("game_id", game.id)
+    .eq("auth_uid", user!.id);
+  if (detachErr) return NextResponse.json({ error: detachErr.message }, { status: 500 });
   const { data: player, error } = await admin
     .from("players")
     .insert({

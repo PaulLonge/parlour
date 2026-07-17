@@ -754,3 +754,15 @@ B-numbers are build-time engineering calls made inside the codebase.
   React Strict Mode double-invoking a state updater silently cancelled string
   ties; one-axis overflow-x kills position:sticky; an opened <details> can never
   satisfy an IntersectionObserver area threshold.
+
+- **D73 — sandbox seat hygiene (bug, fixed) + the sandbox rethink (queued).**
+  Paul's first solo run broke on the SECOND possession: /api/join never released
+  the session's previous seat, so two player rows in one game carried the same
+  auth_uid and the client's who-am-I lookup (maybeSingle) errored into a
+  permanent me=null — "Play as …" blanked, /g fell back to the join screen.
+  Fixed twice over: join now detaches the session's other seats in that game at
+  both attach points (takeover + new-player), and the client read is limit(1)
+  so a polluted game can never brick the view again. QUEUED (Paul): the solo
+  sandbox deserves a ground-up rethink now the redesign landed — it predates
+  the case-file/co-op faces, THE BOARD, and the venue-free heartbeat, and reads
+  as a dev readout rather than a playtest cockpit.

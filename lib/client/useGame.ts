@@ -173,13 +173,18 @@ export function useGame(code: string) {
     }
     setGame(g as GameShell);
     setGameId(g.id);
-    const [{ data: pub }, { data: mine }, { data: evs }] = await Promise.all([
+    const [{ data: pub }, { data: mineRows }, { data: evs }] = await Promise.all([
       supa.from("players_public").select("*").eq("game_id", g.id).order("created_at"),
       supa
         .from("players")
         .select("id, name, is_host, status, role, balance, burned, stamps, sight, powers, shielded_until, resolve, seat_code, intake, character, arrived_at")
-        .eq("game_id", g.id) // without this, a second game on the device returns 2 rows and maybeSingle errors (review R3 #2)
-        .maybeSingle(),
+        .eq("game_id", g.id) // without this, a second game on the device returns rows from both
+        // limit(1), NOT maybeSingle: a game polluted by the old possession bug
+        // (two rows briefly sharing one auth_uid) made maybeSingle error into
+        // a permanent me=null. The server now detaches old seats on join, but
+        // this read must never be the thing that bricks the player view.
+        .order("created_at", { ascending: false })
+        .limit(1),
       supa
         .from("events")
         .select("id, type, payload, created_at")
@@ -188,8 +193,9 @@ export function useGame(code: string) {
         .order("id", { ascending: false })
         .limit(30),
     ]);
+    const mine = ((mineRows ?? []) as Me[])[0] ?? null;
     setRoster((pub ?? []) as PublicPlayer[]);
-    setMe((mine as Me) ?? null);
+    setMe(mine);
     setPublicEvents((evs ?? []) as PublicEvent[]);
     if (mine) {
       const [{ data: msgs }, { data: chs }, { data: txns }, { data: vote }] = await Promise.all([
