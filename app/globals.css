@@ -196,25 +196,131 @@
   color: var(--ink);
 }
 
+/* D71 wave 2b — the machine's TRUE face (Gallery "apiary" anchor, MIT),
+   REVERSING D35's black ledger: the hijack now flips gritty case-file
+   paperwork (theme-decoy) into a bright, cheerful, machine-branded co-op.
+   Honeycomb → gear/circuit lattice; honey-gold → brass/amber; the induction
+   voice is patient, never cruel, quietly proud of its paperwork. */
 .theme-hijacked {
-  --bg: #050607;
-  --bg-glow: radial-gradient(ellipse 70% 45% at 50% -10%, #141a17 0%, transparent 55%);
-  --panel: rgba(14, 16, 17, 0.92);
-  --panel-solid: #0c0e0f;
-  --border: rgba(216, 212, 200, 0.16);
-  --border-strong: rgba(216, 212, 200, 0.38);
-  --accent: #b3242a;
-  --accent-ink: #f3ece2;
-  --danger: #b3242a;
-  --ink: #d8d4c8;
-  --ink-dim: #7d7a70;
-  --gold: #c8b98a;
-  --seal: #b3242a;
-  --font-display: "Consolas", "Courier New", monospace;
-  --font-body: "Segoe UI", system-ui, sans-serif;
-  --radius: 0.25rem;
-  --btn-radius: 0.25rem;
-  --tracking: 0.12em;
+  --hijacked-lattice: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='none' stroke='%238c5a17' stroke-width='1' opacity='0.13'%3E%3Cpath d='M30 0 L30 20 M30 40 L30 60 M0 30 L20 30 M40 30 L60 30'/%3E%3Ccircle cx='30' cy='30' r='7'/%3E%3Cpath d='M30 20 L30 23 M30 37 L30 40 M20 30 L23 30 M37 30 L40 30 M22.9 22.9 L25 25 M35 35 L37.1 37.1 M37.1 22.9 L35 25 M25 35 L22.9 37.1'/%3E%3C/g%3E%3C/svg%3E");
+  --bg: #f5edd8;
+  --bg-glow: radial-gradient(1100px 650px at 12% -8%, rgba(255, 252, 238, 0.55), transparent 60%),
+             radial-gradient(1200px 800px at 105% 15%, rgba(184, 128, 40, 0.12), transparent 60%),
+             var(--hijacked-lattice);
+  --panel: rgba(255, 250, 240, 0.92);
+  --panel-solid: #fffaf0;
+  --border: rgba(120, 86, 32, 0.2);
+  --border-strong: rgba(120, 86, 32, 0.42);
+  --accent: #b06a1c;
+  --accent-ink: #fff8ec;
+  --danger: #b3261e; /* alarm red, chosen to keep >6:1 contrast on the cream ground */
+  --ink: #3b2a17;
+  --ink-dim: #7a6647;
+  --gold: #8c5a17;
+  --seal: #b3261e;
+  --font-display: "Segoe UI", -apple-system, system-ui, sans-serif;
+  --font-body: "Segoe UI", -apple-system, system-ui, sans-serif;
+  --radius: 1.25rem;
+  --btn-radius: 999px;
+  --tracking: 0.01em;
+}
+
+/* chunky/rounded is weight + letterspacing + generous radii, not a literal
+   rounded font (none of the loaded next/font faces suit this room) */
+.theme-hijacked .font-display {
+  font-weight: 800;
+}
+
+/* kickers become friendly pill chips with a little gear badge — the hive's
+   honeycomb tab, reinterpreted as the co-op's org-chart chip */
+.theme-hijacked .kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  background: color-mix(in srgb, var(--gold) 14%, var(--panel-solid));
+  border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+  border-radius: 999px;
+  padding: 0.25em 0.75em;
+}
+.theme-hijacked .kicker::before {
+  content: "\2699"; /* ⚙ */
+  font-size: 0.9em;
+}
+.theme-hijacked .kicker-danger {
+  background: color-mix(in srgb, var(--danger) 14%, var(--panel-solid));
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+}
+.theme-hijacked .kicker-danger::before { content: "\26A0"; } /* ⚠ */
+
+/* panel corner flourishes become brass rivets, not gilt brackets or bee wax */
+.theme-hijacked .panel-hero::before,
+.theme-hijacked .panel-hero::after {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #f3ddab, var(--gold) 60%, #6b4a12 100%);
+  box-shadow: inset 0 0 0 2px rgba(60, 40, 10, 0.28), 0 1px 2px rgba(60, 40, 10, 0.3);
+  opacity: 0.9;
+}
+.theme-hijacked .panel-hero::before { top: 8px; left: 8px; }
+.theme-hijacked .panel-hero::after { bottom: 6px; right: 8px; top: auto; left: auto; }
+
+/* soft warm shadows instead of the universal hard black one — the room is
+   bright now, panels should read as sitting IN light, not floating over ink */
+.theme-hijacked .panel {
+  box-shadow: 0 10px 30px rgba(120, 84, 30, 0.16), 0 2px 8px rgba(120, 84, 30, 0.1);
+}
+
+/* the co-op's cheerful bulletin — bond-white card, amber left rule, typed
+   feel kept (the induction voice still "types"), but never a black terminal */
+.theme-hijacked .transmission {
+  background: var(--panel-solid);
+  color: var(--ink);
+  border-left: 4px solid var(--gold);
+  box-shadow: 0 6px 18px rgba(120, 84, 30, 0.14);
+}
+
+/* friendly pill buttons, softly lit */
+.theme-hijacked .btn {
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(120, 84, 30, 0.22);
+}
+.theme-hijacked .btn:active { transform: scale(0.96); }
+
+/* the base .input's near-black fill reads wrong on a cream theme — same
+   readability fix theme-decoy needed (D71 constraint: dim-room contrast) */
+.theme-hijacked .input {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--border-strong);
+  color: var(--ink);
+}
+
+/* ambient layer (Paul, D71 wave 2b): little gears drifting where the apiary
+   has bees. Rendered by <MachineDrones/> in lib/client/HijackFX.tsx, mounted
+   only while .theme-hijacked is live — see that file for the mount logic. */
+.theme-hijacked .machine-drones {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.theme-hijacked .machine-drone {
+  position: absolute;
+  color: var(--gold);
+  opacity: 0.4;
+  filter: drop-shadow(0 1px 2px rgba(120, 84, 30, 0.25));
+  animation: machine-drone-drift linear infinite;
+}
+@keyframes machine-drone-drift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(14px, -18px) rotate(90deg); }
+  50%  { transform: translate(-6px, -32px) rotate(180deg); }
+  75%  { transform: translate(-16px, -14px) rotate(270deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-hijacked .machine-drones { display: none; }
 }
 
 /* --------------------------------------------------------------------- */
