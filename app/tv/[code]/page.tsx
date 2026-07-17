@@ -402,27 +402,30 @@ export default function TvPage({ params }: { params: Promise<{ code: string }> }
             position: fixed; top: 1.4rem; right: 1.4rem; z-index: 20;
             font-family: Consolas, "Courier New", monospace;
             text-align: right;
-            padding: 0.8rem 1.1rem 0.7rem 1.3rem;
+            padding: 1rem 1.4rem 0.9rem 1.6rem;
             background: rgba(1, 4, 9, 0.5);
             backdrop-filter: blur(6px);
             border-right: 2px solid rgba(100, 240, 210, 0.35);
             animation: benthica-emerge 2.2s ease both;
           }
+          /* the meters are the visible stakes of the whole post-hijack
+             tug-of-war — TV-legible sizes, not a laptop-corner widget
+             (review #4, ~2x the prior register, still corner-docked) */
           .benthica-hud-title {
-            font-size: 0.6rem; letter-spacing: 0.22em; color: rgba(159, 195, 207, 0.75);
-            margin-bottom: 0.55rem; white-space: nowrap;
+            font-size: 0.9rem; letter-spacing: 0.22em; color: rgba(159, 195, 207, 0.75);
+            margin-bottom: 0.7rem; white-space: nowrap;
           }
-          .benthica-readout { display: flex; justify-content: flex-end; align-items: baseline; gap: 0.6em; margin: 0.32rem 0; font-variant-numeric: tabular-nums; }
-          .benthica-readout .lbl { font-size: 0.62rem; letter-spacing: 0.16em; color: rgba(159, 195, 207, 0.7); white-space: nowrap; }
-          .benthica-readout .val { font-size: 1.2rem; font-weight: 600; color: #E6F1F4; min-width: 3ch; }
-          .benthica-readout .unit { font-size: 0.6rem; letter-spacing: 0.08em; color: rgba(159, 195, 207, 0.6); }
+          .benthica-readout { display: flex; justify-content: flex-end; align-items: baseline; gap: 0.6em; margin: 0.4rem 0; font-variant-numeric: tabular-nums; }
+          .benthica-readout .lbl { font-size: 1rem; letter-spacing: 0.16em; color: rgba(159, 195, 207, 0.7); white-space: nowrap; }
+          .benthica-readout .val { font-size: 2.4rem; font-weight: 600; color: #E6F1F4; min-width: 3ch; }
+          .benthica-readout .unit { font-size: 0.95rem; letter-spacing: 0.08em; color: rgba(159, 195, 207, 0.6); }
           .benthica-zonebar {
             position: relative; z-index: 5;
             display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
             margin-top: 0.9rem; padding: 0.55rem 0.3rem 0;
             border-top: 1px solid rgba(100, 240, 210, 0.18);
             font-family: Consolas, "Courier New", monospace;
-            font-size: 0.7rem; letter-spacing: 0.2em; color: #9FC3CF;
+            font-size: 1.1rem; letter-spacing: 0.2em; color: #9FC3CF;
           }
           .benthica-zonebar .lbl { color: rgba(159, 195, 207, 0.55); margin-right: 0.6em; }
           .benthica-zonebar-note { font-style: italic; letter-spacing: 0.05em; opacity: 0.75; }
