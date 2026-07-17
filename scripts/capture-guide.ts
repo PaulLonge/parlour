@@ -316,6 +316,33 @@ async function main() {
     check("throwaway game row found by code", !gErr && !!gameRow, gErr?.message ?? "");
     gameId = gameRow!.id as string;
 
+    // ------------------------------------------------------------ 05/06 --
+    // TV first, while the game is still guaranteed in the lobby: the join
+    // code only shows there, and the SECOND join auto-ticks the induction
+    // straight into act1 (advance_phase fires once two players exist).
+    console.log("— 05/06: the TV (before the second join, so the code shows)");
+    await tvPage.goto(`${baseUrl}/tv/${code}`, { waitUntil: "load", timeout: 30_000 });
+    await tvPage.getByRole("button", { name: "🕯 Light the candles" }).waitFor({ state: "visible", timeout: 30_000 });
+    await shot(tvPage, "05-tv-gate.png");
+    await tvPage.getByRole("button", { name: "🕯 Light the candles" }).click();
+    await tvPage.getByRole("button", { name: "🕯 Light the candles" }).waitFor({ state: "hidden", timeout: 10_000 }).catch(() => {});
+    await tvPage.waitForTimeout(500); // wake-lock/fullscreen may reject headless — both are try/caught client-side, harmless either way
+    check("tv lobby shows the join code", (await tvPage.textContent("body"))?.includes(code) ?? false);
+    await shot(tvPage, "06-tv-lobby.png");
+
+    // park the TV: its heartbeat also ticks the director, and tutorialTick has
+    // no concurrency guard — a TV tick racing this script's ticks double-runs
+    // a step's moves (duplicate letters observed). Real engine race, flagged
+    // upstream; for a clean capture this script must be the only ticker.
+    await tvPage.goto("about:blank");
+
+    // ---------------------------------------------------------------- 04 --
+    console.log("— 04: host phone, Now tab, lobby");
+    await openTab(hostPage, "Now");
+    const hostBodyText = await hostPage.textContent("body");
+    note("hostPhone Now tab reads as lobby (best-effort)", !!hostBodyText?.includes("doors are not yet open"));
+    await shot(hostPage, "04-now-lobby.png");
+
     // ---------------------------------------------------------------- 03 --
     console.log("— 03: second phone joins");
     await secondPage.goto(`${baseUrl}/g/${code}`, { waitUntil: "load", timeout: 30_000 });
@@ -327,35 +354,6 @@ async function main() {
     await secondPage.getByRole("button", { name: "Step inside", exact: true }).click();
     await secondPage.getByRole("tablist").waitFor({ state: "visible", timeout: 30_000 });
     check("PlayerView renders for the second phone", await secondPage.getByRole("tablist").isVisible());
-
-    // ---------------------------------------------------------------- 04 --
-    // NOTE (known race, see final report): joining auto-ticks the director
-    // server-side for tutorial games. hostPage was loaded BEFORE the join and
-    // is not reloaded here, so it should still show the lobby it fetched at
-    // mount — but Supabase Realtime could push a status change through first.
-    // That's why this is a soft `note()`, not a hard `check()`.
-    console.log("— 04: host phone, Now tab, lobby");
-    await openTab(hostPage, "Now");
-    const hostBodyText = await hostPage.textContent("body");
-    note("hostPhone Now tab still reads as lobby (best-effort, racy by design)", !!hostBodyText?.includes("doors are not yet open"));
-    await shot(hostPage, "04-now-lobby.png");
-
-    // ------------------------------------------------------------ 05/06 --
-    console.log("— 05/06: the TV");
-    await tvPage.goto(`${baseUrl}/tv/${code}`, { waitUntil: "load", timeout: 30_000 });
-    await tvPage.getByRole("button", { name: "🕯 Light the candles" }).waitFor({ state: "visible", timeout: 30_000 });
-    await shot(tvPage, "05-tv-gate.png");
-    await tvPage.getByRole("button", { name: "🕯 Light the candles" }).click();
-    await tvPage.getByRole("button", { name: "🕯 Light the candles" }).waitFor({ state: "hidden", timeout: 10_000 }).catch(() => {});
-    await tvPage.waitForTimeout(500); // wake-lock/fullscreen may reject headless — both are try/caught client-side, harmless either way
-    note("tv shows the join code (best-effort, same race as 04)", (await tvPage.textContent("body"))?.includes(code) ?? false);
-    await shot(tvPage, "06-tv-lobby.png");
-
-    // park the TV: its heartbeat also ticks the director, and tutorialTick has
-    // no concurrency guard — a TV tick racing this script's ticks double-runs
-    // a step's moves (duplicate letters observed). Real engine race, flagged
-    // upstream; for a clean capture this script must be the only ticker.
-    await tvPage.goto("about:blank");
 
     // ---------------------------------------------------------------- 07 --
     // step0 "assemble" (players >= 2) is already satisfied by the two joins —
