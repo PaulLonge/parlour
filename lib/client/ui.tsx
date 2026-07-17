@@ -6,6 +6,27 @@
 
 import { useState } from "react";
 
+// API errors arrive as a plain string OR a zod flatten() object — render
+// either as a human sentence, never "[object Object]" (caught live on a phone).
+export function errorText(e: unknown, fallback = "something went wrong"): string {
+  if (!e) return fallback;
+  if (typeof e === "string") return e;
+  if (typeof e === "object") {
+    const z = e as { formErrors?: string[]; fieldErrors?: Record<string, string[]> };
+    const bits = [
+      ...(z.formErrors ?? []),
+      ...Object.entries(z.fieldErrors ?? {}).map(([field, msgs]) => `${field}: ${msgs.join(", ")}`),
+    ];
+    if (bits.length) return bits.join(" · ");
+    try {
+      return JSON.stringify(e);
+    } catch {
+      return fallback;
+    }
+  }
+  return String(e);
+}
+
 export function Accordion({
   title,
   kicker,

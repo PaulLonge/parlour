@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { errorText } from "@/lib/client/ui";
 import { TUTORIAL_PRESET } from "@/lib/schemas/config";
 import { SCENARIOS, DEFAULT_SCENARIO } from "@/content/scenarios";
 
@@ -47,7 +48,7 @@ export default function NewGame() {
     });
     const json = await res.json();
     setBusy(false);
-    if (!res.ok) return setError(json.error?.toString() ?? "something went wrong");
+    if (!res.ok) return setError(errorText(json.error));
     // the creator never passes through the join flow — cache tonight's word so
     // sandbox possession and takeovers on this device don't bounce off it
     if (password.trim()) {

@@ -45,6 +45,12 @@ function fill<T>(v: T, map: Record<string, string>): T {
   return v;
 }
 
+// 0009: one tutorial_step / tutorial_step_done row per game+step (unique
+// index) — a competing ticker's insert fails and it must simply stand down.
+function lostRace(e: unknown): boolean {
+  return e instanceof Error && e.message.includes("duplicate key value");
+}
+
 async function marker(admin: SupabaseClient, gameId: string) {
   const { data } = await admin
     .from("events")
@@ -174,22 +180,28 @@ export async function skipTutorialStep(admin: SupabaseClient, gameId: string) {
   const s = await loadState(admin, gameId);
   const n = names(s);
   const m = await marker(admin, gameId);
-  if (!m) {
-    await startStep(admin, gameId, n, 0);
-    return { ok: true, result: "started" };
+  try {
+    if (!m) {
+      await startStep(admin, gameId, n, 0);
+      return { ok: true, result: "started" };
+    }
+    const idx = m.payload?.step ?? 0;
+    if (idx >= TUTORIAL_STEPS.length) return { ok: false, result: "already_complete" };
+    await emit(admin, gameId, "tutorial_step_done", {
+      payload: { step: idx, key: TUTORIAL_STEPS[idx].key, skipped: true, via: "host" },
+      isPublic: true,
+    });
+    if (idx + 1 >= TUTORIAL_STEPS.length) {
+      await finish(admin, gameId, n);
+      return { ok: true, result: "complete" };
+    }
+    await startStep(admin, gameId, n, idx + 1);
+    return { ok: true, result: `skipped_to_${idx + 2}` };
+  } catch (e) {
+    // a tick beat us to this exact step — the skip is moot, not an error
+    if (lostRace(e)) return { ok: false, result: "already_advancing" };
+    throw e;
   }
-  const idx = m.payload?.step ?? 0;
-  if (idx >= TUTORIAL_STEPS.length) return { ok: false, result: "already_complete" };
-  await emit(admin, gameId, "tutorial_step_done", {
-    payload: { step: idx, key: TUTORIAL_STEPS[idx].key, skipped: true, via: "host" },
-    isPublic: true,
-  });
-  if (idx + 1 >= TUTORIAL_STEPS.length) {
-    await finish(admin, gameId, n);
-    return { ok: true, result: "complete" };
-  }
-  await startStep(admin, gameId, n, idx + 1);
-  return { ok: true, result: `skipped_to_${idx + 2}` };
 }
 
 export async function tutorialTick(
@@ -203,31 +215,38 @@ export async function tutorialTick(
   // steps satisfy their own condition (auto / self-emitted events) and must
   // not wait for a player action that will never come
   for (let guard = 0; guard < 4; guard++) {
-    const m = await marker(admin, gameId);
-    if (!m) {
-      await startStep(admin, gameId, n, 0);
-      return { skipped: "tutorial: step 1 started", moves: TUTORIAL_STEPS[0].moves.length };
+    try {
+      const m = await marker(admin, gameId);
+      if (!m) {
+        await startStep(admin, gameId, n, 0);
+        return { skipped: "tutorial: step 1 started", moves: TUTORIAL_STEPS[0].moves.length };
+      }
+      const idx = m.payload?.step ?? 0;
+      if (idx >= TUTORIAL_STEPS.length) return { skipped: "tutorial complete" };
+      const step: TutorialStep = TUTORIAL_STEPS[idx];
+
+      // steps that need the second player wait until they exist
+      if (idx > 0 && !n.second) return { skipped: "tutorial: waiting for the second player" };
+
+      const llmSkip = step.optional === "llm" && !process.env.ANTHROPIC_API_KEY;
+      if (!llmSkip && !(await met(admin, gameId, step.done, m.id)))
+        return { skipped: `tutorial: waiting on step ${idx + 1} (${step.key})` };
+
+      await emit(admin, gameId, "tutorial_step_done", {
+        payload: { step: idx, key: step.key, skipped: llmSkip, ...(llmSkip ? { why: "no ANTHROPIC_API_KEY" } : {}) },
+        isPublic: true,
+      });
+      if (idx + 1 >= TUTORIAL_STEPS.length) {
+        await finish(admin, gameId, n);
+        return { skipped: "tutorial complete" };
+      }
+      await startStep(admin, gameId, n, idx + 1);
+    } catch (e) {
+      // a concurrent ticker (TV heartbeat, join auto-tick) advanced this exact
+      // step first — its moves ran exactly once, ours must not run at all
+      if (lostRace(e)) return { skipped: "tutorial: lost the race to a concurrent tick" };
+      throw e;
     }
-    const idx = m.payload?.step ?? 0;
-    if (idx >= TUTORIAL_STEPS.length) return { skipped: "tutorial complete" };
-    const step: TutorialStep = TUTORIAL_STEPS[idx];
-
-    // steps that need the second player wait until they exist
-    if (idx > 0 && !n.second) return { skipped: "tutorial: waiting for the second player" };
-
-    const llmSkip = step.optional === "llm" && !process.env.ANTHROPIC_API_KEY;
-    if (!llmSkip && !(await met(admin, gameId, step.done, m.id)))
-      return { skipped: `tutorial: waiting on step ${idx + 1} (${step.key})` };
-
-    await emit(admin, gameId, "tutorial_step_done", {
-      payload: { step: idx, key: step.key, skipped: llmSkip, ...(llmSkip ? { why: "no ANTHROPIC_API_KEY" } : {}) },
-      isPublic: true,
-    });
-    if (idx + 1 >= TUTORIAL_STEPS.length) {
-      await finish(admin, gameId, n);
-      return { skipped: "tutorial complete" };
-    }
-    await startStep(admin, gameId, n, idx + 1);
   }
   return { skipped: "tutorial: advanced (guard reached)" };
 }

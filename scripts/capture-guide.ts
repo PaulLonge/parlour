@@ -330,11 +330,11 @@ async function main() {
     check("tv lobby shows the join code", (await tvPage.textContent("body"))?.includes(code) ?? false);
     await shot(tvPage, "06-tv-lobby.png");
 
-    // park the TV: its heartbeat also ticks the director, and tutorialTick has
-    // no concurrency guard — a TV tick racing this script's ticks double-runs
-    // a step's moves (duplicate letters observed). Real engine race, flagged
-    // upstream; for a clean capture this script must be the only ticker.
-    await tvPage.goto("about:blank");
+    // the TV stays open and ticking for the rest of the walk — DELIBERATELY.
+    // Its heartbeat races this script's direct ticks, which is exactly the
+    // real-night condition migration 0009 guards (one tutorial_step row per
+    // game+step; the race loser stands down). Before that guard existed, this
+    // race double-ran a step's moves — duplicate letters on real phones.
 
     // ---------------------------------------------------------------- 04 --
     console.log("— 04: host phone, Now tab, lobby");

@@ -708,6 +708,11 @@ B-numbers are build-time engineering calls made inside the codebase.
   Caught three real bugs on first runs: (a) /new never sent hostName in create body
   [fixed, e85d29b], (b) closeAccusation emitted accusation_closed only on no-verdict
   path — correct burning stalled THE INDUCTION at step 16/18 [fixed, b398176, all
-  three outcomes now emit closure marker], (c) tutorialTick has no concurrency guard
-  — two tickers racing can double-run a step [known, queued migration with unique
-  index or advisory lock; capture works around it by parking the TV].
+  three outcomes now emit closure marker], (c) tutorialTick had no concurrency guard
+  — two tickers racing could double-run a step's moves (duplicate letters observed
+  live) [fixed: migration 0009 puts a partial unique index on tutorial_step /
+  tutorial_step_done per game+step; the race loser's insert fails and the engine
+  stands down. The capture harness now leaves the TV ticking DELIBERATELY as
+  standing race coverage]. Also: API errors surfaced as "[object Object]" on /new
+  and the join screen (caught live on Paul's phone) — errorText() in lib/client/ui
+  renders zod flatten objects as sentences.

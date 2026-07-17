@@ -202,7 +202,7 @@ black box.
 | Testing | `npm run simulate` + `npm run simulate:rogue` | Full scripted games (no LLM) asserting phases, the kill/bribe locks, burnings, mail interception, unmasking |
 
 Repo: `github.com/PaulLonge/parlour` (private). 22 API routes, 8 pages, 2 game
-modes, 8 SQL migrations.
+modes, 9 SQL migrations.
 
 ## Current status (honest)
 
@@ -245,9 +245,12 @@ modes, 8 SQL migrations.
 - **THE MANUAL + guide:capture harness (D70, new):** `/guide` is an illustrated
   in-app walkthrough (guest-safe tier + host spoiler curtain). The `npm run guide:capture`
   Playwright harness runs an INDUCTION game over live Supabase, asserting 48 checks
-  and capturing 28 screenshots for the manual's manifest; it caught three real bugs
-  on first runs (hostName missing from /new create, accusation_closed missing from
-  correct burning, tutorialTick concurrency race — first two fixed).
+  and capturing 28 screenshots for the manual's manifest; it caught four real bugs
+  on its first runs (hostName missing from /new create, accusation_closed missing
+  from correct burning, the tutorialTick concurrency race — closed by migration
+  0009's unique step-marker index — and "[object Object]" error rendering), all
+  fixed. The harness now leaves the TV heartbeat racing its own ticks on purpose,
+  so every capture re-proves the race guard.
 - **Gate progress (2026-07-15):** Paul's Supabase project (`parlour`) is live and
   all 8 migrations are applied against it — the schema, RLS, and column grants
   above are now running for real, not just compile-verified. Anthropic key is in

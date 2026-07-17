@@ -21,7 +21,7 @@ import {
   GlyphBadge,
 } from "@/lib/client/rogue-cards";
 import { useRogueTheme, GlitchOverlay } from "@/lib/client/HijackFX";
-import { Accordion, InfoDot, TabBar } from "@/lib/client/ui";
+import { Accordion, errorText, InfoDot, TabBar } from "@/lib/client/ui";
 import { SandboxBar } from "@/lib/client/SandboxBar";
 import { WagerHub } from "@/lib/client/wager-hub";
 
@@ -123,7 +123,7 @@ function JoinScreen({ g }: { g: ReturnType<typeof useGame> }) {
         setError(seatCode ? "That code doesn't match the seat. The host can look it up." : "");
         return;
       }
-      if (!res.ok && !res.playerId) setError(res.error?.toString() ?? "couldn't join");
+      if (!res.ok && !res.playerId) setError(errorText(res.error, "couldn't join"));
       else setNeedsSeat(false);
     } finally {
       setBusy(false);
