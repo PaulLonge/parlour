@@ -690,3 +690,24 @@ B-numbers are build-time engineering calls made inside the codebase.
 5. PWA install + web push as optional enhancement (never a gate)
 6. Awards ceremony interactivity (awards exist in the story schema; director announces them at reveal)
 7. Photo-judged tasks, Web-NFC-on-Android easter egg, diegetic theme evolution mid-game (skin tokens already flow from story → TV page)
+
+- **D70 — THE MANUAL (guide) + guide:capture QA harness (July 2026).** An illustrated
+  in-app guide at `/guide` (THE MANUAL), zero-config, two tiers: guest-safe walkthrough
+  (getting in, tabs, votes, the post, the TV house channel, the panic way-out), then a
+  closed-by-default spoiler curtain whose summary explicitly warns guests away — hosts
+  are told the machinery is theirs to know, only the WHO of the night stays sealed
+  (D24 scope). Behind it every screenshot renders blurred until tapped; the footer
+  cites the capture manifest. Linked from /new and /sandbox only, never the landing
+  page or the player app.
+  `npm run guide:capture` (scripts/capture-guide.ts) is a Playwright harness that
+  creates a real INDUCTION game through /new, drives two phones + TV through all 18
+  induction steps over live Supabase (ticking /api/director/tick with the secret,
+  polling tutorial_step events), asserts 48 checks, captures 28 screenshots to
+  public/guide/ + manifest.json, deletes the throwaway game. Spoiler-safe by
+  construction (only photographs induction, /preview mock content, pre-seal surfaces).
+  Caught three real bugs on first runs: (a) /new never sent hostName in create body
+  [fixed, e85d29b], (b) closeAccusation emitted accusation_closed only on no-verdict
+  path — correct burning stalled THE INDUCTION at step 16/18 [fixed, b398176, all
+  three outcomes now emit closure marker], (c) tutorialTick has no concurrency guard
+  — two tickers racing can double-run a step [known, queued migration with unique
+  index or advisory lock; capture works around it by parking the TV].

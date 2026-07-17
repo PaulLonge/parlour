@@ -1,6 +1,6 @@
 # PARLOUR — The Overview
 
-> **Last updated: 2026-07-15 (rev 21 — THE GATE opens: Paul's Supabase project live, all 8 migrations applied against it. Rev 20: D69 SCENARIOS: games are now DATA (a registry + a content pack, no engine change); THIRD game shipped — THE VAULT, a casino-heist reskin proving the engine is theme-agnostic. Rev 19: GDD adoption complete)** · maintained by Claude, co-edited by Paul · this file's
+> **Last updated: 2026-07-17 (rev 22 — THE MANUAL: /guide + the guide:capture Playwright harness, the first automated E2E over the real browser/HTTP layer; caught three real bugs on its first runs. Rev 21 — THE GATE opens: Paul's Supabase project live, all 8 migrations applied against it. Rev 20: D69 SCENARIOS: games are now DATA (a registry + a content pack, no engine change); THIRD game shipped — THE VAULT, a casino-heist reskin proving the engine is theme-agnostic. Rev 19: GDD adoption complete)** · maintained by Claude, co-edited by Paul · this file's
 > history: `git log -- docs/OVERVIEW.md`
 > **Maintenance rule:** any change to game mechanics, app behaviour, or the tech stack
 > updates this document — date bumped — in the same commit.
@@ -139,6 +139,11 @@ Purse, The Wrong'un, The Phoenix, The Ghost).
 - **Sandbox mode** (host testing): create a game at 10× time, and a switcher strip on
   the player screen possesses any player in one tap — the whole cast playable solo
   from one phone.
+- **THE MANUAL** (`/guide`): an illustrated in-app walkthrough built from real
+  screenshots the machine took of itself mid-induction. Guest-safe up top; the
+  machinery sits behind a closed-by-default spoiler curtain that warns guests away
+  (hosts may look — only the WHO of the night stays sealed, per D24). Linked from
+  `/new` and `/sandbox` only.
 - **The conductor's readout** (hosts only, live): current phase and minutes-in, when
   the machine last acted, flag acknowledgment, and an anonymized plain-words ticker
   of recent director moves ("a coin was dangled", "mail was intercepted") — the pulse
@@ -196,7 +201,7 @@ black box.
 | Content | Stories as zod-validated JSON (`RogueStory` schema) | One generator serves the hand-refined reference story AND the sealed party story; validators reject unplayable generations mechanically |
 | Testing | `npm run simulate` + `npm run simulate:rogue` | Full scripted games (no LLM) asserting phases, the kill/bribe locks, burnings, mail interception, unmasking |
 
-Repo: `github.com/PaulLonge/parlour` (private). 22 API routes, 7 pages, 2 game
+Repo: `github.com/PaulLonge/parlour` (private). 22 API routes, 8 pages, 2 game
 modes, 8 SQL migrations.
 
 ## Current status (honest)
@@ -237,6 +242,12 @@ modes, 8 SQL migrations.
   (only the optional audience step touches the model), crowd-scale load, and
   forgeries/petitions/wiretaps (director-judgement mechanics — exercised by
   `simulate:rogue` instead).
+- **THE MANUAL + guide:capture harness (D70, new):** `/guide` is an illustrated
+  in-app walkthrough (guest-safe tier + host spoiler curtain). The `npm run guide:capture`
+  Playwright harness runs an INDUCTION game over live Supabase, asserting 48 checks
+  and capturing 28 screenshots for the manual's manifest; it caught three real bugs
+  on first runs (hostName missing from /new create, accusation_closed missing from
+  correct burning, tutorialTick concurrency race — first two fixed).
 - **Gate progress (2026-07-15):** Paul's Supabase project (`parlour`) is live and
   all 8 migrations are applied against it — the schema, RLS, and column grants
   above are now running for real, not just compile-verified. Anthropic key is in
