@@ -832,3 +832,21 @@ B-numbers are build-time engineering calls made inside the codebase.
   hijacked; speaks new announcements and three sparse ceremony beats, never
   receipts. Backlog items 1, 2, 4 closed; item 3 (costume portraits) BLOCKED
   on choosing an image-generation service — Paul's call, not buildable today.
+
+- **D76 — THE CONTROL ROOM: PARLOUR becomes an engine that explains itself (Paul,
+  2026-07-17).** Paul's endurance turn: built for two nights, now built to last.
+  /new gains a collapsed "⚙ THE CONTROL ROOM — every dial, explained": 32 GameConfig
+  knobs in six in-voice groups (THE CLOCK / THE DOOR / THE ECONOMY / THE PAPER
+  LAYER / THE TABLE / POWERS & THE SIGHT), each showing the scenario's house
+  default vs the host's override with a reset, and a 1-2 sentence blurb explaining
+  the MECHANIC behind the number (content/controls.ts — a registry that asserts
+  every key against GameConfig.shape at import, so an undocumented future knob
+  fails the build). Untouched dials keep preset values; overrides spread last and
+  win. Real trap found in verification: the server's shallow preset⊕config merge
+  would drop a preset's untouched mechanics.* siblings when one is overridden —
+  the component writes whole nested objects with preset siblings preserved (9/9
+  live assertions). Omitted by judgment: playersPerTraitor + killChallengeExpiry
+  (murder-mode insurance engine knobs) — add a THE MURDER group if wanted. ALSO
+  RECORDED: Paul has downgraded spoiler anxiety — "the twist is minor in a way;
+  it's still a really fun game." The curtain and guest-safe tiers stay (free
+  theatre), but they are no longer load-bearing; testing may spoil freely.

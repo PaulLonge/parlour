@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { errorText } from "@/lib/client/ui";
-import { TUTORIAL_PRESET } from "@/lib/schemas/config";
+import { Accordion, errorText } from "@/lib/client/ui";
+import { GameConfig, TUTORIAL_PRESET } from "@/lib/schemas/config";
 import { SCENARIOS, DEFAULT_SCENARIO } from "@/content/scenarios";
+import { ControlRoom, type ControlOverrides } from "@/lib/client/control-room";
 
 export default function NewGame() {
   const [title, setTitle] = useState("");
@@ -15,10 +16,17 @@ export default function NewGame() {
   const [password, setPassword] = useState("");
   const [sandbox, setSandbox] = useState(false);
   const [tutorial, setTutorial] = useState(false);
+  // D76: THE CONTROL ROOM — starts empty = a pure preset night. Keyed by the
+  // scenario picker so switching games doesn't drag stale dials along.
+  const [overrides, setOverrides] = useState<ControlOverrides>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
   const scenario = SCENARIOS.find((s) => s.id === scenarioId);
+  // client-side mirror of the server's preset resolution (D69's create route):
+  // scenario.preset merged over the schema's own defaults, via a real parse
+  // so every field — not just the preset's overrides — is populated.
+  const resolvedPreset = GameConfig.parse({ ...(scenario?.preset ?? {}) });
 
   async function create() {
     setBusy(true);
@@ -43,6 +51,11 @@ export default function NewGame() {
           targetEndAt: end.toISOString(),
           ...(tutorial ? TUTORIAL_PRESET : {}),
           ...(sandbox ? { timeScale: 10 } : {}),
+          // D76: THE CONTROL ROOM — spread last so a host's explicit dial
+          // always wins. The server (app/api/game/create/route.ts) already
+          // does `{...scenario.preset, ...config}`, so anything landing in
+          // `config` beats the scenario preset too — no engine change needed.
+          ...overrides,
         },
       }),
     });
@@ -88,13 +101,28 @@ export default function NewGame() {
                 key={s.id}
                 type="button"
                 className={`btn text-left ${scenarioId === s.id ? "" : "btn-ghost"}`}
-                onClick={() => setScenarioId(s.id)}
+                onClick={() => {
+                  setScenarioId(s.id);
+                  setOverrides({}); // dials are per-scenario; a fresh game starts on pure preset
+                }}
               >
                 <span className="font-semibold">{s.emoji} {s.label}</span>
                 <span className="mt-0.5 block text-xs font-normal italic opacity-80">{s.blurb}</span>
               </button>
             ))}
           </div>
+        </div>
+
+        {/* D76: THE CONTROL ROOM — closed by default so the fast path (pick a
+            game, name yourself, go) is never intimidated by 32 dials. Not
+            meaningful under induction, which forces its own preset. */}
+        <div className={tutorial ? "pointer-events-none opacity-40" : ""}>
+          <Accordion title="⚙ THE CONTROL ROOM" kicker="every dial, explained">
+            <p className="mb-3 text-xs italic" style={{ color: "var(--ink-dim)" }}>
+              Untouched dials keep {scenario ? `“${scenario.label}”'s` : "the scenario's"} house defaults. Change only what tonight needs.
+            </p>
+            <ControlRoom preset={resolvedPreset} value={overrides} onChange={setOverrides} />
+          </Accordion>
         </div>
 
         <label className="flex flex-col gap-1 text-sm" style={{ color: "var(--ink-dim)" }}>
