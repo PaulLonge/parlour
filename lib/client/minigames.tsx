@@ -47,15 +47,96 @@ export function MiniGame({
       role="dialog"
       aria-modal="true"
       aria-label={`${game} duel`}
-      className="fixed inset-0 z-50 flex flex-col p-6 text-center select-none"
+      className="duel-baize fixed inset-0 z-50 flex flex-col p-6 text-center select-none"
       style={{
-        background: "rgba(6,7,8,0.97)", // solid — instructions must not fight the page behind (visual #1)
+        // background now lives in the scoped stylesheet below — still fully
+        // opaque, instructions must not fight the page behind (visual #1)
         touchAction: "none",
         overscrollBehavior: "none",
       }}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <div className="flex items-center justify-between">
+      {/* D71 follow-up: LEGERDEMAIN identity for the pass-the-phone duels,
+          scoped to this component only. Same trick as WagerHub — redefine the
+          house theme's custom properties inside .duel-baize so .kicker/.btn/
+          the score readouts (which already use var(--gold)/var(--panel-solid)/
+          var(--danger)) repaint as the card table with no gameplay code
+          touched. Timings/scoring/handlers below are untouched. */}
+      <style>{`
+        .duel-baize {
+          --db-baize: #0a2f24;
+          --db-baize-hi: #123f32;
+          --db-baize-sh: #061e17;
+          --db-stock: #f6f1e2;
+          --db-ink: #1a1418;
+          --db-carmine: #b62c35;
+          --db-gilt: #c8a45e;
+          --db-gilt-d: #a6823f;
+
+          --panel-solid: color-mix(in srgb, var(--db-baize-hi) 92%, black 4%);
+          --border-strong: color-mix(in srgb, var(--db-gilt) 62%, transparent);
+          --accent: var(--db-gilt);
+          --accent-ink: var(--db-ink);
+          --danger: var(--db-carmine);
+          --ink: var(--db-stock);
+          --ink-dim: color-mix(in srgb, var(--db-stock) 68%, transparent);
+          --gold: var(--db-gilt);
+          --font-body: Georgia, "Times New Roman", serif;
+          --font-display: Georgia, "Times New Roman", serif;
+          --btn-radius: 5px;
+
+          background:
+            radial-gradient(120% 70% at 50% -8%, var(--db-baize-hi) 0%, transparent 58%),
+            radial-gradient(140% 85% at 50% 108%, var(--db-baize-sh) 0%, transparent 55%),
+            var(--db-baize);
+          /* the ambient theme's own .themed rule already resolved "color" at an
+             ancestor above this dialog — redefining --ink here only feeds fresh
+             var(--ink) lookups, it can't retroactively repaint an inherited
+             value, so the body text needs its own explicit declaration too
+             (this is what fixed the theme-hijacked contrast bug: dark brown ink
+             meant for a cream ground, inherited straight into this dark-green
+             dialog, until this line pinned it back to stock ivory) */
+          color: var(--db-stock);
+        }
+        .duel-baize .db-felt {
+          position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.22;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .07 0 0 0 0 .16 0 0 0 0 .12 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        .duel-baize .db-frame { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        .duel-baize .db-frame::before,
+        .duel-baize .db-frame::after {
+          content: ""; position: absolute;
+          border: 1px solid color-mix(in srgb, var(--db-gilt) 55%, transparent);
+        }
+        .duel-baize .db-frame::before { inset: 10px; }
+        .duel-baize .db-frame::after { inset: 15px; border-color: color-mix(in srgb, var(--db-gilt) 26%, transparent); }
+        .duel-baize .db-pip {
+          position: fixed; z-index: 0; pointer-events: none; user-select: none;
+          font-family: Georgia, serif; font-size: 1.1rem;
+          color: color-mix(in srgb, var(--db-gilt) 45%, transparent);
+        }
+        .duel-baize .db-pip[data-corner="tl"] { top: 22px; left: 26px; }
+        .duel-baize .db-pip[data-corner="tr"] { top: 22px; right: 26px; }
+        .duel-baize .db-pip[data-corner="bl"] { bottom: 22px; left: 26px; }
+        .duel-baize .db-pip[data-corner="br"] { bottom: 22px; right: 26px; }
+
+        .duel-baize .db-scene { animation: db-deal 0.3s ease both; }
+        @keyframes db-deal {
+          from { opacity: 0; transform: translateY(10px) scale(0.99); }
+          to { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .duel-baize .db-scene { animation: none !important; }
+        }
+      `}</style>
+      <div className="db-felt" aria-hidden="true" />
+      <div className="db-frame" aria-hidden="true" />
+      <span className="db-pip" data-corner="tl" aria-hidden="true">♠</span>
+      <span className="db-pip" data-corner="tr" aria-hidden="true">♥</span>
+      <span className="db-pip" data-corner="bl" aria-hidden="true">♦</span>
+      <span className="db-pip" data-corner="br" aria-hidden="true">♣</span>
+
+      <div className="relative z-10 flex items-center justify-between">
         <p className="kicker">
           {game} — {playerA} vs {playerB}
         </p>
@@ -71,7 +152,7 @@ export function MiniGame({
       </div>
 
       {phase === "intro" && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+        <div className="db-scene relative z-10 flex flex-1 flex-col items-center justify-center gap-4">
           <p className="text-lg">
             {game === "Reaction" && "Tap READY, wait for the flash, tap FAST. A false start is an automatic loss."}
             {game === "Tap Race" && "Five seconds. Tap as many times as humanly possible."}
@@ -87,18 +168,24 @@ export function MiniGame({
       )}
 
       {phase === "aTurn" && (
-        <Turn
-          game={game}
-          player={playerA}
-          onScore={(s) => {
-            setScoreA(s);
-            setPhase("handover"); // gate: A's residual taps must not start B's turn (UX #1)
-          }}
-        />
+        // relative z-10: stacks above the fixed felt/frame/pip decoration
+        // behind it (CSS painting order would otherwise put a non-positioned
+        // in-flow child below sibling position:fixed z-index:0 layers) — a
+        // pure positioning wrapper, Turn's own gameplay code is untouched
+        <div className="relative z-10 flex flex-1">
+          <Turn
+            game={game}
+            player={playerA}
+            onScore={(s) => {
+              setScoreA(s);
+              setPhase("handover"); // gate: A's residual taps must not start B's turn (UX #1)
+            }}
+          />
+        </div>
       )}
 
       {phase === "handover" && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+        <div className="db-scene relative z-10 flex flex-1 flex-col items-center justify-center gap-4">
           <p className="text-lg" style={{ fontVariantNumeric: "tabular-nums" }}>
             {playerA}: <b>{fmt(scoreA)}</b>
             {game === "Reaction" && scoreA !== null && scoreA >= 9999 && (
@@ -117,18 +204,20 @@ export function MiniGame({
       )}
 
       {phase === "bTurn" && (
-        <Turn
-          game={game}
-          player={playerB}
-          onScore={(s) => {
-            setScoreB(s);
-            setPhase("result");
-          }}
-        />
+        <div className="relative z-10 flex flex-1">
+          <Turn
+            game={game}
+            player={playerB}
+            onScore={(s) => {
+              setScoreB(s);
+              setPhase("result");
+            }}
+          />
+        </div>
       )}
 
       {phase === "result" && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+        <div className="db-scene relative z-10 flex flex-1 flex-col items-center justify-center gap-4">
           <p className="text-lg" style={{ fontVariantNumeric: "tabular-nums" }}>
             {playerA}: <b>{fmt(scoreA)}</b> · {playerB}: <b>{fmt(scoreB)}</b>
           </p>
@@ -145,7 +234,11 @@ export function MiniGame({
           {winner && (
             <p
               className="max-w-xs rounded p-3 text-base"
-              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.22)" }}
+              style={{
+                background: "color-mix(in srgb, var(--db-gilt) 14%, var(--db-baize-hi))",
+                border: "1px solid color-mix(in srgb, var(--db-gilt) 45%, transparent)",
+                color: "var(--db-stock)",
+              }}
             >
               Now both of you report <b>{winner}</b> on <b>your OWN phones</b>. The machine is watching the arithmetic.
             </p>
