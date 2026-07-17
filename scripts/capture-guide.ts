@@ -131,10 +131,12 @@ async function ensureServer(): Promise<string> {
     console.log(`— BASE_URL ${baseUrl} did not respond; spawning a dev server instead`);
   }
   console.log("— spawning `npm run dev`…");
-  devProc = spawn(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "dev"], {
+  // shell:true — Node 20+ refuses to spawn .cmd shims on Windows without it
+  devProc = spawn("npm", ["run", "dev"], {
     cwd: process.cwd(),
     env: process.env,
     stdio: ["ignore", "pipe", "pipe"],
+    shell: true,
   }) as DevServerProcess;
 
   const discovered = await new Promise<string>((resolve, reject) => {

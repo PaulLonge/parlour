@@ -31,6 +31,7 @@ export default function NewGame() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         title: title || "The Gathering",
+        hostName,
         // D69: the scenario resolves mode + preset server-side. Induction
         // overrides to its own preset; sandbox is an orthogonal time-warp.
         scenario: tutorial ? undefined : scenarioId,
