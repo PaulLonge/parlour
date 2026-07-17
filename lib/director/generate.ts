@@ -175,6 +175,11 @@ export async function generateAndSealStory(
           attempt === 0
             ? prompt
             : `${prompt}\n\nYOUR PREVIOUS ATTEMPT FAILED THESE STRUCTURAL CHECKS — fix them:\n${problems.join("\n")}`,
+        // jsonTool, NOT auto: strict structured outputs caps optional params
+        // at 24 and rejects large schemas (see director.ts — the same limit
+        // 400'd every director tick). The structural validator below is the
+        // real gate; grammar-strict decoding buys nothing here.
+        providerOptions: { anthropic: { structuredOutputMode: "jsonTool" } },
       });
       problems = validateStoryStructure(object, names);
       if (problems.length === 0) story = object;

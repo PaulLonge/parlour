@@ -307,6 +307,13 @@ export async function tickDirector(gameId: string, trigger: string): Promise<Tic
     schema: DirectorProposal,
     system: rogueMode ? ROGUE_SYSTEM : SYSTEM,
     prompt,
+    // jsonTool, NOT the default auto: auto picks Anthropic's strict
+    // structured outputs, whose grammar caps optional params at 24 — the
+    // 34-tool DirectorTool union carries 48 and every real tick 400'd
+    // ("Schemas contains too many optional parameters"). jsonTool emits a
+    // plain JSON tool call; zod validates here and the referee re-validates
+    // every move anyway (director proposes, referee disposes).
+    providerOptions: { anthropic: { structuredOutputMode: "jsonTool" } },
   });
 
   const verdicts = await applyDirectorMoves(admin, gameId, proposal.moves);
