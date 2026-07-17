@@ -317,7 +317,10 @@ function PlayerView({ g }: { g: ReturnType<typeof useGame> }) {
   return (
     <main className={`mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pb-24 ${themeClass}`}>
       <GlitchOverlay active={glitching} />
-      {Number(game.config?.timeScale ?? 1) > 1 && <SandboxBar g={g} />}
+      {/* host-identity gate, not just the timeScale dial — a sandbox run's
+          config left on >1 must never surface debug chrome to a real guest's
+          own phone (review #4) */}
+      {me.is_host && Number(game.config?.timeScale ?? 1) > 1 && <SandboxBar g={g} />}
 
       <header>
         <div className="flex items-baseline justify-between gap-3">
