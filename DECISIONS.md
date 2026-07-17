@@ -717,3 +717,22 @@ B-numbers are build-time engineering calls made inside the codebase.
   standing race coverage]. Also: API errors surfaced as "[object Object]" on /new
   and the join screen (caught live on Paul's phone) — errorText() in lib/client/ui
   renders zod flatten objects as sentences.
+
+- **D71 — THE CASTING SHEET: visual identity anchored to The Gallery (Paul, 2026-07-17).**
+  Paul's verdict on the current look: flat, weak identity. The fix: concrete taste
+  anchors from "The Gallery — Fifty Rooms Built by Claude"
+  (guywithtwocats.github.io/TheGallery, MIT) — borrow techniques per-surface rather
+  than describe adjectives. Paul's picks, mapped to the app's existing faces:
+  ESCAPEMENT → the landing (SHIPPED: live clockwork movement, chapter ring, balance
+  wheel, "the house keeps your time"); COLD CASE → Act One's decoy face — the
+  murder-mystery-as-case-file (manila, typewriter, stamps; letters become evidence
+  slips, notes become paperclipped memos) AND the full /guide manual as a dossier;
+  APIARY (bees → drifting gears) → the machine's post-hijack face — REVERSES D35's
+  black-mono ledger: the hijack now flips gritty human paperwork into a bright,
+  cheerful machine-branded co-op, which is wrong in exactly the right way;
+  BENTHICA (descent telemetry) → the pirate night's TV skin, meters as depth;
+  LEGERDEMAIN (green baize, fanned cards) → WagerHub/phone duels/THE VAULT, and the
+  guest-shareable pub briefing as a tap-through card deck (the Jackbox format Paul
+  leaned to, wearing the card-table identity). Other rooms are fair game per feature
+  (glyphaus/shortwave/nightmarket flagged). Build order: landing+guide → Cold Case
+  act one → Apiary hijack flip → Benthica TV + Legerdemain wagers.
