@@ -1,4 +1,6 @@
-# PARLOUR — Build Checklist (living)
+# PARLOUR — Work state (living)
+_Now at the canonical `.claude/STATE.md` path (moved from `docs/CHECKLIST.md` 2026-07-21,
+git history preserved via `git mv`) — see `~/.claude/CLAUDE.md` for the convention._
 
 > The resume point. Any session starts here: what's shipped, what's mid-build, what's
 > next, what's waiting on Paul. Canonical *why* lives in [`DECISIONS.md`](../DECISIONS.md);
@@ -150,3 +152,12 @@ Rogue story GENERATOR (November's factory) · dead schema/config pruning (`beats
 `murders.discovered`, `ghost` status, unread knobs) · PDCA venue setup dialogue · slip
 print-sheet page · invite drip · TTS · portraits · paper-pack export · proper director
 advisory lock · host-runbook rewrite for ROGUE + pub · reveal "arc" stats for flipped players.
+
+## Active branches / worktrees
+- `main` — only worktree, tracking `origin/main`.
+- `claude/ui-fixes` — **NOT merged**, 5 real commits (review #4: poll fallback +
+  resubscribe-on-drop, DepthHUD TV-legible numerals, 44px tap targets, host-gated
+  SandboxBar, join QR). Stranded — decide whether to finish/merge or drop.
+- `claude/security-audit` — 1 commit, findings-only (all flagged views/tables traced SAFE,
+  no migration needed) — safe to delete once read, nothing to merge.
+- `origin/claude/gifted-sagan-glnrww` — fully merged into main, safe to delete.
