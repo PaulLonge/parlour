@@ -350,7 +350,7 @@ async function main() {
     const hostGuestButton = secondPage.getByRole("button", { name: /Paul/ });
     check("guest list shows Paul (host, ✦)", (await hostGuestButton.textContent())?.includes("✦") ?? false);
     await shot(secondPage, "03-join-screen.png");
-    await secondPage.getByLabel("your name").fill("Co-Host");
+    await secondPage.getByLabel("your name").fill("Cohost");
     await secondPage.getByRole("button", { name: "Step inside", exact: true }).click();
     await secondPage.getByRole("tablist").waitFor({ state: "visible", timeout: 30_000 });
     check("PlayerView renders for the second phone", await secondPage.getByRole("tablist").isVisible());
@@ -501,12 +501,12 @@ async function main() {
     // require the candidate button so we anchor to the real vote panel
     const accusationVote = hostPage
       .locator(".panel", { hasText: "The accusation" })
-      .filter({ has: hostPage.getByRole("button", { name: "Co-Host" }) })
+      .filter({ has: hostPage.getByRole("button", { name: "Cohost" }) })
       .first();
     await accusationVote.waitFor({ state: "visible", timeout: 30_000 });
     check("accusation VoteTable rendered", await accusationVote.isVisible());
     await shot(hostPage, "10-vote.png");
-    await accusationVote.getByRole("button", { name: "Co-Host" }).click();
+    await accusationVote.getByRole("button", { name: "Cohost" }).click();
     await advanceTo(16, "accusation→verdict(auto)→unmasking");
 
     // ---------------------------------------------------------------- -- --
@@ -514,10 +514,10 @@ async function main() {
     await freshNow(hostPage);
     const unmaskingVote = hostPage
       .locator(".panel", { hasText: "THE UNMASKING" })
-      .filter({ has: hostPage.getByRole("button", { name: "Co-Host" }) })
+      .filter({ has: hostPage.getByRole("button", { name: "Cohost" }) })
       .first();
     await unmaskingVote.waitFor({ state: "visible", timeout: 30_000 });
-    await unmaskingVote.getByRole("button", { name: "Co-Host" }).click();
+    await unmaskingVote.getByRole("button", { name: "Cohost" }).click();
     await advanceTo(17, "unmasking→curtain");
     await advanceTo(18, "curtain(auto)→complete");
 

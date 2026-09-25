@@ -48,7 +48,7 @@ A real human at the party. Identity is a name tap (pseudo-account, anonymous aut
 | Property | Meaning |
 |---|---|
 | `name` | real name, unique per game |
-| `is_host` | Paul (and Co-Host if flagged). Hosts are blind players + break-glass holders |
+| `is_host` | Paul (and the co-host if flagged). Hosts are blind players + break-glass holders |
 | `status` | `lobby → alive → dead / ghost / banished → (respawn) → alive` |
 | `role` | `faithful` or `traitor`. **Nobody is born a traitor** — see `complete_challenge` |
 | `intake` | age, occupation, relation-to-host, relations-to-others, expected arrival |

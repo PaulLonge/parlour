@@ -135,7 +135,7 @@ paper-fallback kit stays deferred.
       **30 anonymous sign-ins/hour/IP** by default — everyone at the real party shares one
       home wifi's public IP, so this is realistic to hit on the night; raise it in
       Authentication → Rate Limits before September's playtest, not during it.
-- [ ] **THE INDUCTION on Paul's + Co-Host's phones** (built to be exactly this first-hour test)
+- [ ] **THE INDUCTION on both hosts' phones** (built to be exactly this first-hour test)
 - [ ] Real director prompt spot-checks (the thing the induction deliberately can't test)
 
 Security note: Supabase advisors flag `players_public`/`wagers_public`/`games_public` as

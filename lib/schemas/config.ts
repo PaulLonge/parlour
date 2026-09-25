@@ -99,7 +99,7 @@ export const PUB_PRESET: Partial<z.input<typeof GameConfig>> = {
   stamplessNotes: true,
   mechanics: { codes: true, notes: true, forgeries: true },
 };
-// D47: THE INDUCTION — Paul + Co-Host, two phones, ~30 minutes. Cheap prices so
+// D47: THE INDUCTION — Paul + co-host, two phones, ~30 minutes. Cheap prices so
 // 500 credits comfortably cover every lesson; targets set out of reach so no
 // endgame-pressure event fires mid-training; stamps stay ON (they're a lesson).
 export const TUTORIAL_PRESET: Partial<z.input<typeof GameConfig>> = {

@@ -146,7 +146,7 @@ log, printed line by line on the TV. The conspiracy was auditable all along.
 ### Seam configuration + the economy layer
 - **S1 — dark offers are BRIBES.** The arming mechanic becomes literal: the rogue AI
   credits your account and names a mission ("plant this phrase in three conversations",
-  "learn who Co-Host trusts most and tell me", "recruit a named friend — forward them
+  "learn who the co-host trusts most and tell me", "recruit a named friend — forward them
   your offer"). **Taking the money is the arming** — you're not cast as a villain,
   you're *bought*, which is thematically perfect for emergent arming. Silent expiry =
   you never took it, nobody knows. The good AI's offers mirror this: missions pay

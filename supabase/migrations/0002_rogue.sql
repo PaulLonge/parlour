@@ -138,7 +138,7 @@ alter table public.side_bets enable row level security;
 create policy side_bets_select_own on public.side_bets
   for select using (bettor_id in (select id from public.players where auth_uid = auth.uid()));
 
--- wagers are pub-social: the table SHOULD see Dave take 60 off Co-Host — but
+-- wagers are pub-social: the table SHOULD see Dave take 60 off Alex — but
 -- only in games the viewer belongs to, and never proposed/declined rows
 -- ("Decline and nobody will ever know" is a promise). Scoped via my_game_ids()
 -- (auth.uid() is the caller's even under owner execution) — review #6.

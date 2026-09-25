@@ -41,7 +41,7 @@ const check = (label: string, cond: boolean, extra = "") => {
   }
 };
 
-const NAMES = ["Paul", "Co-Host", "Alex", "Sam", "Jess", "Tom"];
+const NAMES = ["Paul", "Cohost", "Alex", "Sam", "Jess", "Tom"];
 
 console.log("— creating throwaway ROGUE game…");
 const { data: game, error: gErr } = await admin
@@ -81,7 +81,7 @@ try {
 
   console.log("— act1 → THE HIJACK");
   await admin.from("games").update({ status: "act1" }).eq("id", gid);
-  let v = await applyDirectorMoves(admin, gid, [{ tool: "offer_bribe", playerName: "Co-Host", amount: 750, memo: "x", mission: "y", publicTrace: "z", expiresInMinutes: 3 }]);
+  let v = await applyDirectorMoves(admin, gid, [{ tool: "offer_bribe", playerName: "Cohost", amount: 750, memo: "x", mission: "y", publicTrace: "z", expiresInMinutes: 3 }]);
   check("bribes REJECTED before hijack", !v[0].ok, v[0].detail);
   v = await applyDirectorMoves(admin, gid, [{ tool: "hijack" }]);
   check("hijack fires", v[0].ok, v[0].detail);
@@ -93,17 +93,17 @@ try {
 
   console.log("— bribes: taking the coin is the arming");
   v = await applyDirectorMoves(admin, gid, [
-    { tool: "offer_bribe", playerName: "Co-Host", amount: 750, memo: "consulting fees", mission: "say the words dead men tell no tales", publicTrace: "someone just sold the map room", expiresInMinutes: 5 },
+    { tool: "offer_bribe", playerName: "Cohost", amount: 750, memo: "consulting fees", mission: "say the words dead men tell no tales", publicTrace: "someone just sold the map room", expiresInMinutes: 5 },
     { tool: "offer_bribe", playerName: "Tom", amount: 750, memo: "quiet work", mission: "swap two name badges", publicTrace: "coins have moved", expiresInMinutes: 5 },
   ]);
   check("two bribes offered", v.every((x) => x.ok), JSON.stringify(v.filter((x) => !x.ok)));
   s = await loadState(admin, gid);
-  const co-hostBribe = s.openChallenges.find((c) => c.player_id === byName("Co-Host").id && c.type === "bribe")!;
-  let r = await acceptOffer(admin, gid, byName("Co-Host").id, co-hostBribe.id);
-  check("Co-Host takes the coin", r.ok, r.result);
+  const cohostBribe = s.openChallenges.find((c) => c.player_id === byName("Cohost").id && c.type === "bribe")!;
+  let r = await acceptOffer(admin, gid, byName("Cohost").id, cohostBribe.id);
+  check("Cohost takes the coin", r.ok, r.result);
   s = await loadState(admin, gid);
-  check("Co-Host is now a minion", s.players.find((p) => p.name === "Co-Host")?.role === "minion");
-  check("Co-Host's purse credited", (s.players.find((p) => p.name === "Co-Host")?.balance ?? 0) === 750);
+  check("Cohost is now a minion", s.players.find((p) => p.name === "Cohost")?.role === "minion");
+  check("Cohost's purse credited", (s.players.find((p) => p.name === "Cohost")?.balance ?? 0) === 750);
   check("plunder meter = accepted bribes (the twist engine)", s.game.meters.plunder === 750, String(s.game.meters.plunder));
   // Tom lets his expire silently — nothing to assert except silence: no role change
   check("Tom stays faithful (silent no)", s.players.find((p) => p.name === "Tom")?.role === "faithful");
@@ -122,8 +122,8 @@ try {
   check("host takes the coin (chaos agents may)", r.ok, r.result);
   v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Paul" }]);
   check("a bought host CAN front now (D57)", v[0].ok, v[0].detail);
-  v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Co-Host" }]);
-  check("the hat can move to Co-Host", v[0].ok, v[0].detail);
+  v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Cohost" }]);
+  check("the hat can move to Cohost", v[0].ok, v[0].detail);
 
   console.log("— D51 wager economy: house rake + pari-mutuel side bets");
   const { credit } = await import("../lib/engine/economy");
@@ -173,7 +173,7 @@ try {
     { tool: "grant_stamps", playerName: "Sam", everyone: false, count: 1 },
   ]);
   check("stamps granted", v.every((x) => x.ok), JSON.stringify(v.filter((x) => !x.ok)));
-  n = await sendNote(admin, gid, byName("Alex").id, "Jess", "I think Co-Host took the coin.");
+  n = await sendNote(admin, gid, byName("Alex").id, "Jess", "I think Cohost took the coin.");
   check("plain note delivers", n.ok, String(n.result));
   const { data: jessMail } = await admin
     .from("messages")
@@ -182,18 +182,18 @@ try {
     .eq("kind", "note");
   check("recipient got it, signed by sender", !!jessMail?.some((m) => m.claimed_sender === "Alex"));
   v = await applyDirectorMoves(admin, gid, [
-    { tool: "tap_wire", targetName: "Alex", minutes: 30, tapperName: "Co-Host" }, // player tap
+    { tool: "tap_wire", targetName: "Alex", minutes: 30, tapperName: "Cohost" }, // player tap
     { tool: "tap_wire", targetName: "Sam", minutes: 30 }, // machine surveillance
   ]);
   check("wiretaps set", v.every((x) => x.ok), JSON.stringify(v.filter((x) => !x.ok)));
   n = await sendNote(admin, gid, byName("Alex").id, "Tom", "Meet me by the map.");
   check("tapped note still delivers", n.ok, String(n.result));
-  const { data: co-hostCopies } = await admin
+  const { data: cohostCopies } = await admin
     .from("messages")
     .select("kind, title")
-    .eq("player_id", byName("Co-Host").id)
+    .eq("player_id", byName("Cohost").id)
     .eq("kind", "intercept");
-  check("tapper received silent copy", (co-hostCopies?.length ?? 0) > 0);
+  check("tapper received silent copy", (cohostCopies?.length ?? 0) > 0);
   n = await sendNote(admin, gid, byName("Sam").id, "Paul", "The machine is bluffing.");
   check("surveilled note reports posted", n.ok && n.result === "posted", String(n.result));
   const { data: heldRow } = await admin
@@ -244,17 +244,17 @@ try {
   s = await loadState(admin, gid);
   const computeBeforeBurn = s.game.meters.compute;
   for (const voter of ["Paul", "Alex", "Sam", "Jess", "Tom"]) {
-    await castVote(admin, gid, byName(voter).id, byName("Co-Host").id);
+    await castVote(admin, gid, byName(voter).id, byName("Cohost").id);
   }
   acc = await closeAccusation(admin, gid);
   check("BURNING", acc.ok && acc.result === "burned", acc.result);
   s = await loadState(admin, gid);
-  const co-host = s.players.find((p) => p.name === "Co-Host")!;
-  check("Co-Host burned but alive and in play", co-host.burned && co-host.status === "alive");
+  const cohost = s.players.find((p) => p.name === "Cohost")!;
+  check("Cohost burned but alive and in play", cohost.burned && cohost.status === "alive");
   check("front man seat vacated", s.game.frontman_player_id === null);
   // D58: a correct burn charges the room's weapon (compute climbs toward shutdown)
   check("burning fed COMPUTE (the room's win bar)", s.game.meters.compute > computeBeforeBurn, `${computeBeforeBurn}→${s.game.meters.compute}`);
-  v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Co-Host" }]);
+  v = await applyDirectorMoves(admin, gid, [{ tool: "appoint_frontman", playerName: "Cohost" }]);
   check("burned players never front again", !v[0].ok, v[0].detail);
 
   console.log("— rotation + THE UNMASKING (two-sided)");
@@ -270,7 +270,7 @@ try {
 
   v = await applyDirectorMoves(admin, gid, [{ tool: "open_unmasking" }]);
   check("unmasking opens", v[0].ok, v[0].detail);
-  for (const voter of ["Paul", "Alex", "Jess", "Tom", "Co-Host"]) {
+  for (const voter of ["Paul", "Alex", "Jess", "Tom", "Cohost"]) {
     await castVote(admin, gid, byName(voter).id, byName("Sam").id); // they solve the LAST chapter
   }
   const endR = await resolveUnmasking(admin, gid);

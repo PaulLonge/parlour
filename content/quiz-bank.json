@@ -12,7 +12,7 @@
     },
     {
       "about": "Co-Host",
-      "fact": "Favourite anime is Spy x Family (per Paul — Co-Host may confirm or veto).",
+      "fact": "Favourite anime is Spy x Family (per Paul — the co-host may confirm or veto).",
       "source": "chat 2026-07-12"
     }
   ],
@@ -26,11 +26,11 @@
     },
     {
       "about": "Co-Host",
-      "question": "What is Co-Host's favourite anime?",
+      "question": "What is the co-host's favourite anime?",
       "options": ["Spy x Family", "Howl's Moving Castle", "Demon Slayer", "Fruits Basket"],
       "correctIndex": 0,
       "status": "ready",
-      "note": "answer supplied by Paul — the machine reserves the right to quiz PAUL on this one, for stakes, in front of Co-Host"
+      "note": "answer supplied by Paul — the machine reserves the right to quiz PAUL on this one, for stakes, in front of the co-host"
     }
   ],
   "openThreads": [

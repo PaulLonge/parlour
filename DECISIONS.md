@@ -187,7 +187,7 @@ B-numbers are build-time engineering calls made inside the codebase.
   last acted, flag acknowledgment ("your flag, 2m ago — 4 things have happened
   since"), and a plain-words anonymized ticker of recent director actions ("a coin
   was dangled", "mail was intercepted"). Aggregates only — the host stays blind to
-  WHO (D24), never to whether the night has a pulse. Paul + Co-Host are on Pixels
+  WHO (D24), never to whether the night has a pulse. Both hosts are on Pixels
   (Android Chrome), so no platform caveats.
 
 - **D44 — TWO NIGHTS (Paul, July 2026).** Night 1: a PUB, lighter — different crowd
@@ -258,7 +258,7 @@ B-numbers are build-time engineering calls made inside the codebase.
   Quiz-bank material about the host (later: guests) is elicited CONVERSATIONALLY
   in chat — never form-filled — then banked as choice questions with plausible
   decoys. The director samples the bank for quiz missions. Banked so far: Paul's
-  favourite anime (One Piece), Co-Host's (Spy x Family, per Paul). Open threads
+  favourite anime (One Piece), the co-host's (Spy x Family, per Paul). Open threads
   live in the bank file.
 
 - **D47 — THE INDUCTION (Paul + Claude, July 2026).** The sandbox family gains a
@@ -276,7 +276,7 @@ B-numbers are build-time engineering calls made inside the codebase.
   director_log); the step pointer is the latest `tutorial_step` event; hosts get
   a "skip step" lever (skips are noted in the record). Decisions within: voice =
   in-character-lite; lives at `/new`, not `/sandbox` (it's a real game two phones
-  join normally); Co-Host sees the whole toolbox (consistent with D24 — the
+  join normally); the co-host sees the whole toolbox (consistent with D24 — the
   surprise is WHO, not WHAT). Side effects promoted to all games: `/api/vote`
   now ticks the director (a completed vote must close promptly even with no TV
   heartbeat); notes/audience tick only in tutorial games (D38's
@@ -284,14 +284,14 @@ B-numbers are build-time engineering calls made inside the codebase.
 
 - **D47a — the November briefing inside the induction (Paul, July 2026).** Steps
   11–13 (of a now-seventeen-step induction) brief both hosts on the two November
-  nights — this is Co-Host's formal intro to the whole project. Covers: THE FIELD
+  nights — this is the co-host's formal intro to the whole project. Covers: THE FIELD
   TRIAL's shape (open machine, stipends, wagers/duels/pub games, richest purse +
   collaborator), the Long Con's premise (the pirate murder mystery that never
   existed, the mid-party hijack, the hiring), the plan (September playtest,
   October tuning, mid-November curtain), conductor duties, and the two
   load-bearing rules (genre-not-reality; panic always honoured). Briefings are
   reading-verified with choice quizzes, like everything else.
-  **Revised (Paul, July 2026): Co-Host knows everything Paul knows.** The original
+  **Revised (Paul, July 2026): the co-host knows everything Paul knows.** The original
   "reserved ceremony surprises" withholding is dropped — step 13 ("HOW I WORK,
   conductor clearance") opens the engine room: director proposes / referee
   disposes / append-only ledger, what the machine can and cannot sense (why
@@ -299,7 +299,7 @@ B-numbers are build-time engineering calls made inside the codebase.
   (secrets unreachable, not hidden — including from the host), the break-glass
   chain of command, and the skull-meter confession (plunder = bribes the room
   chose to accept; the ceremony opens the books). The ONLY thing the briefing
-  withholds is WHO — night-of allegiances, sealed from Paul too; Co-Host's own
+  withholds is WHO — night-of allegiances, sealed from Paul too; the co-host's own
   November role stays "not yet written" pending Paul's call.
   **Added (Paul, July 2026): THE CATALOGUE & THE SHOPPING LIST (step 14, now
   eighteen steps).** The briefing enumerates every game/challenge form the
@@ -312,22 +312,22 @@ B-numbers are build-time engineering calls made inside the codebase.
   the paper-meets-phone loop (dictate → write → hand/hide → type → ledger)
   stated as the implementation trick. Both letters are titled to be KEPT (the
   shopping list doubles as the packing checklist); reading-verified by quiz.
-  NOTE: Co-Host's November role — briefly logged as open here; Paul restated the
+  NOTE: the co-host's November role — briefly logged as open here; Paul restated the
   call two days later. RESOLVED → D48.
 
 - **D48 — the conductors' November roles (Paul, 2026-07-14).** **Paul = the
   AGENT OF CHAOS** (aligned to nobody, stirs both sides, plays himself — the
   Commissioner; his surprise remains WHO among the guests, which stays emergent).
-  **Co-Host = the GOOD AI's champion** (serves BOSUN's side: compute missions,
+  **The Co-Host = the GOOD AI's champion** (serves BOSUN's side: compute missions,
   counter-intelligence, building the lantern). Mechanical consequences: the
   referee now refuses to appoint any HOST as front man (`hosts_never_front`,
   lib/engine/rogue.ts — a host front man would know WHO, killing their own
   surprise; also enforced in the tool description the LLM sees). The induction
-  briefing now states both seats plainly (Co-Host is briefed to Paul's level,
+  briefing now states both seats plainly (the co-host is briefed to Paul's level,
   D47a); guests' allegiances remain unwritten until bought on the night — that
   is now the ONLY WHO-secret, and it is sealed from everyone including the
   machine until it happens. November story authoring must write mission arcs
-  for both fixed seats (chaos-agent hooks for Paul; champion arc for Co-Host).
+  for both fixed seats (chaos-agent hooks for Paul; champion arc for the co-host).
 
 - **D49 — safety is plumbing, not signage (Paul, 2026-07-14).** Paul's call, made
   twice now: his friends are adults; visible safety warnings condescend. REMOVED:
@@ -433,7 +433,7 @@ B-numbers are build-time engineering calls made inside the codebase.
   (Paul, 2026-07-14).** (a) Reverses D48's `hosts_never_front`: a front man only
   knows they're the rogue's voice, not the other minions (one-way knowledge), so
   a host fronting doesn't spoil the WHO-surprise — and the Commissioner outed as
-  the machine's puppet, or Co-Host (BOSUN's champion) seduced into fronting, are
+  the machine's puppet, or the co-host (BOSUN's champion) seduced into fronting, are
   prize beats. (b) Answering "is the LLM smart enough to balance teams?": NO for
   hard invariants, YES for judgement — so the engine now feeds the director a
   BALANCE READOUT each tick (live minion count vs an asymmetric cap from
@@ -627,7 +627,7 @@ B-numbers are build-time engineering calls made inside the codebase.
   told immediately, three covert acts each leaving one real + one ambiguous clue,
   identity locked). Twist-stacking answered: **keep the bribes-tally reveal ALONE**
   (the review argued, and Paul's instinct agrees, that "one ship two flags" would
-  make honest work and betrayal equally hollow). Co-Host's championship is **public**
+  make honest work and betrayal equally hollow). The co-host's championship is **public**
   (the game needs one trust anchor). Paul gets a **Chaos score** with objectives
   (broker deals, make players reverse positions), never ballot power. REJECTED:
   the review's push to EXPAND safety signage (see D49); the Dead-Reckoning paper

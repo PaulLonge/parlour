@@ -44,7 +44,7 @@ economy · front-man lifecycle (tenure, office-acts-leak-clues, freeze before
 finale) + SEER (scarce authenticated yes/no) + SHIELD · scheduled tribunal
 windows · scaled plunder/compute targets · bribe retune 75/150/300/600 gated ·
 decoy-survives-hijack · pub collaborator as a real system. Twist stays single
-(bribes-tally alone); Co-Host's championship public; Paul gets a Chaos score.
+(bribes-tally alone); the co-host's championship public; Paul gets a Chaos score.
 
 ## KNOWN BACKLOG (designed, not built — in rough order)
 
@@ -118,7 +118,7 @@ decoy-survives-hijack · pub collaborator as a real system. Twist stays single
 
 - **Everything.** Zero lines have executed against a database. First hour with keys:
   both migrations → `npm run simulate` + `npm run simulate:rogue` → deploy → **THE
-  INDUCTION (D47) on Paul's + Co-Host's phones** → REAL director spot-checks
+  INDUCTION (D47) on both hosts' phones** → REAL director spot-checks
   (replacing the Fable-executed ones Paul already reviewed).
 - **What the induction covers vs doesn't (D47).** Covers, machine-verified on two
   real phones: join/passwords, arrivals, inbox, expected/choice/glyph

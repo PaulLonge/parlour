@@ -7,7 +7,7 @@ import { tickDirector } from "@/lib/director/director";
 
 const Body = z.object({ code: z.string() });
 
-// D42a: the "this is dragging" flag — HOSTS ONLY (Paul + Co-Host), the room's two
+// D42a: the "this is dragging" flag — HOSTS ONLY (Paul + co-host), the room's two
 // calibrated sensors. A soft private nudge below break-glass: no ceremony, no
 // public tally, advisory during votes. Guests' individual boredom is the
 // director's job via behavior telemetry (open missions, completions, recency),

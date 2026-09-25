@@ -12,7 +12,7 @@ The generator prompt and the RogueStory schema must enforce this.
 | Mode | What it proves | Example |
 |---|---|---|
 | **CODE ENTRY** | a physical event happened | "Type the code on the slip you found behind the map" |
-| **GLYPH** *(D32/D41 — built)* | two humans met face-to-face, deterministically | "Get Co-Host to SHOW you her mark; tap it here" — per-player symbol rotates every 10 min, verified without any AI call |
+| **GLYPH** *(D32/D41 — built)* | two humans met face-to-face, deterministically | "Get your co-host to SHOW you their mark; tap it here" — per-player symbol rotates every 10 min, verified without any AI call |
 | **CHOICE** *(D41 — built)* | knowledge, machine-scored | multiple-choice quiz (incl. the Commissioner's Interview bank); a `correctIndex` scores it instantly, no AI call |
 | **CROSS-CONFIRMATION** | two humans corroborate | You're told to toast someone; their phone later asks "did anyone toast 'new management' at you? Who?" |
 | **SUBMISSION** | knowledge/observation — expected-answer match first (D41: normalized edit distance), AI-judged only on misses/open answers | "Quote her answer word for word" / "Name who you think got a mission this round" |

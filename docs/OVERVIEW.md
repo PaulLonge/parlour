@@ -33,7 +33,7 @@ sold."*
 
 Paul plays **himself, the Commissioner** — publicly the man who summoned the machine,
 the room's lightning rod, and mechanically the **AGENT OF CHAOS**: aligned to nobody,
-courted by both sides, may take bribes, but can never be the front man (D48). **Co-Host
+courted by both sides, may take bribes, but can never be the front man (D48). **The Co-Host
 is the GOOD AI's champion** (D48) — its arm in the room, building the lantern.
 Both are conductors and briefed to the same knowledge; the only thing hidden from
 either is WHO among the *guests* is bought, which is sealed from Paul too and emerges
@@ -206,7 +206,7 @@ black box.
 | Content | Stories as zod-validated JSON (`RogueStory` schema) | One generator serves the hand-refined reference story AND the sealed party story; validators reject unplayable generations mechanically |
 | Testing | `npm run simulate` + `npm run simulate:rogue` | Full scripted games (no LLM) asserting phases, the kill/bribe locks, burnings, mail interception, unmasking |
 
-Repo: `github.com/PaulLonge/parlour` (private). 22 API routes, 8 pages, 2 game
+Repo: `github.com/PaulLonge/parlour` (public). 22 API routes, 8 pages, 2 game
 modes, 9 SQL migrations.
 
 ## Current status (honest)
@@ -230,7 +230,7 @@ modes, 9 SQL migrations.
   plays director, THE MACHINE teaches every mechanic in voice across eighteen
   steps, and each step only advances when the real mechanic verifies it happened
   (a delivered note, a matched glyph, a settled wager…). Steps 11–14 are the
-  NOVEMBER BRIEFING — Co-Host's formal intro: what THE FIELD TRIAL and the Long
+  NOVEMBER BRIEFING — the co-host's formal intro: what THE FIELD TRIAL and the Long
   Con each are, the plan through September/October, the conductor duties, the
   two rules that outrank everything, HOW THE AI WORKS (director proposes /
   referee disposes / append-only ledger; what it can sense and why verification
@@ -239,7 +239,7 @@ modes, 9 SQL migrations.
   form, pub game, set piece, and ceremony award), and THE SHOPPING LIST — the
   physical half of both nights (slips + pen, ping-pong ball, disposable cards,
   TV channel, printed QR, envelopes, prizes) with the paper-meets-phone loop
-  spelled out. Co-Host is briefed to Paul's own knowledge level (his call, July
+  spelled out. The co-host is briefed to Paul's own knowledge level (his call, July
   2026) — the only thing withheld is WHO, which is sealed from Paul too. It doubles as the QA harness: a
   completed induction is machine-verified proof the engine works on two real
   phones, and the record lands in both Inboxes. Hosts get a skip lever; skips
@@ -261,7 +261,7 @@ modes, 9 SQL migrations.
   above are now running for real, not just compile-verified. Anthropic key is in
   place; still open: `SUPABASE_SERVICE_ROLE_KEY` into the deploy target, both
   simulate scripts against the real DB, Vercel deploy, and **the induction on
-  Paul's and Co-Host's phones** (it was built to be exactly this first-hour test).
+  both hosts' phones** (it was built to be exactly this first-hour test).
 - **Designed, not built:** the PDCA setup dialogue (host ↔ AI planning the physical
   night), the slip print-sheet page, TTS house voice, costume portraits, paper-pack
   export, November's story content (unblocked — the surprise is WHO, not WHAT).

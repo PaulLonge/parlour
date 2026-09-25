@@ -45,7 +45,7 @@ function check(label: string, cond: boolean, extra = "") {
   }
 }
 
-const NAMES = ["Paul", "Co-Host", "Alex", "Sam", "Jess", "Tom", "Priya", "Dan"];
+const NAMES = ["Paul", "Cohost", "Alex", "Sam", "Jess", "Tom", "Priya", "Dan"];
 
 console.log("— creating throwaway game…");
 const { data: game, error: gErr } = await admin
@@ -87,25 +87,25 @@ try {
 
   console.log("— hybrid arming: two kill offers, one wins, one near-misses");
   v = await applyDirectorMoves(admin, gid, [
-    { tool: "offer_challenge", playerName: "Co-Host", type: "kill", brief: "Hand Sam the marked glass and say cheers.", targetName: "Sam", method: "The Marked Glass", expiresInMinutes: 20 },
+    { tool: "offer_challenge", playerName: "Cohost", type: "kill", brief: "Hand Sam the marked glass and say cheers.", targetName: "Sam", method: "The Marked Glass", expiresInMinutes: 20 },
     { tool: "offer_challenge", playerName: "Tom", type: "kill", brief: "Slip Jess the black envelope.", targetName: "Jess", method: "The Black Envelope", expiresInMinutes: 20 },
     { tool: "send_message", playerName: "Paul", kind: "flavor", title: "The house notices you", body: "Someone has been in the study." },
   ]);
   check("both kill offers + decoy flavor accepted", v.every((x) => x.ok), JSON.stringify(v.filter((x) => !x.ok)));
 
   let s = await loadState(admin, gid);
-  const co-host = players.find((p) => p.name === "Co-Host")!;
+  const cohost = players.find((p) => p.name === "Cohost")!;
   const tom = players.find((p) => p.name === "Tom")!;
-  const co-hostKill = s.openChallenges.find((c) => c.player_id === co-host.id && c.type === "kill")!;
+  const cohostKill = s.openChallenges.find((c) => c.player_id === cohost.id && c.type === "kill")!;
   const tomKill = s.openChallenges.find((c) => c.player_id === tom.id && c.type === "kill")!;
 
-  let r = await completeChallenge(admin, gid, co-host.id, co-hostKill.id);
-  check("Co-Host's kill registers (murder_registered)", r.ok && r.result === "murder_registered", r.result);
+  let r = await completeChallenge(admin, gid, cohost.id, cohostKill.id);
+  check("Cohost's kill registers (murder_registered)", r.ok && r.result === "murder_registered", r.result);
   r = await completeChallenge(admin, gid, tom.id, tomKill.id);
   check("Tom's same-round kill is a NEAR MISS (kill lock)", !r.ok && r.result === "near_miss", r.result);
 
   s = await loadState(admin, gid);
-  check("Co-Host is now a traitor", s.players.find((p) => p.id === co-host.id)?.role === "traitor");
+  check("Cohost is now a traitor", s.players.find((p) => p.id === cohost.id)?.role === "traitor");
   check("Sam is dead", s.players.find((p) => p.name === "Sam")?.status === "dead");
   check("Tom is still faithful (chickened-out path stays silent)", s.players.find((p) => p.id === tom.id)?.role === "faithful");
 
@@ -120,18 +120,18 @@ try {
 
   const alive = (await loadState(admin, gid)).alive;
   for (const voter of alive) {
-    const target = voter.name === "Co-Host" ? players.find((p) => p.name === "Paul")! : co-host; // mob votes Co-Host
+    const target = voter.name === "Cohost" ? players.find((p) => p.name === "Paul")! : cohost; // mob votes Cohost
     const res = await castVote(admin, gid, voter.id, target.id);
     check(`${voter.name} votes`, res.ok, res.result);
   }
   const deadSam = players.find((p) => p.name === "Sam")!;
-  const badVote = await castVote(admin, gid, deadSam.id, co-host.id);
+  const badVote = await castVote(admin, gid, deadSam.id, cohost.id);
   check("dead player cannot vote", !badVote.ok, badVote.result);
 
   const tally = await closeVote(admin, gid);
   check("vote closes: traitor banished", tally.ok && tally.result === "banished_traitor", tally.result);
   s = await loadState(admin, gid);
-  check("Co-Host is banished", s.players.find((p) => p.id === co-host.id)?.status === "banished");
+  check("Cohost is banished", s.players.find((p) => p.id === cohost.id)?.status === "banished");
 
   console.log("— respawn the dead as a spare character");
   v = await applyDirectorMoves(admin, gid, [{ tool: "respawn", playerName: "Sam" }]);
